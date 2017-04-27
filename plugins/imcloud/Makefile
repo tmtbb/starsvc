@@ -92,6 +92,8 @@ im_init.o : ./im_init.cc ./im_init.h
 
 im_logic.o : ./im_logic.cc ./im_logic.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./im_logic.cc $(INCLUDE_PATHS)	
+im_mysql.o : ./im_mysql.cc ./im_mysql.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./im_mysql.cc $(INCLUDE_PATHS)
 logic_unit.o :  $(USER_DIR)/logic/logic_unit.cc $(USER_DIR)/logic/logic_unit.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/logic_unit.cc $(INCLUDE_PATHS)	
 swp_infos.o :  $(USER_DIR)/logic/swp_infos.cc $(USER_DIR)/logic/swp_infos.h
@@ -119,7 +121,8 @@ redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/storage/redis_pool.cc $(INCLUDE_PATHS)
 	
 
-$(PLUGIN) : im_init.o im_logic.o fcgimodule.o swp_infos.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o 		redis_pool.o\
+$(PLUGIN) : im_init.o im_logic.o im_mysql.o fcgimodule.o swp_infos.o logic_unit.o packet_processing.o \
+	data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o \
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \
 	$^ -o $@
