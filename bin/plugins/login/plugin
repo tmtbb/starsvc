@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin id="login"
+        name="login"
+        version="1.0.0"
+        provider-name="li">
+</plugin>
+

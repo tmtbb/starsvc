@@ -1,0 +1,20 @@
+#ifndef PLUGINS_LOGIN_LOGIN_OPCODE_H_
+#define PLUGINS_LOGIN_LOGIN_OPCODE_H_
+
+#include "comm/comm_head.h"
+#include "net/comm_head.h"
+
+namespace login {
+#define LOGIN_TYPE 1
+#define HEARTBEAT_REQ 3000
+#define REGISTER_ACCOUNT_REQ LOGIN_TYPE * 1000 + 1
+#define REGISTER_ACCOUNT_RLY LOGIN_TYPE * 1000 + 2
+
+#define USER_LOGIN_REQ LOGIN_TYPE * 1000 + 3
+#define USER_LOGIN_RLY LOGIN_TYPE * 1000 + 4
+
+#define CHANGE_PASSWD_REQ LOGIN_TYPE * 1000 + 5
+#define CHANGE_PASSWD_RLY LOGIN_TYPE * 1000 + 6
+}
+
+#endif  // PLUGINS_LOGIN_LOGIN_OPCODE_H_

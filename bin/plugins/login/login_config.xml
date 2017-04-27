@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+  <database>
+     <mysql host ="127.0.0.1" 
+            port ="3306" 
+            user = "actuals" 
+            pass = "vKjYAMUZ6NNcQ"  
+            name = "actuals"/>
+
+  </database>
+  
+  <cached>
+     <redis host ="61.147.114.69"
+  		port ="6390"
+     pass = "7ifW4i@M"
+     name = "0"/>
+
+     <memcached>
+       <config host = "127.0.0.1" port="11211"/>
+     </memcached>
+  </cached>
+  
+</config>

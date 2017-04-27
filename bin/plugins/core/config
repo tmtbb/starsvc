@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <srv_config bindhost="139.224.34.22"
+                port="16005"
+                path="/var/www/tmp/paycorefile"/>
+    
+    <log_config usr_file="/home/kerry/rounter/bin/user.log"
+                sys_file="/home/kerry/rounter/bin/sys.log"
+                error_file="/home/kerry/rounter/bin/err.log"
+		log_facility="6"/>
+    
+    <app_config max_worker="4"
+                max_fds="1000"
+                max_conns="2000"/>
+   
+    <other_config modules_dir="./plugins"/>
+
+    <remote_config flag="1">
+            <config bindhost = "127.0.0.1" port="15005"/>
+    </remote_config>
+</config> 
