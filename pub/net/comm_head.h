@@ -19,7 +19,8 @@ enum PACKET_TYPE {
   TRADES_TYPE = 5,
   HISTORY_TYPE = 6,
   PAY_TYPE = 7,
-  BANK_TYPE = 8
+  BANK_TYPE = 8,
+  IM_TYPE = 9
 };
 
 

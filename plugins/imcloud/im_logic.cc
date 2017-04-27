@@ -9,6 +9,7 @@
 #include "logic/logic_unit.h"
 #include "net/errno.h"
 #include <string>
+#include "operator_code.h"
 
 #define DEFAULT_CONFIG_PATH "./plugins/imcloud/im_config.xml"
 
@@ -50,7 +51,35 @@ bool Imlogic::OnImConnect(struct server *srv, const int socket) {
 
 bool Imlogic::OnImMessage(struct server *srv, const int socket,
                                     const void *msg, const int len) {
-  
+  bool r = false;
+  struct PacketHead *packet = NULL;
+  if (srv == NULL || socket < 0 || msg == NULL || len < PACKET_HEAD_LENGTH)
+    return false;
+  if (!net::PacketProsess::UnpackStream(msg, len, &packet)) {
+    LOG_ERROR2("UnpackStream Error socket %d", socket);
+    send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+    return false;
+  }
+  switch (packet->operate_code) {
+    case R_IMCLOUD_REGISTER: {
+      OnRegisterImcloud(srv, socket, packet);
+      break;
+    }
+    case R_IMCLOUD_LOGIN:{
+      OnLoginImcloud(srv, socket, packet);
+      break;
+    }
+    default:
+      break;
+  }
+
+  return true;
+}
+
+bool Imlogic::OnRegisterImcloud(struct server* srv,int socket ,struct PacketHead* packet){
+  return true;
+}
+bool Imlogic::OnLoginImcloud(struct server* srv,int socket ,struct PacketHead* packet){
   return true;
 }
 
@@ -84,45 +113,10 @@ bool Imlogic::OnIniTimer(struct server *srv) {
 
 bool Imlogic::OnTimeout(struct server *srv, char *id, int opcode,
                              int time) {
-
+  switch (opcode) {
+    default:
+      break;
+  }
   return true;
 }
-
-bool Imlogic::OnImTrades(struct server* srv, int socket,
-                                   struct PacketHead *packet) {
- 
-  return true;
-}
-
-bool Imlogic::OnImRecharge(struct server* srv, int socket,
-                                     struct PacketHead *packet) {
- 
-  return true;
-}
-
-bool Imlogic::OnImWithdrawals(struct server* srv, int socket,
-                                        struct PacketHead * packet) {
-  
-  return true;
-}
-
-bool Imlogic::OnHandleTradesPosition(struct server* srv, int socket,
-                                          struct PacketHead * packet) {
-  
-
-  return true;
-}
-
-bool Imlogic::OnHisotryHandlePosition(struct server* srv, int socket,
-                                           struct PacketHead* packet) {
-  
-  return true;
-}
-
-bool Imlogic::OnHandleWithdrawals(struct server* srv, int socket,
-                                       struct PacketHead* packet) {
-  
-  return true;
-}
-
 }  // namespace trades_logic

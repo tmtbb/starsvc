@@ -42,25 +42,9 @@ class Imlogic {
 
   bool OnTimeout(struct server *srv, char *id, int opcode, int time);
 
-
- private:
-  bool OnImTrades(struct server* srv, int socket,
-                       struct PacketHead *packet);
-
-  bool OnImRecharge(struct server* srv, int socket,
-                         struct PacketHead *packet);
-
-  bool OnImWithdrawals(struct server* srv, int socket,
-                            struct PacketHead * packet);
-
-  bool OnHandleWithdrawals(struct server* srv, int socket,
-                           struct PacketHead* packet);
-
-  bool OnHandleTradesPosition(struct server* srv, int socket,
-                             struct PacketHead * packet);
-
-  bool OnHisotryHandlePosition(struct server* srv, int socket,
-                          struct PacketHead* packet);
+  bool OnRegisterImcloud(struct server* srv,int socket ,struct PacketHead* packet);
+  
+  bool OnLoginImcloud(struct server* srv,int socket ,struct PacketHead* packet);
  private:
   bool Init();
 };
