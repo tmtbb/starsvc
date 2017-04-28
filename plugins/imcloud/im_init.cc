@@ -4,6 +4,7 @@
 #include "core/plugins.h"
 #include "imcloud/im_logic.h"
 #include "logic/logic_comm.h"
+#include "im_process.h"
 
 struct imcloudplugin {
   char *id;
@@ -33,6 +34,10 @@ static handler_t OnImShutdown(struct server *srv, void *pd) {
 
 static handler_t OnImConnect(struct server *srv, int fd, void *data,
                                      int len) {
+  LOG_ERROR("-------------------------------------------OnImConnect");
+  im_process::ImProcess *test = new im_process::ImProcess();
+  test->gettoken();
+
   im_logic::Imlogic::GetInstance()->OnImConnect(srv, fd);
   return HANDLER_GO_ON;
 }

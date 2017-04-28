@@ -119,4 +119,4 @@ bool Imlogic::OnTimeout(struct server *srv, char *id, int opcode,
   }
   return true;
 }
-}  // namespace trades_logic
+}  // namespace
