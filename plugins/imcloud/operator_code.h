@@ -13,5 +13,7 @@ namespace users_logic {
 #define R_IMCLOUD_LOGIN  IM_TYPE * 1000 + 3
 #define S_IMCLOUD_LOGIN  IM_TYPE * 1000 + 4
 
+#define R_IMCLOUD_GETTOKEN IM_TYPE * 1000 + 5
+#define S_IMCLOUD_GETTOKEN IM_TYPE * 1000 + 6
 }
 #endif

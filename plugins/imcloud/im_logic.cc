@@ -61,8 +61,8 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
     return false;
   }
   switch (packet->operate_code) {
-    case R_IMCLOUD_REGISTER: {
-      OnRegisterImcloud(srv, socket, packet);
+    case R_IMCLOUD_GETTOKEN: {
+      OnGetTokenImcloud(srv, socket, packet);
       break;
     }
     case R_IMCLOUD_LOGIN:{
@@ -75,7 +75,18 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
 
   return true;
 }
+bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead* packet){
 
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  int length = packet->packet_length - sizeof(PacketHead);
+  char message[length+1];
+  strcpy(message,(char*)(packet+sizeof(PacketHead)));
+  LOG_MSG2("get message = %s \n",message);
+  return true;
+}
 bool Imlogic::OnRegisterImcloud(struct server* srv,int socket ,struct PacketHead* packet){
   return true;
 }

@@ -45,6 +45,8 @@ class Imlogic {
   bool OnRegisterImcloud(struct server* srv,int socket ,struct PacketHead* packet);
   
   bool OnLoginImcloud(struct server* srv,int socket ,struct PacketHead* packet);
+
+  bool OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead* packet);
  private:
   bool Init();
 };

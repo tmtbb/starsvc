@@ -36,8 +36,7 @@ static handler_t OnImConnect(struct server *srv, int fd, void *data,
                                      int len) {
   LOG_ERROR("-------------------------------------------OnImConnect");
   im_process::ImProcess *test = new im_process::ImProcess();
-  test->gettoken();
-
+  test->gettoken("13569365932","qwert");
   im_logic::Imlogic::GetInstance()->OnImConnect(srv, fd);
   return HANDLER_GO_ON;
 }

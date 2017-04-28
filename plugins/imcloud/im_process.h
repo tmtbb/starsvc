@@ -25,7 +25,7 @@ class ImProcess {
   ~ImProcess();
 
  public:
-  void gettoken();
+  std::string gettoken(std::string accid,std::string name);
   
 };
 
