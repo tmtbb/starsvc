@@ -10,6 +10,8 @@
 #include "net/errno.h"
 #include <string>
 #include "operator_code.h"
+#include "im_proto.h"
+#include "im_process.h"
 
 #define DEFAULT_CONFIG_PATH "./plugins/imcloud/im_config.xml"
 
@@ -45,12 +47,12 @@ bool Imlogic::OnImConnect(struct server *srv, const int socket) {
   std::string ip;
   int port;
   logic::SomeUtils::GetIPAddress(socket, ip, port);
-  LOG_MSG2("==========================ip {%s} prot {%d}", ip.c_str(), port);
+  LOG_MSG2("ip {%s} prot {%d}", ip.c_str(), port);
   return true;
 }
 
 bool Imlogic::OnImMessage(struct server *srv, const int socket,
-                                    const void *msg, const int len) {
+                                    const void *msg, const int len) {                               
   bool r = false;
   struct PacketHead *packet = NULL;
   if (srv == NULL || socket < 0 || msg == NULL || len < PACKET_HEAD_LENGTH)
@@ -60,6 +62,8 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
     send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
     return false;
   }
+  
+  //OnGetTokenImcloud(srv, socket, packet);
   switch (packet->operate_code) {
     case R_IMCLOUD_GETTOKEN: {
       OnGetTokenImcloud(srv, socket, packet);
@@ -76,15 +80,39 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
   return true;
 }
 bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead* packet){
-
+  LOG_ERROR("========================OnGetTokenImcloud============================");
   if (packet->packet_length <= PACKET_HEAD_LENGTH) {
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
+  im_logic::net_request::tokencode tokencode;
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+  tokencode.set_http_packet(packet_recv->body_);
+
+  LOG_MSG2("getmessage------------------------:%s,%s",tokencode.name().c_str(),tokencode.accid().c_str());
+  /*
   int length = packet->packet_length - sizeof(PacketHead);
   char message[length+1];
   strcpy(message,(char*)(packet+sizeof(PacketHead)));
   LOG_MSG2("get message = %s \n",message);
+  */
+  im_process::ImProcess tokenfun;
+  std::string tokenvalue = tokenfun.gettoken(tokencode.name(),tokencode.accid());
+  if(sizeof(tokenvalue)<=0){
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+	  
+  //构建回复包
+  im_logic::net_reply::tokenreply reply;
+  reply.set_token(tokenvalue);
+  std::string code = "ok";
+  reply.set_result(code);
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_IMCLOUD_GETTOKEN, IM_TYPE, 0,packet->session_id, 0);
+  packet_reply.body_ = reply.get();
+  send_message(socket, &packet_reply);
+  
   return true;
 }
 bool Imlogic::OnRegisterImcloud(struct server* srv,int socket ,struct PacketHead* packet){
