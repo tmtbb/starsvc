@@ -7,7 +7,7 @@
 #include "net/comm_head.h"
 #include "net/packet_processing.h"
 #include "manager/data_share_mgr.h"
-
+#include "im_mysql.h"
 namespace im_logic {
 
 class Imlogic {
@@ -18,11 +18,10 @@ class Imlogic {
   bool OnQutations(struct server* srv, int socket, struct PacketHead *packet);
  private:
   static Imlogic *instance_;
-
+  im_mysql::Im_Mysql *sqlengine;
  public:
   static Imlogic *GetInstance();
   static void FreeInstance();
-
   bool OnImConnect(struct server *srv, const int socket);
 
   bool OnImMessage(struct server *srv, const int socket, const void *msg,

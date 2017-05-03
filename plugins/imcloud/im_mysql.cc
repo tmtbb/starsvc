@@ -8,6 +8,7 @@
 #include "comm/comm_head.h"
 
 #include "logic/logic_comm.h"
+#include "basic/basic_util.h"
 
 namespace im_mysql {
 
@@ -23,15 +24,23 @@ Im_Mysql::~Im_Mysql() {
   mysql_engine_ = NULL;
 }
 //写用户信息
-int32 Im_Mysql::SetUserInfo(std::string phone_num, std::string& client_ip,
+int32 Im_Mysql::SetUserInfo(int64 userid, int64 phonenum, std::string name,std::string accid,std::string token,
                         DicValue* dic){
   int32 err = 0;
   bool r = false;
   do {
-    std::stringstream ss;
-    ss << "call test('100')";
-    dic->SetString(L"sql", ss.str());
-    LOG_DEBUG2("%s", ss.str().c_str());
+    std::string sql;
+
+    sql = "call star_addcloudinfo("
+      + base::BasicUtil::StringUtil::Int64ToString(userid) + ","
+      + base::BasicUtil::StringUtil::Int64ToString(phonenum) + ","
+      + "'" + name + "','"
+      + "'"  + accid + "','"
+      + token + "'" + ");";
+
+    //std::string m_sql = "call star_addcloudinfo(123,1770640,'m_name','m_accid')";
+    dic->SetString(L"sql", sql);
+    LOG_DEBUG2("%s", sql.c_str());
     r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),NULL);
     if (!r) {
       err = SQL_EXEC_ERR;
@@ -46,15 +55,16 @@ int32 Im_Mysql::SetUserInfo(std::string phone_num, std::string& client_ip,
   return err;
 }
 //读用户信息
-int32 Im_Mysql::GetStaticInfo(std::string phone, std::string& client_ip,
-                                  DicValue* dic) {
+int32 Im_Mysql::GetStaticInfo(int64 phonenum,  DicValue* dic) {
   int32 err = 0;
   bool r = false;
   do {
-    std::stringstream ss;
-    ss << "call test('100')";
-    dic->SetString(L"sql", ss.str());
-    LOG_DEBUG2("%s", ss.str().c_str());
+    std::string sql;
+    sql = "call star_getcloudinfo("
+      + base::BasicUtil::StringUtil::Int64ToString(phonenum)
+      +  ");";
+    dic->SetString(L"sql", sql);
+    LOG_DEBUG2("%s", sql.c_str());
     r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),
                                 CallStaticSelect);
     if (!r) {
@@ -68,8 +78,13 @@ int32 Im_Mysql::GetStaticInfo(std::string phone, std::string& client_ip,
   } while (0);
   base_logic::DictionaryValue *userinfo = NULL;
   dic->GetDictionary(L"userinfo", &userinfo);
-  std::string userid;
-  userinfo->GetString(L"userid", &userid);
+  std::string username;
+  std::string accid;
+  std::string tokenvalue;
+  userinfo->GetString(L"username", &username);
+  userinfo->GetString(L"accid", &accid);
+  userinfo->GetString(L"tokenvalue", &tokenvalue);
+  LOG_DEBUG2("li============%s,%s",username.c_str(),accid.c_str(),tokenvalue.c_str());
   return err;
 }
 void Im_Mysql::CallStaticSelect(void* param, base_logic::Value* value) {
@@ -83,9 +98,11 @@ void Im_Mysql::CallStaticSelect(void* param, base_logic::Value* value) {
   if (num > 0) {
     while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
       if (rows[0] != NULL)
-        userinfo->SetString(L"userid", rows[0]);
+        userinfo->SetString(L"username", rows[0]);
       if (rows[1] != NULL)
         userinfo->SetString(L"accid", rows[1]);
+      if (rows[2] != NULL)
+        userinfo->SetString(L"tokenvalue", rows[2]);
       dict->Set(L"userinfo", (base_logic::Value *) (userinfo));
     }
   } else {
