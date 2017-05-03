@@ -40,7 +40,7 @@ std::string sumHash1(std::string strin)
         http::HttpMethodPost hmp(url);
         std::string content = "Content-Type: application/x-www-form-urlencoded;charset=utf-8";
         hmp.SetHeaders(content);
-        std::string appkey = "AppKey: 709f85147892793d23a2ed6bfe3de1b3";
+        std::string appkey = "AppKey: 0d0f4b452de9695f91b0e4dc949d54cc";
         hmp.SetHeaders(appkey);
 
         std::string nonce = util::RandomString(32);
@@ -55,7 +55,7 @@ std::string sumHash1(std::string strin)
         std::string curtimevalue = "CurTime: "+curtime;
         hmp.SetHeaders(curtimevalue);
         
-        std::string sumstring = "f40ab1832147"+nonce+curtime;
+        std::string sumstring = "15eca00bfce6"+nonce+curtime;
         std::string checksum = "CheckSum: "+ sumHash1(sumstring);
         hmp.SetHeaders(checksum);
         
@@ -86,5 +86,55 @@ std::string sumHash1(std::string strin)
         
         return token;
  }
-  
+ std::string ImProcess::refreshtoken(std::string accid){
+        std::string url = "https://api.netease.im/nimserver/user/refreshToken.action";
+
+        http::HttpMethodPost hmp(url);
+        std::string content = "Content-Type: application/x-www-form-urlencoded;charset=utf-8";
+        hmp.SetHeaders(content);
+        std::string appkey = "AppKey: 0d0f4b452de9695f91b0e4dc949d54cc";
+        hmp.SetHeaders(appkey);
+
+        std::string nonce = util::RandomString(32);
+        std::string noncevalue = "Nonce: "+nonce;
+        hmp.SetHeaders(noncevalue);
+
+        
+        std::stringstream ss;
+        std::string curtime;
+        ss<<time(NULL);
+        ss>>curtime;
+        std::string curtimevalue = "CurTime: "+curtime;
+        hmp.SetHeaders(curtimevalue);
+        
+        std::string sumstring = "15eca00bfce6"+nonce+curtime;
+        std::string checksum = "CheckSum: "+ sumHash1(sumstring);
+        hmp.SetHeaders(checksum);
+        
+        LOG_MSG2("%s",content.c_str());
+        LOG_MSG2("%s",appkey.c_str());
+        LOG_MSG2("%s",nonce.c_str());
+        LOG_MSG2("%s",curtime.c_str());
+        LOG_MSG2("checksum = %s",checksum.c_str());
+
+        std::string post_data = "accid="+accid;
+        hmp.Post(post_data.c_str());
+
+        std::string result;
+        hmp.GetContent(result);
+        LOG_MSG2("http refreshtoken result:%s", result.c_str());
+        
+        Json::Reader reader;
+        Json::Value value;
+        std::string desc;
+        std::string token;
+        if (reader.parse(result, value))
+        {
+            desc = value["desc"].asString();
+            token =  value["token"].asString();
+        }
+        LOG_MSG2("desc = %s",desc.c_str());
+        
+        return token;
+ }
 } 

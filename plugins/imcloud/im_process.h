@@ -26,6 +26,7 @@ class ImProcess {
 
  public:
   std::string gettoken(std::string accid,std::string name);
+  std::string refreshtoken(std::string accid);
   
 };
 

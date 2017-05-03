@@ -69,6 +69,10 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
       OnGetTokenImcloud(srv, socket, packet);
       break;
     }
+    case R_IMCLOUD_REFRESHTOKEN: {
+      OnRefreshTokenImcloud(srv, socket, packet);
+      break;
+    }
     case R_IMCLOUD_LOGIN:{
       OnLoginImcloud(srv, socket, packet);
       break;
@@ -106,10 +110,38 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
   //构建回复包
   im_logic::net_reply::tokenreply reply;
   reply.set_token(tokenvalue);
-  std::string code = "ok";
+  std::string code = "success";
   reply.set_result(code);
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_IMCLOUD_GETTOKEN, IM_TYPE, 0,packet->session_id, 0);
+  packet_reply.body_ = reply.get();
+  send_message(socket, &packet_reply);
+  
+  return true;
+}
+bool Imlogic::OnRefreshTokenImcloud(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  im_logic::net_request::tokencode tokencode;
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+  tokencode.set_http_packet(packet_recv->body_);
+
+  im_process::ImProcess tokenfun;
+  std::string tokenvalue = tokenfun.refreshtoken(tokencode.accid());
+  if(sizeof(tokenvalue)<=0){
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+	  
+  //构建回复包
+  im_logic::net_reply::tokenreply reply;
+  reply.set_token(tokenvalue);
+  std::string code = "success";
+  reply.set_result(code);
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_IMCLOUD_REFRESHTOKEN, IM_TYPE, 0,packet->session_id, 0);
   packet_reply.body_ = reply.get();
   send_message(socket, &packet_reply);
   

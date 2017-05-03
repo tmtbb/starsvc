@@ -16,10 +16,10 @@ class Im_Mysql {
   Im_Mysql(config::FileConfig* config);
   ~Im_Mysql();
 
-  int32 UserLoginSelect(std::string phone_num, std::string& client_ip,
+  int32 GetStaticInfo(std::string phone_num, std::string& client_ip,
                         DicValue* dic);
 
-  static void CallUserLoginSelect(void* param, base_logic::Value* value);
+  static void CallStaticSelect(void* param, base_logic::Value* value);
  private:
   base_logic::DataEngine* mysql_engine_;
 };

@@ -22,7 +22,7 @@ Im_Mysql::~Im_Mysql() {
   }
   mysql_engine_ = NULL;
 }
-int32 Im_Mysql::UserLoginSelect(std::string phone, std::string& client_ip,
+int32 Im_Mysql::GetStaticInfo(std::string phone, std::string& client_ip,
                                   DicValue* dic) {
   int32 err = 0;
   bool r = false;
@@ -32,7 +32,7 @@ int32 Im_Mysql::UserLoginSelect(std::string phone, std::string& client_ip,
     dic->SetString(L"sql", ss.str());
     LOG_DEBUG2("%s", ss.str().c_str());
     r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),
-                                CallUserLoginSelect);
+                                CallStaticSelect);
     if (!r) {
       err = SQL_EXEC_ERR;
       break;
@@ -44,7 +44,7 @@ int32 Im_Mysql::UserLoginSelect(std::string phone, std::string& client_ip,
   } while (0);
   return err;
 }
-void Im_Mysql::CallUserLoginSelect(void* param, base_logic::Value* value) {
+void Im_Mysql::CallStaticSelect(void* param, base_logic::Value* value) {
   base_storage::DBStorageEngine* engine =
       (base_storage::DBStorageEngine*) (param);
   MYSQL_ROW rows;
