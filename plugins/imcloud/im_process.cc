@@ -75,14 +75,15 @@ std::string sumHash1(std::string strin)
         
         Json::Reader reader;
         Json::Value value;
-        std::string desc;
+        int desc;
         std::string token;
         if (reader.parse(result, value))
         {
-            desc = value["desc"].asString();
-            token =  value["token"].asString();
+            desc = value["code"].asInt();
+            //token =  value["info"]["token"].asString();
         }
-        LOG_MSG2("desc = %s",desc.c_str());
+        if(desc == 200)
+            token =  value["info"]["token"].asString();
         
         return token;
  }
@@ -126,14 +127,14 @@ std::string sumHash1(std::string strin)
         
         Json::Reader reader;
         Json::Value value;
-        std::string desc;
+        int desc;
         std::string token;
         if (reader.parse(result, value))
         {
-            desc = value["desc"].asString();
-            token =  value["token"].asString();
+            desc = value["code"].asInt();  
         }
-        LOG_MSG2("desc = %s",desc.c_str());
+        if(desc==200)
+            token =  value["info"]["token"].asString();
         
         return token;
  }

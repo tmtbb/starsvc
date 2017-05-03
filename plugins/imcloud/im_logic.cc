@@ -12,8 +12,9 @@
 #include "operator_code.h"
 #include "im_proto.h"
 #include "im_process.h"
+#include "im_mysql.h"
 
-#define DEFAULT_CONFIG_PATH "./plugins/imcloud/im_config.xml"
+#define DEFAULT_CONFIG_PATH "./plugins/imcloud/imcoud_config.xml"
 
 #define TIME_DISTRIBUTION_TASK 10001
 
@@ -48,6 +49,34 @@ bool Imlogic::OnImConnect(struct server *srv, const int socket) {
   int port;
   logic::SomeUtils::GetIPAddress(socket, ip, port);
   LOG_MSG2("ip {%s} prot {%d}", ip.c_str(), port);
+
+  //test
+  // im_process::ImProcess tokenfun;
+  // std::string tokenvalue = tokenfun.gettoken("15306559323","15306559323");
+  // LOG_MSG2("tokenvalue ============ %s ,length = %d\n",tokenvalue.c_str(),tokenvalue.length());
+  // if(tokenvalue.length()<=0){
+  //   tokenvalue = tokenfun.refreshtoken("15306559323");
+  // }
+  // LOG_MSG2("===========%s\n",tokenvalue.c_str());
+
+  // bool r = false;
+  // config::FileConfig* config = config::FileConfig::GetFileConfig();
+  // std::string path = DEFAULT_CONFIG_PATH;
+  // if (config == NULL) {
+  //   LOG_ERROR("imlogic config init error");
+  //   return false;
+  // }
+  // r = config->LoadConfig(path);
+  // if (!r) {
+  //   LOG_ERROR("login config load error");
+  //   return false;
+  // }
+  
+  // im_mysql::Im_Mysql *sql = new im_mysql::Im_Mysql(config);
+  // std::string cli;
+  // std::string arg = "123";
+  // DicValue *dic = new base_logic::DictionaryValue();
+  // sql->GetStaticInfo(arg,cli,dic);
   return true;
 }
 
@@ -62,8 +91,6 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
     send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
     return false;
   }
-  
-  //OnGetTokenImcloud(srv, socket, packet);
   switch (packet->operate_code) {
     case R_IMCLOUD_GETTOKEN: {
       OnGetTokenImcloud(srv, socket, packet);
@@ -102,11 +129,14 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
   */
   im_process::ImProcess tokenfun;
   std::string tokenvalue = tokenfun.gettoken(tokencode.name(),tokencode.accid());
-  if(sizeof(tokenvalue)<=0){
+  LOG_MSG2("tokenvalue ============ %s ,length = %d\n",tokenvalue.c_str(),tokenvalue.length());
+  if(tokenvalue.length()<=0){
+    tokenvalue = tokenfun.refreshtoken(tokencode.accid());
+  }
+	if(sizeof(tokenvalue)<=0){
 	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	  return false;
   }
-	  
   //构建回复包
   im_logic::net_reply::tokenreply reply;
   reply.set_token(tokenvalue);

@@ -15,7 +15,11 @@ class Im_Mysql {
  public:
   Im_Mysql(config::FileConfig* config);
   ~Im_Mysql();
+  //写入用户信息到数据库
+  int32 SetUserInfo(std::string phone_num, std::string& client_ip,
+                        DicValue* dic);
 
+  //获取用户信息
   int32 GetStaticInfo(std::string phone_num, std::string& client_ip,
                         DicValue* dic);
 
