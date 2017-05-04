@@ -16,7 +16,7 @@
 #include <openssl/rsa.h>
 #include <openssl/err.h>
 #include "basic/base64.h"
-
+ 
 namespace im_process {
 
 class ImProcess {
@@ -25,7 +25,8 @@ class ImProcess {
   ~ImProcess();
 
  public:
-  void gettoken();
+  std::string gettoken(std::string accid,std::string name);
+  std::string refreshtoken(std::string accid);
   
 };
 

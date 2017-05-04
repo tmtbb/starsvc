@@ -96,6 +96,8 @@ im_process.o : ./im_process.cc ./im_process.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./im_process.cc $(INCLUDE_PATHS)
 im_mysql.o : ./im_mysql.cc ./im_mysql.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./im_mysql.cc $(INCLUDE_PATHS)
+im_proto.o : ./im_proto.cc ./im_proto.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./im_proto.cc $(INCLUDE_PATHS)
 logic_unit.o :  $(USER_DIR)/logic/logic_unit.cc $(USER_DIR)/logic/logic_unit.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/logic_unit.cc $(INCLUDE_PATHS)	
 swp_infos.o :  $(USER_DIR)/logic/swp_infos.cc $(USER_DIR)/logic/swp_infos.h
@@ -123,9 +125,14 @@ mysql_pool.o :  $(USER_DIR)/storage/mysql_pool.cc $(USER_DIR)/storage/mysql_pool
 redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/storage/redis_pool.cc $(INCLUDE_PATHS)
 	
-
-$(PLUGIN) : im_init.o im_logic.o im_mysql.o im_process.o fcgimodule.o util.o swp_infos.o logic_unit.o packet_processing.o \
-	data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o \
+json_reader.o :	$(USER_DIR)/json/json_reader.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/json/json_reader.cpp  $(INCLUDE_PATHS)
+json_value.o :	$(USER_DIR)/json/json_value.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/json/json_value.cpp   $(INCLUDE_PATHS)
+json_writer.o :	$(USER_DIR)/json/json_writer.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/json/json_writer.cpp   $(INCLUDE_PATHS)
+$(PLUGIN) : json_reader.o json_value.o json_writer.o im_init.o im_logic.o im_mysql.o im_process.o fcgimodule.o util.o swp_infos.o logic_unit.o packet_processing.o \
+	data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o im_proto.o \
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \
 	$^ -o $@
