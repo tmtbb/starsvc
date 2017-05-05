@@ -34,13 +34,13 @@ std::string sumHash1(std::string strin)
     } 
     return strout;
 }
- std::string ImProcess::gettoken(std::string accid,std::string name){
+ std::string ImProcess::gettoken(std::string name,std::string accid){
         std::string url = "https://api.netease.im/nimserver/user/create.action";
 
         http::HttpMethodPost hmp(url);
         std::string content = "Content-Type: application/x-www-form-urlencoded;charset=utf-8";
         hmp.SetHeaders(content);
-        std::string appkey = "AppKey: 0d0f4b452de9695f91b0e4dc949d54cc";
+        std::string appkey = "AppKey: 9c3a406f233dea0d355c6458fb0171b8";
         hmp.SetHeaders(appkey);
 
         std::string nonce = util::RandomString(32);
@@ -55,7 +55,7 @@ std::string sumHash1(std::string strin)
         std::string curtimevalue = "CurTime: "+curtime;
         hmp.SetHeaders(curtimevalue);
         
-        std::string sumstring = "15eca00bfce6"+nonce+curtime;
+        std::string sumstring = "59a801fe9811"+nonce+curtime;
         std::string checksum = "CheckSum: "+ sumHash1(sumstring);
         hmp.SetHeaders(checksum);
         
@@ -93,7 +93,7 @@ std::string sumHash1(std::string strin)
         http::HttpMethodPost hmp(url);
         std::string content = "Content-Type: application/x-www-form-urlencoded;charset=utf-8";
         hmp.SetHeaders(content);
-        std::string appkey = "AppKey: 0d0f4b452de9695f91b0e4dc949d54cc";
+        std::string appkey = "AppKey: 9c3a406f233dea0d355c6458fb0171b8";
         hmp.SetHeaders(appkey);
 
         std::string nonce = util::RandomString(32);
@@ -108,7 +108,7 @@ std::string sumHash1(std::string strin)
         std::string curtimevalue = "CurTime: "+curtime;
         hmp.SetHeaders(curtimevalue);
         
-        std::string sumstring = "15eca00bfce6"+nonce+curtime;
+        std::string sumstring = "59a801fe9811"+nonce+curtime;
         std::string checksum = "CheckSum: "+ sumHash1(sumstring);
         hmp.SetHeaders(checksum);
         

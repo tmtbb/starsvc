@@ -33,9 +33,9 @@ int32 Im_Mysql::SetUserInfo(int64 userid, int64 phonenum, std::string name,std::
 
     sql = "call star_addcloudinfo("
       + base::BasicUtil::StringUtil::Int64ToString(userid) + ","
-      + base::BasicUtil::StringUtil::Int64ToString(phonenum) + ","
-      + "'" + name + "','"
-      + "'"  + accid + "','"
+      + base::BasicUtil::StringUtil::Int64ToString(phonenum) + ",'"
+      + name + "','"
+      + accid + "','"
       + token + "'" + ");";
 
     //std::string m_sql = "call star_addcloudinfo(123,1770640,'m_name','m_accid')";
