@@ -43,6 +43,115 @@ bool UsersDB::CheckAccountExist(const std::string& phone) {
   }
   return r;
 }
+bool UsersDB::WXBindAccount(const std::string& phone_num,
+                              const std::string& passwd, const int32 type,
+                              int64& uid, int32& result, const std::string &openid, 
+			      const std::string &nick_name, const std::string &head_url,
+			      const std::string &agent_id, const std::string &recommend,
+			      const std::string &device_id, const int64 member_id) {
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+  int64 big_type = type;
+  //call actuals.proc_RegisterAccount('18668169052','1234124123')
+  sql = "call proc_WXBindAccount('" + phone_num + "','" + passwd + "',"
+      + base::BasicUtil::StringUtil::Int64ToString(big_type)  + ","
+      + base::BasicUtil::StringUtil::Int64ToString(member_id)  + ",'"
+      + head_url + "','" + nick_name + "','" + openid 
+      + "','" + agent_id + "','" + recommend
+      + "','" + device_id + "');";
+
+  base_logic::ListValue *listvalue;
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallRegisterAccount);
+  if (!r)
+    return false;
+
+  dict->GetDictionary(L"resultvalue", &info_value);
+
+  r = info_value->GetBigInteger(L"uid", &uid);
+  r = info_value->GetInteger(L"result", &result);
+  LOG_ERROR2("uid %d,result %d",uid,result);
+  r = (r && result > 0) ? true : false;
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
+bool UsersDB::LoginWiXin(const std::string& open_id,
+                           const std::string &device_id,
+			   const std::string& ip, swp_logic::UserInfo& user, std::string &passwd) {
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+
+  //call actuals.proc_LoginAccount('18668169052','4bcf73028a526f5ae6899759ab332c3d3b173855bef3b22b19224cd5233d39c0','127.0,0.1')
+  sql = "call proc_LoginWiXin('" + open_id + "','"+ device_id + "','" + ip
+      + "')";
+
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallLoginAccount);
+  if (!r)
+    return false;
+
+  dict->GetDictionary(L"resultvalue", &info_value);
+
+  int32 result;
+  r = info_value->GetInteger(L"result", &result);
+  r = (r && result > 0) ? true : false;
+  if (!r)
+    return false;
+
+  user.ValueSerialization(info_value);
+  info_value->GetString(L"passwd", &passwd); 
+
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
+bool UsersDB::UserChangePasswd(const std::string& phone_num,const std::string& oldpasswd,
+  								const std::string& newpasswd){
+	bool r = false;
+	std::string sql;
+	base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+	
+	sql = "call proc_changepasswd('" + phone_num+ "','"+ oldpasswd + "','" + newpasswd
+      + "')";
+	LOG_ERROR2("sql = %s",sql.c_str());
+	dict->SetString(L"sql", sql);
+	r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallChangePasswd);
+
+	base_logic::DictionaryValue *info_value = NULL;
+	dict->GetDictionary(L"resultvalue", &info_value);
+	int32 result;
+  	r = info_value->GetInteger(L"result", &result);
+	if(!r || (result<1))
+		return false;
+	return true;
+}
+void UsersDB::CallChangePasswd(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetInteger(L"result", atoi(rows[0]));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+}
 
 bool UsersDB::RegisterAccount(const std::string& phone_num,
                               const std::string& passwd, const int32 type,
@@ -57,9 +166,9 @@ bool UsersDB::RegisterAccount(const std::string& phone_num,
   sql = "call proc_RegisterAccount('" + phone_num + "','" + passwd + "',"
       + base::BasicUtil::StringUtil::Int64ToString(big_type)  + ","
       + base::BasicUtil::StringUtil::Int64ToString(memberid) 
-      + ",'" + agentid + "','" + recommend
-      + "');";
-
+      + ",'" + agentid + "','" + recommend + "'," + "''"
+      + ");";
+  LOG_ERROR2("sqlcommand = %s",sql.c_str());
   base_logic::ListValue *listvalue;
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
@@ -69,9 +178,11 @@ bool UsersDB::RegisterAccount(const std::string& phone_num,
 
   dict->GetDictionary(L"resultvalue", &info_value);
 
-  r = info_value->GetBigInteger(L"uid", &uid);
-  r = info_value->GetInteger(L"result", &result);
-  r = (r && uid > 0) ? true : false;
+  //r = info_value->GetBigInteger(L"uid", &uid);
+  bool r2 = info_value->GetInteger(L"result", &result);
+  LOG_ERROR2("result : %d, r2 : %d",result,r2);
+  r = (r2 && result > 0) ? true : false;
+
   if (dict) {
     delete dict;
     dict = NULL;
@@ -129,6 +240,11 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
 
   dict->GetDictionary(L"resultvalue", &info_value);
 
+  int32 result;
+  bool r2 = info_value->GetInteger(L"result", &result);
+
+  LOG_ERROR2("sql==================%s",sql.c_str());
+  r = (r2 && result > 0) ? true : false;
   user.ValueSerialization(info_value);
   if (dict) {
     delete dict;
@@ -174,15 +290,7 @@ void UsersDB::CallLoginAccount(void* param, base_logic::Value* value) {
   if (num > 0) {
     while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
       if (rows[0] != NULL)
-        info_value->SetBigInteger(L"uid", atoll(rows[0]));
-      if (rows[1] != NULL)
-        info_value->SetString(L"member_id", rows[1]);
-      if (rows[2] != NULL)
-        info_value->SetReal(L"balance", atof(rows[2]));
-      if (rows[3] != NULL)
-        info_value->SetString(L"phone", rows[3]);
-      if (rows[4] != NULL)
-        info_value->SetInteger(L"type", atoi(rows[4]));
+        info_value->SetInteger(L"result", atoi(rows[0]));
     }
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));

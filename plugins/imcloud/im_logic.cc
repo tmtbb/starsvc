@@ -137,21 +137,27 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
 	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	  return false;
   }
-  //构建回复包
-  im_logic::net_reply::tokenreply reply;
-  reply.set_token(tokenvalue);
-  std::string code = "success";
-  reply.set_result(code);
-  struct PacketControl packet_reply;
-  MAKE_HEAD(packet_reply, S_IMCLOUD_GETTOKEN, IM_TYPE, 0,packet->session_id, 0);
-  packet_reply.body_ = reply.get();
-  send_message(socket, &packet_reply);
-  
-  //写入数据
-  DicValue *dic = new base_logic::DictionaryValue();
-  int64 userid = 0;
-  int64 phonenum = 0;
-  sqlengine->SetUserInfo(userid,phonenum,tokencode.name(),tokencode.accid(),tokenvalue,dic);
+
+  if(tokenvalue.length()<=0){
+    //构建回复包
+    im_logic::net_reply::tokenreply reply;
+    reply.set_token(tokenvalue);
+    std::string code = "success";
+    reply.set_result(code);
+    struct PacketControl packet_reply;
+    MAKE_HEAD(packet_reply, S_IMCLOUD_GETTOKEN, IM_TYPE, 0,packet->session_id, 0);
+    packet_reply.body_ = reply.get();
+    send_message(socket, &packet_reply);
+    
+    //写入数据
+    DicValue *dic = new base_logic::DictionaryValue();
+    int64 userid = 0;
+    int64 phonenum = 0;
+    sqlengine->SetUserInfo(userid,phonenum,tokencode.name(),tokencode.accid(),tokenvalue,dic);
+  }else{
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
 
   return true;
 }
