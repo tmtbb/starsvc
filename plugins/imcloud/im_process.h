@@ -27,6 +27,16 @@ class ImProcess {
  public:
   std::string gettoken(std::string accid,std::string name);
   std::string refreshtoken(std::string accid);
+
+  bool addfriend(const std::string& accid,const std::string& faccid,const std::string& msg,
+  							const int64& type);
+
+  bool delfriend(const std::string& accid,const std::string& faccid); 
+
+  bool getfriendlist(const std::string& accid,const std::string& creattime,base_logic::DictionaryValue& result);
+
+  bool editfriendinfo(const std::string& accid,const std::string& faccid,
+  							const std::string& alias,const std::string& ex);
   
 };
 

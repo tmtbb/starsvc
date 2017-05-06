@@ -106,13 +106,185 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
       OnRefreshTokenImcloud(srv, socket, packet);
       break;
     }
+	case R_IMCLOUD_ADDFRIEND:{
+	  OnAddCloudFriend(srv, socket, packet);	
+	  break;
+	}
+	case R_IMCLOUD_DELFRIEND:{
+	  OnDelCloudFriend(srv, socket, packet);
+	  break;
+	}
     case R_IMCLOUD_LOGIN:{
       OnLoginImcloud(srv, socket, packet);
       break;
     }
+	case R_IMCLOUD_GETFRIENDLIST:{
+	  OnGetFriendList(srv, socket, packet);
+	  break;
+	}
+	case R_IMCLOUD_EDITFRIENDINFO:{
+	  OnEditFriendInfo(srv, socket, packet);
+	  break;
+	}
     default:
       break;
   }
+
+  return true;
+}
+bool Imlogic::OnEditFriendInfo(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string accid;
+  std::string createtime;
+  std::string faccid;
+  std::string alias;
+  std::string ex;
+  bool r1 = packet_recv->body_->GetString(L"accid",&accid);
+  bool r2 = packet_recv->body_->GetString(L"faccid",&faccid);
+  bool r3 = packet_recv->body_->GetString(L"alias",&alias);
+  bool r4 = packet_recv->body_->GetString(L"ex",&ex);
+  bool r = r1 && r2 &&r3 && r4;
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+  im_process::ImProcess im_pro;
+
+  r = im_pro.editfriendinfo(accid,faccid,alias,ex);
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_IMCLOUD_GETFRIENDLIST, IM_TYPE, 0,packet->session_id, 0);
+  base_logic::DictionaryValue ret;
+  base_logic::StringValue* result = new base_logic::StringValue("success");
+  ret.Set(L"result",result);
+
+  packet_reply.body_ = &ret;
+  send_message(socket,&packet_reply);
+ //sqlengine->SetUserInfo(userid,phonenum,tokencode.name(),tokencode.accid(),tokenvalue,dic);
+
+  return true;
+}
+
+bool Imlogic::OnGetFriendList(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string accid;
+  std::string createtime;
+  bool r1 = packet_recv->body_->GetString(L"accid",&accid);
+  bool r2 = packet_recv->body_->GetString(L"createtime",&createtime);
+  bool r = r1 && r2;
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+  im_process::ImProcess im_pro;
+
+  base_logic::DictionaryValue ret;
+  r = im_pro.getfriendlist(accid,createtime,ret);
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_IMCLOUD_GETFRIENDLIST, IM_TYPE, 0,packet->session_id, 0);
+  //base_logic::DictionaryValue* ret = new base_logic::DictionaryValue();
+  base_logic::StringValue* result = new base_logic::StringValue("success");
+  ret.Set(L"result",result);
+
+  packet_reply.body_ = &ret;
+  send_message(socket,&packet_reply);
+ //sqlengine->SetUserInfo(userid,phonenum,tokencode.name(),tokencode.accid(),tokenvalue,dic);
+
+  return true;
+}
+
+bool Imlogic::OnDelCloudFriend(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string accid;
+  std::string faccid;
+  std::string msg;
+  int64 type;
+  bool r1 = packet_recv->body_->GetString(L"accid",&accid);
+  bool r2 = packet_recv->body_->GetString(L"faccid",&faccid);
+  bool r = r1 && r2;
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  im_process::ImProcess im_pro;
+  r = im_pro.delfriend(accid,faccid);
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_IMCLOUD_ADDFRIEND, IM_TYPE, 0,packet->session_id, 0);
+  base_logic::DictionaryValue* ret = new base_logic::DictionaryValue();
+  base_logic::StringValue* result = new base_logic::StringValue("success");
+  ret->Set(L"result",result);
+  packet_reply.body_ = ret;
+  send_message(socket,&packet_reply);
+ //sqlengine->SetUserInfo(userid,phonenum,tokencode.name(),tokencode.accid(),tokenvalue,dic);
+
+  return true;
+}
+
+bool Imlogic::OnAddCloudFriend(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string accid;
+  std::string faccid;
+  std::string msg;
+  int64 type;
+  bool r1 = packet_recv->body_->GetString(L"accid",&accid);
+  bool r2 = packet_recv->body_->GetString(L"faccid",&faccid);
+  bool r3 = packet_recv->body_->GetString(L"msg",&msg);
+  bool r4 = packet_recv->body_->GetBigInteger(L"type",&type);
+  bool r = r1 && r2 && r3 && r4;
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  im_process::ImProcess im_process;
+  r = im_process.addfriend(accid,faccid,msg,type);
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_IMCLOUD_DELFRIEND, IM_TYPE, 0,packet->session_id, 0);
+  base_logic::DictionaryValue* ret = new base_logic::DictionaryValue();
+  base_logic::StringValue* result = new base_logic::StringValue("success");
+  ret->Set(L"result",result);
+  packet_reply.body_ = ret;
+  send_message(socket,&packet_reply);
+  
 
   return true;
 }
@@ -133,12 +305,8 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
   if(tokenvalue.length()<=0){
     tokenvalue = tokenfun.refreshtoken(tokencode.accid());
   }
-	if(sizeof(tokenvalue)<=0){
-	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-	  return false;
-  }
-
-  if(tokenvalue.length()<=0){
+  LOG_MSG2("token ==== %s,length = %d",tokenvalue.c_str(),tokenvalue.length());
+  if(tokenvalue.length() > 0){
     //构建回复包
     im_logic::net_reply::tokenreply reply;
     reply.set_token(tokenvalue);
@@ -156,7 +324,7 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
     sqlengine->SetUserInfo(userid,phonenum,tokencode.name(),tokencode.accid(),tokenvalue,dic);
   }else{
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-	  return false;
+	return false;
   }
 
   return true;

@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <cstring>
 #include <arpa/inet.h>
+#include "time.h"
 
 #define PORT 16005
 
@@ -13,11 +14,6 @@ typedef signed char         int8;
 typedef short               int16;
 typedef int                 int32;
 typedef long long           int64;
-
-typedef unsigned char      uint8;
-typedef unsigned short     uint16;
-typedef unsigned int       uint32;
-typedef unsigned long long uint64;
 
 struct PacketHead{
     int16 packet_length;
@@ -31,11 +27,20 @@ struct PacketHead{
     int32 reserved;
 };
 
-int main()
+void printhelp(){
+    printf("**************************************************\n");
+    printf("2 个参数，第一个操作码，第二个文件名\n");
+    printf("eg:./clint 9005 9005.txt\n");
+
+}
+int main(int argv,char** args)
 {
+    if(argv != 3){
+	printhelp();
+	return 1;
+    }
     int conndfd;
     struct sockaddr_in serverAddr;
-    char buf[1024+1];
     if(-1==(conndfd=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP)))
         printf("Create Socket Error\n");
     memset(&serverAddr,0,sizeof(serverAddr));
@@ -51,33 +56,54 @@ int main()
 
     struct PacketHead pack = {
 	packet_length:10,
-	is_zip_encrypt:1,
+	is_zip_encrypt:0,
 	type:1,
-	signature:1,
-	operate_code:1,
+	signature:0,
+	operate_code:9005,
 	data_length:1,
-	timestamp:1,
+	timestamp:time(NULL),
 	session_id:1,
-	reserved:1
+	reserved:0
     };
-    char str[] = "abcdefg";
-    memcpy(buf,&pack,sizeof(pack));
+    //char str[] = "{\"name_value\": \"abcd\",\"accid_value\": \"123456\"}";
+    pack.operate_code = atoi(args[1]);
+
+    FILE *file = NULL;
+    int lsize;
+    char *str;
+    file = fopen(args[2], "rb");
+    if (file == NULL) 
+    {
+	    fputs("File error", stderr); exit(1);
+    }
+    fseek(file , 0 , SEEK_END); 
+    lsize = ftell(file);
+    rewind(file);
+    str = (char*) malloc(sizeof(char) * lsize);  
+    if (str == NULL) 
+    {
+	    fputs("Memory error", stderr); exit(2);
+    }
+    fread(str, 1, lsize, file);
+    fclose(file);
+
+
+
+    pack.packet_length = 26+strlen(str);
+    pack.data_length = sizeof(str);
+    char *buf = (char*)malloc(26+strlen(str));
+    memcpy(buf,&pack,26);
     memcpy(buf+26,str,strlen(str));
-    int strlength = sizeof(pack)+strlen(str);
+    int strlength = 26+strlen(str);
+    printf("send============%s\n",buf + 26);
     send(conndfd,buf,strlength,0);
-    /*
-    int16 head2 = 6;
-    memcpy(buf,&head2,sizeof(head2));
-    buf[2] = 'a';
-    buf[3] = 'b';
-    buf[4] = 'c';
-    buf[5] = '\0';
-    int n=send(conndfd,buf,6,0);
-    */
-    //memset(buf,0,sizeof(buf));
-    //n=recv(conndfd,buf,1024,0);
-    //printf("Recv %d byte from Server\n",n);
-    //printf("%s\n",buf);
+
+
+    char rev[1024];
+    memset(rev,0,sizeof(rev));
+    int n = recv(conndfd,rev,1024,0);
+    printf("Recv %d byte from Server\n",n);
+    printf("%s\n",rev+26);
     close(conndfd);
     return 0;
 }

@@ -48,6 +48,15 @@ class Imlogic {
   bool OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead* packet);
 
   bool OnRefreshTokenImcloud(struct server* srv,int socket ,struct PacketHead* packet);
+
+  bool OnAddCloudFriend(struct server* srv,int socket ,struct PacketHead* packet);
+  
+  bool OnDelCloudFriend(struct server* srv,int socket ,struct PacketHead* packet);
+
+  bool OnGetFriendList(struct server* srv,int socket ,struct PacketHead* packet);
+
+  bool OnEditFriendInfo(struct server* srv,int socket ,struct PacketHead* packet);
+  
  private:
   bool Init();
 };

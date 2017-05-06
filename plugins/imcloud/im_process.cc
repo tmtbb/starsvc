@@ -138,4 +138,212 @@ std::string sumHash1(std::string strin)
         
         return token;
  }
+ bool ImProcess::addfriend(const std::string& accid,const std::string& faccid,const std::string& msg,
+  							const int64& type){
+  	std::string url = "https://api.netease.im/nimserver/friend/add.action";
+    std::string content = "Content-Type: application/x-www-form-urlencoded;charset=utf-8";
+	http::HttpMethodPost hmp(url);
+    hmp.SetHeaders(content);
+    std::string appkey = "AppKey: 9c3a406f233dea0d355c6458fb0171b8";
+    hmp.SetHeaders(appkey);
+    std::string nonce = util::RandomString(32);
+    std::string noncevalue = "Nonce: "+nonce;
+    hmp.SetHeaders(noncevalue);
+
+    std::stringstream ss;
+    std::string curtime;
+    ss<<time(NULL);
+    ss>>curtime;
+    std::string curtimevalue = "CurTime: "+curtime;
+    hmp.SetHeaders(curtimevalue);
+    std::string sumstring = "59a801fe9811"+nonce+curtime;
+    std::string checksum = "CheckSum: "+ sumHash1(sumstring);
+    hmp.SetHeaders(checksum);
+    
+
+    std::string post_data = "accid="+accid + "&faccid=" + faccid + "&type=" 
+							+ base::BasicUtil::StringUtil::Int64ToString(type) + "&msg="+msg;
+    hmp.Post(post_data.c_str());
+
+    std::string result;
+    hmp.GetContent(result);
+    LOG_MSG2("http addfriend result:%s", result.c_str());
+    
+    Json::Reader reader;
+    Json::Value value;
+    int desc;
+    std::string token;
+    if (reader.parse(result, value))
+    {
+        desc = value["code"].asInt();  
+    }
+	else
+		return false;
+    if(desc==200)
+        return true;
+    
+	return false;
+ }
+
+  bool ImProcess::delfriend(const std::string& accid,const std::string& faccid){
+	std::string url = "https://api.netease.im/nimserver/friend/add.action";
+    std::string content = "Content-Type: application/x-www-form-urlencoded;charset=utf-8";
+	http::HttpMethodPost hmp(url);
+    hmp.SetHeaders(content);
+    std::string appkey = "AppKey: 9c3a406f233dea0d355c6458fb0171b8";
+    hmp.SetHeaders(appkey);
+    std::string nonce = util::RandomString(32);
+    std::string noncevalue = "Nonce: "+nonce;
+    hmp.SetHeaders(noncevalue);
+
+    std::stringstream ss;
+    std::string curtime;
+    ss<<time(NULL);
+    ss>>curtime;
+    std::string curtimevalue = "CurTime: "+curtime;
+    hmp.SetHeaders(curtimevalue);
+    std::string sumstring = "59a801fe9811"+nonce+curtime;
+    std::string checksum = "CheckSum: "+ sumHash1(sumstring);
+    hmp.SetHeaders(checksum);
+    
+
+    std::string post_data = "accid="+accid + "&faccid=" + faccid;
+    hmp.Post(post_data.c_str());
+
+    std::string result;
+    hmp.GetContent(result);
+    LOG_MSG2("http delfriend result:%s", result.c_str());
+    
+    Json::Reader reader;
+    Json::Value value;
+    int desc;
+    std::string token;
+    if (reader.parse(result, value))
+    {
+        desc = value["code"].asInt();  
+    }
+	else
+		return false;
+    if(desc==200)
+        return true;
+    
+	return false;
+  }
+bool ImProcess::getfriendlist(const std::string& accid,const std::string& createtime,base_logic::DictionaryValue& ret){
+  	std::string url = "https://api.netease.im/nimserver/friend/get.action";
+    std::string content = "Content-Type: application/x-www-form-urlencoded;charset=utf-8";
+	http::HttpMethodPost hmp(url);
+    hmp.SetHeaders(content);
+    std::string appkey = "AppKey: 9c3a406f233dea0d355c6458fb0171b8";
+    hmp.SetHeaders(appkey);
+    std::string nonce = util::RandomString(32);
+    std::string noncevalue = "Nonce: "+nonce;
+    hmp.SetHeaders(noncevalue);
+
+    std::stringstream ss;
+    std::string curtime;
+    ss<<time(NULL);
+    ss>>curtime;
+    std::string curtimevalue = "CurTime: "+curtime;
+    hmp.SetHeaders(curtimevalue);
+    std::string sumstring = "59a801fe9811"+nonce+curtime;
+    std::string checksum = "CheckSum: "+ sumHash1(sumstring);
+    hmp.SetHeaders(checksum);
+    
+
+    std::string post_data = "accid="+accid + "&createtime=" + createtime;
+    hmp.Post(post_data.c_str());
+
+    std::string result;
+    hmp.GetContent(result);
+    LOG_MSG2("http getfriendlist result:%s", result.c_str());
+
+    Json::Reader reader;
+    Json::Value value;
+    int desc;
+    std::string token;
+    if (reader.parse(result, value))
+    {
+        desc = value["code"].asInt();  
+    }
+	else
+		return false;
+    if(desc==200){
+		base_logic::FundamentalValue* size = new base_logic::FundamentalValue(value["size"].asInt());
+		ret.Set(L"size",size);
+		base_logic::DictionaryValue* friends = new base_logic::DictionaryValue();
+		
+		Json::Value arrayObj = value["friends"];
+		for (int j = 0; j < value["size"].asInt(); j++)
+		{
+			/*
+			if (arrayObj[j].isMember("createtime")){
+				std::string m_creattime = arrayObj[j]["createtime"].asString();
+				friends->SetString(L"createtime",m_creattime);
+			}
+			*/
+			if (arrayObj[j].isMember("faccid")){
+				std::string m_faccid = arrayObj[j]["faccid"].asString();
+				friends->SetString(L"faccid",m_faccid);
+			}	
+			if (arrayObj[j].isMember("alias")){
+				std::string m_alias = arrayObj[j]["alias"].asString();
+				friends->SetString(L"alias",m_alias);
+			}
+			
+		}
+		
+		ret.Set(L"friends",(base_logic::Value*)friends);
+		return true;
+	}
+	return false;
+ }
+bool ImProcess::editfriendinfo(const std::string& accid,const std::string& faccid,
+  							const std::string& alias,const std::string& ex){
+
+	std::string url = "https://api.netease.im/nimserver/friend/update.action";
+    std::string content = "Content-Type: application/x-www-form-urlencoded;charset=utf-8";
+	http::HttpMethodPost hmp(url);
+    hmp.SetHeaders(content);
+    std::string appkey = "AppKey: 9c3a406f233dea0d355c6458fb0171b8";
+    hmp.SetHeaders(appkey);
+    std::string nonce = util::RandomString(32);
+    std::string noncevalue = "Nonce: "+nonce;
+    hmp.SetHeaders(noncevalue);
+
+    std::stringstream ss;
+    std::string curtime;
+    ss<<time(NULL);
+    ss>>curtime;
+    std::string curtimevalue = "CurTime: "+curtime;
+    hmp.SetHeaders(curtimevalue);
+    std::string sumstring = "59a801fe9811"+nonce+curtime;
+    std::string checksum = "CheckSum: "+ sumHash1(sumstring);
+    hmp.SetHeaders(checksum);
+    
+
+    std::string post_data = "accid="+accid + "&faccid=" + faccid
+							+ "&alias="+ alias + "&ex=" + ex;
+    hmp.Post(post_data.c_str());
+
+    std::string result;
+    hmp.GetContent(result);
+    LOG_MSG2("http editfriendinfo result:%s", result.c_str());
+    
+    Json::Reader reader;
+    Json::Value value;
+    int desc;
+    std::string token;
+    if (reader.parse(result, value))
+    {
+        desc = value["code"].asInt();  
+    }
+	else
+		return false;
+    if(desc==200)
+        return true;
+    
+	return false;
+}
+
 } 
