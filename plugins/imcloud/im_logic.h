@@ -56,7 +56,9 @@ class Imlogic {
   bool OnGetFriendList(struct server* srv,int socket ,struct PacketHead* packet);
 
   bool OnEditFriendInfo(struct server* srv,int socket ,struct PacketHead* packet);
-  
+
+  //明星发送消息处理，需要扣除订购者的时间
+  bool OnStarSendMessage(struct server* srv,int socket ,struct PacketHead* packet);
  private:
   bool Init();
 };

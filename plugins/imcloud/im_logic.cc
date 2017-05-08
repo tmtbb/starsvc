@@ -126,12 +126,50 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
 	  OnEditFriendInfo(srv, socket, packet);
 	  break;
 	}
+	case R_IMCLOUD_SENDMESSAGE:{
+	  OnStarSendMessage(srv, socket, packet);
+	  break;
+	}
     default:
       break;
   }
 
   return true;
 }
+bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string accid;
+  std::string faccid;
+
+  bool r1 = packet_recv->body_->GetString(L"accid",&accid);
+  bool r2 = packet_recv->body_->GetString(L"faccid",&faccid);
+  bool r = r1 && r2 ;
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+  if(!sqlengine->ReduceTalkingtimes(accid,faccid)){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+  
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_IMCLOUD_SENDMESSAGE, IM_TYPE, 0,packet->session_id, 0);
+  base_logic::DictionaryValue ret;
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
+  ret.Set(L"result",result);
+  packet_reply.body_ = &ret;
+  send_message(socket,&packet_reply);
+ 
+  return true;
+}
+
 bool Imlogic::OnEditFriendInfo(struct server* srv,int socket ,struct PacketHead* packet){
   if (packet->packet_length <= PACKET_HEAD_LENGTH) {
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
@@ -164,7 +202,7 @@ bool Imlogic::OnEditFriendInfo(struct server* srv,int socket ,struct PacketHead*
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_IMCLOUD_GETFRIENDLIST, IM_TYPE, 0,packet->session_id, 0);
   base_logic::DictionaryValue ret;
-  base_logic::StringValue* result = new base_logic::StringValue("success");
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
   ret.Set(L"result",result);
 
   packet_reply.body_ = &ret;
@@ -202,7 +240,7 @@ bool Imlogic::OnGetFriendList(struct server* srv,int socket ,struct PacketHead* 
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_IMCLOUD_GETFRIENDLIST, IM_TYPE, 0,packet->session_id, 0);
   //base_logic::DictionaryValue* ret = new base_logic::DictionaryValue();
-  base_logic::StringValue* result = new base_logic::StringValue("success");
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
   ret.Set(L"result",result);
 
   packet_reply.body_ = &ret;
@@ -240,7 +278,7 @@ bool Imlogic::OnDelCloudFriend(struct server* srv,int socket ,struct PacketHead*
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_IMCLOUD_ADDFRIEND, IM_TYPE, 0,packet->session_id, 0);
   base_logic::DictionaryValue* ret = new base_logic::DictionaryValue();
-  base_logic::StringValue* result = new base_logic::StringValue("success");
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
   ret->Set(L"result",result);
   packet_reply.body_ = ret;
   send_message(socket,&packet_reply);
@@ -280,7 +318,7 @@ bool Imlogic::OnAddCloudFriend(struct server* srv,int socket ,struct PacketHead*
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_IMCLOUD_DELFRIEND, IM_TYPE, 0,packet->session_id, 0);
   base_logic::DictionaryValue* ret = new base_logic::DictionaryValue();
-  base_logic::StringValue* result = new base_logic::StringValue("success");
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
   ret->Set(L"result",result);
   packet_reply.body_ = ret;
   send_message(socket,&packet_reply);

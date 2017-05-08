@@ -110,6 +110,54 @@ void Im_Mysql::CallStaticSelect(void* param, base_logic::Value* value) {
   }
   dict->Remove(L"sql", &value);
 }
+bool Im_Mysql::ReduceTalkingtimes(std::string& accid,std::string& faccid){
+	bool r = false;
+	DicValue dic;
+	std::string sql;
+	sql = "call proc_reducetalkingseconds('"
+	  + accid 
+	  + "','" + faccid 
+	  +  "');";
+	dic.SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (&dic),
+	                            Callreducetalkingtimes);
+	if (!r || dic.empty()) {
+	  return false;
+	}
+
+	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	int64 result;
+	bool r1 = dic.GetDictionary(L"resultvalue", &ret);
+	bool r2 = ret->GetBigInteger(L"result", &result);
+	if(r1 && r2){
+		if(result == 1)
+			return true;
+	}
+	return false;
+}
+void Im_Mysql::Callreducetalkingtimes(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine =
+	  (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+
+	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  if (rows[0] != NULL){
+	  		ret->SetBigInteger(L"result", atoi(rows[0]));
+	  		dict->Set(L"resultvalue", (base_logic::Value *) (ret));
+	  	}
+	}
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+
 
 }
 

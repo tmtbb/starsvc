@@ -23,7 +23,11 @@ class Im_Mysql {
   int32 GetStaticInfo(int64 phonenum, DicValue* dic);
 
   static void CallStaticSelect(void* param, base_logic::Value* value);
- private:
+
+  bool ReduceTalkingtimes(std::string& accid,std::string& faccid);
+  static void Callreducetalkingtimes(void* param, base_logic::Value* value);
+  
+  private:
   base_logic::DataEngine* mysql_engine_;
 };
 
