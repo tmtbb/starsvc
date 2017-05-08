@@ -54,6 +54,8 @@ class UsersDB {
 
   bool UserChangePasswd(const std::string& phone_num,const std::string& oldpasswd,
   								const std::string& newpasswd);
+
+  bool ResetAccount(const std::string& phone_num,const std::string& passwd);
  private:
   base_logic::DataEngine* mysql_engine_;
 };

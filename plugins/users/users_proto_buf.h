@@ -826,7 +826,9 @@ class RegisterVerfiycode {
    void set_code_time(const int64 code_time) {
      code_time_ = new base_logic::FundamentalValue(code_time);
    }
-
+   void set_result(const int64 result) {
+     result_ = new base_logic::FundamentalValue(result);
+   }
    void set_token(const std::string& token) {
      token_ = new base_logic::StringValue(token);
    }
@@ -835,12 +837,15 @@ class RegisterVerfiycode {
     value_ = new base_logic::DictionaryValue();
     if (code_time_ != NULL)
       value_->Set(L"timeStamp", code_time_);
+	if (result_ != NULL)
+      value_->Set(L"result", result_);
     if (token_ != NULL)
       value_->Set(L"vToken", token_);
     return value_;
   }
  private:
   base_logic::FundamentalValue* code_time_;
+  base_logic::FundamentalValue* result_;
   base_logic::StringValue* token_;
   base_logic::DictionaryValue* value_;
 };

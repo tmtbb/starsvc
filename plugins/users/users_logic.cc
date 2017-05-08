@@ -141,6 +141,10 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
       OnRegisterVerifycode(srv, socket, packet);
       break;
     }
+	case R_USRES_RESET_PASSWD:{
+      OnResetPasswd(srv, socket, packet);
+      break;
+    }
     case R_WX_LOGIN:{
       OnLoginWiXin(srv, socket, packet);
       break;
@@ -490,6 +494,47 @@ bool Userslogic::OnUserCheckToken(struct server* srv, int socket,
   SendUserInfo(socket, packet->session_id, S_ACCOUNT_CHECK, userinfo);
   return true;
 }
+bool Userslogic::OnResetPasswd(struct server* srv, int socket,
+                                      struct PacketHead *packet) {
+  users_logic::net_request::RegisterAccount register_account;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+
+  std::string phonenum;
+  std::string passwd;
+  bool r1 = packet_control->body_->GetString(L"pwd", &passwd);
+  bool r2 = packet_control->body_->GetString(L"phone", &phonenum);
+
+  bool r = (r1 && r2);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  int64 uid = 1;
+  int32 result = 0;
+
+  r = user_db_->ResetAccount(phonenum,passwd);
+  if (!r) {
+    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
+    return false;
+  }
+
+
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_USRES_RESET_PASSWD, USERS_TYPE, 0,packet->session_id, 0);
+  base_logic::DictionaryValue ret;
+  base_logic::FundamentalValue* m_result = new base_logic::FundamentalValue(1);
+  ret.Set(L"result",m_result);
+  packet_reply.body_ = &ret;
+  send_message(socket,&packet_reply);                   
+
+}
 
 bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
                                       struct PacketHead *packet) {
@@ -506,38 +551,42 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
     return false;
   }
 
-  ////检测号码是否已经注册
+  
+  
   std::string phone = register_vercode.phone();
+
+  /*
+  ////检测号码是否已经注册
   r =user_db_->CheckAccountExist(phone);
   if (!r) {
     LOG_DEBUG2("packet_length %d",packet->packet_length);
     send_error(socket, ERROR_TYPE, NO_USER_EXIST_REGISTER, packet->session_id);
     return false;
   }
-
+  */
+  
   int64 rand_code = 100000 + rand() % (999999 - 100000 + 1);
   std::string shell_sms = SHELL_SMS;
   std::stringstream ss;
   ss << SHELL_SMS << " " << phone << " "
       <<rand_code<<" "
-      << 1;
-  /*std::string sysc = shell_sms + " " + phone + " " +
-      base::BasicUtil::StringUtil::Int64ToString(rand_code) + " " +
-      base::BasicUtil::StringUtil::Int64ToString(1);*/
+      << 0;
 
   std::string sysc = ss.str();
   system(sysc.c_str());
-
+  LOG_MSG2("send shell : %s",sysc.c_str());
   //发送信息
   int64 code_time =  time(NULL);
   std::string v_token = SMS_KEY + base::BasicUtil::StringUtil::Int64ToString(code_time) +
-      base::BasicUtil::StringUtil::Int64ToString(rand_code) + register_vercode.phone();
+      base::BasicUtil::StringUtil::Int64ToString(rand_code) + phone;
   base::MD5Sum md5(v_token.c_str());
   std::string token = md5.GetHash();
-
+  LOG_MSG2("====v_token = %s",v_token.c_str());
   users_logic::net_reply::RegisterVerfiycode register_verfiy;
   register_verfiy.set_code_time(code_time);
   register_verfiy.set_token(token);
+  int64 result_ = 1;
+  register_verfiy.set_result(result_);
   struct PacketControl net_packet_control;
   MAKE_HEAD(net_packet_control,S_REGISTER_VERFIY_CODE, 1, 0, packet->session_id, 0);
   net_packet_control.body_ = register_verfiy.get();

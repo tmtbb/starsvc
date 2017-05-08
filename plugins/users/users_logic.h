@@ -71,6 +71,8 @@ class Userslogic {
 
   bool OnUserChangePasswd(struct server* srv, int socket,
                       struct PacketHead *packet);
+  //重置密码
+  bool OnResetPasswd(struct server* srv, int socket,struct PacketHead *packet);
  private:
   bool Init();
  private:

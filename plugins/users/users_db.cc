@@ -36,7 +36,7 @@ bool UsersDB::CheckAccountExist(const std::string& phone) {
   dict->GetDictionary(L"resultvalue", &info_value);
   int32 result = 0;
   r = info_value->GetInteger(L"result", &result);
-  r = (r && result == 0) ? true : false; /*0表示不存在未注册*/
+  r = (r && result == 1) ? true : false; /*0表示不存在未注册*/
   if (dict) {
     delete dict;
     dict = NULL;
@@ -345,6 +345,25 @@ void UsersDB::CallCheckAccountExist(void* param, base_logic::Value* value) {
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
 }
+bool UsersDB::ResetAccount(const std::string& phone_num,const std::string& passwd){
+	bool r = false;
+	std::string sql;
+	base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+	
+	sql = "call proc_resetpasswd('" + phone_num+ "','" + passwd + "')";
+	LOG_ERROR2("sql = %s",sql.c_str());
+	dict->SetString(L"sql", sql);
+	r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallChangePasswd);
+
+	base_logic::DictionaryValue *info_value = NULL;
+	dict->GetDictionary(L"resultvalue", &info_value);
+	int32 result;
+  	r = info_value->GetInteger(L"result", &result);
+	if(!r || (result<1))
+		return false;
+	return true;
+}	
 
 
 }  // namespace history_logic
