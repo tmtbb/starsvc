@@ -144,19 +144,37 @@ bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead
 
   struct PacketControl* packet_recv = (struct PacketControl*) (packet);
 
-  std::string accid;
-  std::string faccid;
+  std::string phone;
+  std::string starcode;
 
-  bool r1 = packet_recv->body_->GetString(L"accid",&accid);
-  bool r2 = packet_recv->body_->GetString(L"faccid",&faccid);
+  bool r1 = packet_recv->body_->GetString(L"phone",&phone);
+  bool r2 = packet_recv->body_->GetString(L"starcode",&starcode);
   bool r = r1 && r2 ;
   if(!r){
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	return false;
   }
-  if(!sqlengine->ReduceTalkingtimes(accid,faccid)){
+  //获取持有该明星时间，如果为1，则删除该记录；如果大于1，则做减1操作
+  int64 times;
+  std::string accid;
+  std::string faccid;
+  if(!sqlengine->gettalkingtimes(phone,starcode,times,accid,faccid)){
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	return false;
+  }
+  if(times > 1){
+	if(!sqlengine->ReduceTalkingtimes(phone,starcode)){
+		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		return false;
+	 }
+  }else{
+	if(!sqlengine->delorderrecord(phone,starcode)){
+		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		return false;
+	}
+	//删除云信关联关系
+	im_process::ImProcess im_pro;
+	im_pro.delfriend(accid,faccid);
   }
   
   struct PacketControl packet_reply;

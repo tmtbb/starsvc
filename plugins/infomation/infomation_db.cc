@@ -22,6 +22,63 @@ Infomation_Mysql::~Infomation_Mysql() {
   }
   mysql_engine_ = NULL;
 }
+bool Infomation_Mysql::getorderstarinfo(const std::string& code,const std::string& phone,DicValue &ret_result){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	std::string sql;
+	sql = "call proc_getorderstarinfo('"
+	  + code + "','"
+	  + phone +  "');";
+
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetorderstarinfo);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+		
+	    ret_result.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+}
+
+void Infomation_Mysql::Callgetorderstarinfo(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine =
+	  (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetString(L"starname", rows[0]);
+		}
+	  if (rows[1] != NULL){
+			ret->SetString(L"faccid", rows[1]);
+		}
+	  if (rows[2] != NULL){
+			ret->SetString(L"starcode", rows[2]);
+		}
+	  if (rows[3] != NULL){
+			ret->SetBigInteger(L"ownseconds", atoi(rows[3]));
+		}
+	  list->Append((base_logic::Value *) (ret));
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
 
 bool Infomation_Mysql::getstarinfo(const std::string& code,const std::string& phone,DicValue &ret_result,int64 all){
 	bool r = false;
@@ -44,7 +101,7 @@ bool Infomation_Mysql::getstarinfo(const std::string& code,const std::string& ph
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
-	if(r){
+	if(r && listvalue->GetSize()>0){
 	    ret_result.Set("list",(base_logic::Value*)listvalue);
 		return true;
 	}
@@ -59,7 +116,6 @@ void Infomation_Mysql::Callgetinfo(void* param, base_logic::Value* value){
 	
 	DicValue* dict = reinterpret_cast<DicValue*>(value);
 	if (num > 0) {
-	LOG_MSG2("=====while=======num==%d",num);
 	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
 	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	  if (rows[0] != NULL){

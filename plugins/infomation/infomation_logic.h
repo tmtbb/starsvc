@@ -40,6 +40,9 @@ class Infomationlogic {
 
   bool OnTimeout(struct server *srv, char *id, int opcode, int time);
 
+  //获取预约明星信息列表
+  bool GetorderStarinfo(struct server* srv,int socket ,struct PacketHead* packet);
+  
   bool GetStarinfoList(struct server* srv,int socket ,struct PacketHead* packet);
   
   bool AddStarinfo(struct server* srv,int socket ,struct PacketHead* packet);

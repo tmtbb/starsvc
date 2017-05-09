@@ -23,11 +23,16 @@ class Infomation_Mysql {
   						const std::string& brief_url,
   						const double price,
   						const std::string& accid);
+  //获取明星信息
   bool getstarinfo(const std::string& code,const std::string& phone,DicValue &ret,int64 all);
-
+  //获取预约明星列表
+  bool getorderstarinfo(const std::string& code,const std::string& phone,DicValue &ret);
+  
   static void Callpublicback(void* param, base_logic::Value* value);
   
   static void Callgetinfo(void* param, base_logic::Value* value);
+
+  static void Callgetorderstarinfo(void* param, base_logic::Value* value);
   
   private:
   base_logic::DataEngine* mysql_engine_;
