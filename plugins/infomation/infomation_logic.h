@@ -7,6 +7,7 @@
 #include "net/comm_head.h"
 #include "net/packet_processing.h"
 #include "manager/data_share_mgr.h"
+#include "infomation_db.h"
 namespace infomation_logic {
 
 class Infomationlogic {
@@ -39,9 +40,12 @@ class Infomationlogic {
 
   bool OnTimeout(struct server *srv, char *id, int opcode, int time);
 
-
+  bool GetStarinfoList(struct server* srv,int socket ,struct PacketHead* packet);
+  
+  bool AddStarinfo(struct server* srv,int socket ,struct PacketHead* packet);
  private:
   bool Init();
+  infomation_mysql::Infomation_Mysql* sqldb;
 };
 }  // namespace im_logic
 
