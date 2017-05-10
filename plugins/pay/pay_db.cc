@@ -52,7 +52,7 @@ bool PayDB::OnUpdateCallBackRechargeOrder(const int64 rid, const double price,
   base_logic::DictionaryValue *info_value = NULL;
   std::string sql;
   int64 bigr_type = 0;
-  if (astatus == 1)
+  if (astatus == 1) //成功
     bigr_type = 3;
   else
     bigr_type = 4;
@@ -125,6 +125,70 @@ void PayDB::CallUpdateCallBackRechargeOrder(void* param,
     }
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+}
+
+//------------------------Withdraw
+bool PayDB::OnCreateWithdrawOrder(const int64 uid, const int64 rid,
+                                  const double price, const int64 bid,
+				  const int64 status) {
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+
+  std::string sql;
+  //int64 bigr_type = rtype;
+  sql = "call proc_Withdraw("
+      + base::BasicUtil::StringUtil::Int64ToString(uid) + ","
+      + base::BasicUtil::StringUtil::Int64ToString(rid) + ","
+      + base::BasicUtil::StringUtil::Int64ToString(bid) + ","
+      + base::BasicUtil::StringUtil::DoubleToString(price) + ","
+      + base::BasicUtil::StringUtil::Int64ToString(status) + ");";
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
+
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return true;
+}
+
+
+bool PayDB::OnUpdateCallBackWithdrawOrder(const std::string& rid, const double price,
+                                          const std::string& transaction_id,
+                                          const int32 astatus, int64& uid,
+                                          double& balance) {
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+  int64 bigr_type = astatus;
+  /*
+  int64 bigr_type = 0;
+  if (astatus == 1)
+    bigr_type = 3;
+  else
+    bigr_type = 4;
+*/
+  sql = "call proc_UpdateCallBackWithdraw("
+      + rid + ","
+      + base::BasicUtil::StringUtil::DoubleToString(price) + ","
+      + base::BasicUtil::StringUtil::Int64ToString(bigr_type) + ",'"
+      + transaction_id + "'" + ");";
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallUpdateCallBackRechargeOrder);
+
+  if (!r)
+    return false;
+  dict->GetDictionary(L"resultvalue", &info_value);
+
+  r = info_value->GetBigInteger(L"uid", &uid);
+  r = info_value->GetReal(L"balance", &balance);
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return true;
 }
 
 }  // namespace history_logic

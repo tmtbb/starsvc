@@ -102,6 +102,8 @@ pay_proto_buf.o : ./pay_proto_buf.cc ./pay_proto_buf.h
 schduler_engine.o : ./schduler_engine.cc ./schduler_engine.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./schduler_engine.cc $(INCLUDE_PATHS)
 
+shfj_order.o : ./shfj_order.cc ./shfj_order.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./shfj_order.cc $(INCLUDE_PATHS)
 wx_order.o : ./wx_order.cc ./wx_order.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./wx_order.cc $(INCLUDE_PATHS)
 	
@@ -134,7 +136,7 @@ redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool
 	
 
 
-$(PLUGIN) : unionpay_order.o pay_init.o pay_logic.o pay_db.o pay_proto_buf.o schduler_engine.o wx_order.o logic_unit.o\
+$(PLUGIN) : unionpay_order.o pay_init.o pay_logic.o pay_db.o pay_proto_buf.o schduler_engine.o shfj_order.o wx_order.o logic_unit.o\
 	swp_infos.o packet_processing.o data_engine.o data_engine.o data_mysql_engine.o \
 	data_redis_engine.o mysql_pool.o redis_pool.o \
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a

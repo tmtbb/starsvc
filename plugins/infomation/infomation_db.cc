@@ -22,6 +22,35 @@ Infomation_Mysql::~Infomation_Mysql() {
   }
   mysql_engine_ = NULL;
 }
+bool Infomation_Mysql::getstarnews(const std::string& code,const std::string& name,DicValue &ret_result,int64& all){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	std::string sql;
+	if(all == 0){
+	  sql = "call proc_getstarnewsinfo('"
+	  + code + "','"
+	  + name +  "');";
+	}else{
+	  sql = "call proc_getallstarnewsinfo()";
+	}
+	
+
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetstarnewsinfo);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+		
+	    ret_result.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+}
 bool Infomation_Mysql::getorderstarinfo(const std::string& code,const std::string& phone,DicValue &ret_result){
 	bool r = false;
     DicValue* dic = new DicValue();
@@ -45,6 +74,51 @@ bool Infomation_Mysql::getorderstarinfo(const std::string& code,const std::strin
 		return true;
 	}
 	return false;
+}
+
+void Infomation_Mysql::Callgetstarnewsinfo(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine =
+	  (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetBigInteger(L"id", atoi(rows[0]));
+		}
+	  if (rows[1] != NULL){
+			ret->SetString(L"starname", rows[1]);
+		}
+	  if (rows[2] != NULL){
+			ret->SetString(L"starcode", rows[2]);
+		}
+	  if (rows[3] != NULL){
+			ret->SetString(L"showpic_url", rows[3]);
+		}
+	  if (rows[4] != NULL){
+			ret->SetString(L"subject_name", rows[4]);
+		}
+	  if (rows[5] != NULL){
+			ret->SetString(L"link_url", rows[5]);
+		}
+	  if (rows[6] != NULL){
+			ret->SetString(L"remarks", rows[6]);
+		}
+	  if (rows[7] != NULL){
+			ret->SetString(L"times", rows[7]);
+		}
+	  list->Append((base_logic::Value *) (ret));
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
 }
 
 void Infomation_Mysql::Callgetorderstarinfo(void* param, base_logic::Value* value){

@@ -89,12 +89,51 @@ bool Infomationlogic::OnInfomationMessage(struct server *srv, const int socket,
 	  GetorderStarinfo(srv,socket,packet);
 	  break;
 	}
+	case R_GET_STARNEWS:{
+	  Getstarnews(srv,socket,packet);
+	}
     default:
       break;
   }
 
   return true;
 }
+bool Infomationlogic::Getstarnews(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string code;
+  std::string name;
+  int64 all;
+  bool r1 = packet_recv->body_->GetString(L"code",&code);
+  bool r2 = packet_recv->body_->GetString(L"name",&name);
+  bool r3 = packet_recv->body_->GetBigInteger(L"all",&all);
+  bool r = r1  && r2 && r3;
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+
+  DicValue ret_list;
+  if(!sqldb->getstarnews(code,name,ret_list,all)){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+  
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_STARINFOLIST_ADD, INFO_TYPE, 0,packet->session_id, 0);
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
+  ret_list.Set(L"result",result);
+  packet_reply.body_ = &ret_list;
+  send_message(socket,&packet_reply);
+
+  return true;
+}
+
 bool Infomationlogic::GetorderStarinfo(struct server* srv,int socket ,struct PacketHead* packet){
   if (packet->packet_length <= PACKET_HEAD_LENGTH) {
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);

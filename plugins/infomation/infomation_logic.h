@@ -46,6 +46,9 @@ class Infomationlogic {
   bool GetStarinfoList(struct server* srv,int socket ,struct PacketHead* packet);
   
   bool AddStarinfo(struct server* srv,int socket ,struct PacketHead* packet);
+
+  bool Getstarnews(struct server* srv,int socket ,struct PacketHead* packet);
+  
  private:
   bool Init();
   infomation_mysql::Infomation_Mysql* sqldb;
