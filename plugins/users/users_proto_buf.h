@@ -756,8 +756,10 @@ class LoginAccount {
 
   base_logic::DictionaryValue* get() {
     value_ = new base_logic::DictionaryValue();
+	base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
     if (token_ != NULL)
       value_->Set(L"token", token_);
+	value_->Set(L"result",result);
     if (userinfo_ != NULL)
       value_->Set(L"userinfo", userinfo_);
     return value_;

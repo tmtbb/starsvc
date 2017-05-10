@@ -535,7 +535,27 @@ bool Userslogic::OnResetPasswd(struct server* srv, int socket,
   send_message(socket,&packet_reply);                   
 
 }
-
+void executeCMD(const char *cmd, char *result){       
+	char buf_ps[1024];      
+	char ps[1024]={0};      
+	FILE *ptr;       
+	strcpy(ps, cmd);     
+	if((ptr=popen(ps, "r"))!=NULL)      
+	{    	   
+		while(fgets(buf_ps, 1024, ptr)!=NULL)    		
+		{    		   
+			strcat(result, buf_ps);    		   
+			if(strlen(result)>1024)   			   
+			break;    		
+		}    		
+		pclose(ptr);    		
+		ptr = NULL;    	
+	}    	
+	else   	
+	{    		
+		printf("popen %s error\n", ps);   	
+	}    
+}
 bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
                                       struct PacketHead *packet) {
   users_logic::net_request::RegisterVerfiycode register_vercode;
@@ -573,8 +593,14 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
       << 0;
 
   std::string sysc = ss.str();
-  system(sysc.c_str());
-  LOG_MSG2("send shell : %s",sysc.c_str());
+  //system(sysc.c_str());
+  char m_ret[1024] = {0};
+  executeCMD(sysc.c_str(),m_ret);
+  LOG_MSG2("send shell : %s,result = %s",sysc.c_str(),m_ret);
+  if(strstr(m_ret,"\"success\":false")!=NULL){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+  }
+  
   //发送信息
   int64 code_time =  time(NULL);
   std::string v_token = SMS_KEY + base::BasicUtil::StringUtil::Int64ToString(code_time) +
