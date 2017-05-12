@@ -29,5 +29,9 @@ namespace infomation_logic {
 //获取明星咨询
 #define R_GET_STARNEWS    INFO_TYPE * 1000 + 13
 #define S_GET_STARNEWS    INFO_TYPE * 1000 + 14
+
+//获取banner信息
+#define R_GET_BANNER    INFO_TYPE * 1000 + 15
+#define S_GET_BANNER    INFO_TYPE * 1000 + 16
 }
 #endif

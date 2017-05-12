@@ -22,7 +22,8 @@ Infomation_Mysql::~Infomation_Mysql() {
   }
   mysql_engine_ = NULL;
 }
-bool Infomation_Mysql::getstarnews(const std::string& code,const std::string& name,DicValue &ret_result,int64& all){
+bool Infomation_Mysql::getstarnews(const std::string& code,const std::string& name,DicValue &ret_result,
+								   int64& startnum,int64& endnum,int64& all){
 	bool r = false;
     DicValue* dic = new DicValue();
 	std::string sql;
@@ -32,9 +33,10 @@ bool Infomation_Mysql::getstarnews(const std::string& code,const std::string& na
 	  + name +  "');";
 	}else{
 	  sql = "call proc_getallstarnewsinfo()";
+	  dic->SetBigInteger(L"startnum", startnum);
+	  dic->SetBigInteger(L"endnum", endnum);
 	}
 	
-
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetstarnewsinfo);
@@ -84,7 +86,14 @@ void Infomation_Mysql::Callgetstarnewsinfo(void* param, base_logic::Value* value
 	base_logic::ListValue *list = new base_logic::ListValue();
 	
 	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	int64 startnum;
+	dict->GetBigInteger(L"startnum",&startnum);
+	int64 endnum;
+	dict->GetBigInteger(L"endnum",&endnum);
+	LOG_MSG2("starnum = %d,endnum = %d",startnum,endnum);
 	if (num > 0) {
+
+	int count = 1;
 	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
 	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	  if (rows[0] != NULL){
@@ -111,7 +120,10 @@ void Infomation_Mysql::Callgetstarnewsinfo(void* param, base_logic::Value* value
 	  if (rows[7] != NULL){
 			ret->SetString(L"times", rows[7]);
 		}
-	  list->Append((base_logic::Value *) (ret));
+	  if(count >= startnum && count <= endnum){
+			list->Append((base_logic::Value *) (ret));
+	  }
+	  count++;
 	}
 	dict->Set(L"resultvalue", (base_logic::Value *) (list));
 	}
@@ -143,6 +155,64 @@ void Infomation_Mysql::Callgetorderstarinfo(void* param, base_logic::Value* valu
 		}
 	  if (rows[3] != NULL){
 			ret->SetBigInteger(L"ownseconds", atoi(rows[3]));
+		}
+	  list->Append((base_logic::Value *) (ret));
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+bool Infomation_Mysql::getbannerinfo(const std::string& code,DicValue &ret_result,int64 all){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	std::string sql;
+    if(all==0){
+		sql = "call proc_getbannerinfo('"
+	  + code +  "');";
+	}else
+		sql = "call proc_getbannerinfoall()";
+	
+    
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetbannerinfo);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+	    ret_result.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+}
+void Infomation_Mysql::Callgetbannerinfo(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine =
+	  (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetString(L"code", rows[0]);
+		}
+	  if (rows[1] != NULL){
+			ret->SetString(L"pic_url", rows[1]);
+		}
+	  if (rows[2] != NULL){
+			ret->SetBigInteger(L"type", atoi(rows[2]));
+		}
+	  if (rows[3] != NULL){
+			ret->SetString(L"name", rows[3]);
 		}
 	  list->Append((base_logic::Value *) (ret));
 	}
@@ -213,6 +283,9 @@ void Infomation_Mysql::Callgetinfo(void* param, base_logic::Value* value){
 	  if (rows[6] != NULL){
 	  		ret->SetString(L"accid", rows[6]);
 	  	}
+	  if (rows[7] != NULL){
+	  		ret->SetString(L"pic_url", rows[7]);
+	  	}
 	  //dict->Set(L"resultvalue", (base_logic::Value *) (ret));
 	  list->Append((base_logic::Value *) (ret));
 	}
@@ -230,7 +303,8 @@ bool Infomation_Mysql::addstarinfo(const std::string& code,
   						const int64 gender,
   						const std::string& brief_url,
   						const double price,
-  						const std::string& accid){
+  						const std::string& accid,
+  						const std::string& picurl){
 	bool r = false;
     DicValue* dic = new DicValue();
 	std::string sql;
@@ -242,7 +316,7 @@ bool Infomation_Mysql::addstarinfo(const std::string& code,
 	  + base::BasicUtil::StringUtil::Int64ToString(gender) + "','"
 	  + brief_url + "','"
 	  + base::BasicUtil::StringUtil::DoubleToString(price) + "','"
-	  + accid +  "');";
+	  + accid + "','" + picurl + "');";
 
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());

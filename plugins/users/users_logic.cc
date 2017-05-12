@@ -599,6 +599,7 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
   LOG_MSG2("send shell : %s,result = %s",sysc.c_str(),m_ret);
   if(strstr(m_ret,"\"success\":false")!=NULL){
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
   }
   
   //发送信息

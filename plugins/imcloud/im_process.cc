@@ -269,19 +269,17 @@ bool ImProcess::getfriendlist(const std::string& accid,const std::string& create
 	else
 		return false;
     if(desc==200){
+		base_logic::ListValue *listvalue = new base_logic::ListValue();
+		//ret.Set("list",(base_logic::Value*)listvalue);
+		
 		base_logic::FundamentalValue* size = new base_logic::FundamentalValue(value["size"].asInt());
 		ret.Set(L"size",size);
-		base_logic::DictionaryValue* friends = new base_logic::DictionaryValue();
+		
 		
 		Json::Value arrayObj = value["friends"];
 		for (int j = 0; j < value["size"].asInt(); j++)
 		{
-			/*
-			if (arrayObj[j].isMember("createtime")){
-				std::string m_creattime = arrayObj[j]["createtime"].asString();
-				friends->SetString(L"createtime",m_creattime);
-			}
-			*/
+			base_logic::DictionaryValue* friends = new base_logic::DictionaryValue();
 			if (arrayObj[j].isMember("faccid")){
 				std::string m_faccid = arrayObj[j]["faccid"].asString();
 				friends->SetString(L"faccid",m_faccid);
@@ -290,10 +288,9 @@ bool ImProcess::getfriendlist(const std::string& accid,const std::string& create
 				std::string m_alias = arrayObj[j]["alias"].asString();
 				friends->SetString(L"alias",m_alias);
 			}
-			
+			listvalue->Append((base_logic::Value*)friends);
 		}
-		
-		ret.Set(L"friends",(base_logic::Value*)friends);
+		ret.Set("list",(base_logic::Value*)listvalue);
 		return true;
 	}
 	return false;
