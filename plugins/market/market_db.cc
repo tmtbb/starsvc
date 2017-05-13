@@ -23,6 +23,58 @@ Market_Mysql::~Market_Mysql() {
   mysql_engine_ = NULL;
 }
 
+
+bool Market_Mysql::searchstarlist(const std::string& code,DicValue &ret){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	
+	std::string sql;
+	
+	sql = "select star_name,star_code from star_starinfolist where star_name like '%"
+		  + code + "%' or star_code like '%"
+		  + code + "%'" + " limit 10";
+	LOG_MSG2("=============sql==========%s",sql.c_str());
+	dic->SetString(L"sql", sql);
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callsearchstarlist);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+	    ret.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+}
+void Market_Mysql::callsearchstarlist(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine = (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	int64 startnum,endnum;
+
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetString(L"name", rows[0]);
+		}
+	  if (rows[1] != NULL){
+			ret->SetString(L"code", rows[1]);
+		}
+	  list->Append((base_logic::Value *) (ret));
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+
 bool Market_Mysql::getstarbrief(const std::string& code,DicValue &ret){
 	bool r = false;
     DicValue* dic = new DicValue();
@@ -42,16 +94,64 @@ bool Market_Mysql::getstarbrief(const std::string& code,DicValue &ret){
 	std::string introduction;
 	std::string expeience;
 	std::string achievement;
-	r = result->GetString(L"introduction",&introduction);
-	r = result->GetString(L"expeience",&expeience);
-	r = result->GetString(L"achievement",&achievement);
-	if(r){
-	    ret.SetString(L"introduction",introduction);
-		ret.SetString(L"expeience",expeience);
-		ret.SetString(L"achievement",achievement);
-		return true;
+	std::string colleage;
+	std::string work;
+	std::string birth;
+	std::string nation;
+	std::string nationality;
+	std::string name;
+	std::string pic1;
+	std::string pic2;
+	std::string pic3;
+	std::string pic4;
+	std::string pic5;
+	if(result->GetString(L"introduction",&introduction)){
+		ret.SetString(L"introduction",introduction);
 	}
-	return false;
+	if(result->GetString(L"expeience",&expeience)){
+		ret.SetString(L"expeience",expeience);
+	}
+	if(result->GetString(L"achievement",&achievement)){
+		ret.SetString(L"achievement",achievement);
+	}
+	if(result->GetString(L"colleage",&colleage)){
+		ret.SetString(L"colleage",colleage);
+	}
+	if(result->GetString(L"work",&work)){
+		ret.SetString(L"work",work);
+	}	
+	if(result->GetString(L"birth",&birth)){
+		ret.SetString(L"birth",birth);
+	}
+	if(result->GetString(L"nation",&nation)){
+		ret.SetString(L"nation",nation);
+	}
+	if(result->GetString(L"nationality",&nationality)){
+		ret.SetString(L"nationality",nationality);
+	}			
+	if(result->GetString(L"name",&name)){
+		ret.SetString(L"introduction",introduction);
+	}
+	if(result->GetString(L"pic1",&pic1)){
+		ret.SetString(L"pic1",pic1);
+	}
+	if(result->GetString(L"pic2",&pic2)){
+		ret.SetString(L"pic2",pic2);
+	}
+	if(result->GetString(L"pic3",&pic3)){
+		ret.SetString(L"pic3",pic3);
+	}
+	if(result->GetString(L"pic4",&pic4)){
+		ret.SetString(L"pic4",pic4);
+	}
+	if(result->GetString(L"pic5",&pic5)){
+		ret.SetString(L"pic5",pic5);
+	}
+	int64 m_seconds;
+	if(result->GetBigInteger(L"seconds",&m_seconds)){
+		ret.SetBigInteger(L"seconds",m_seconds);
+	}
+	return true;
 }
 void Market_Mysql::callgetstarbrief(void* param, base_logic::Value* value){
 	base_storage::DBStorageEngine* engine = (base_storage::DBStorageEngine*) (param);
@@ -68,8 +168,44 @@ void Market_Mysql::callgetstarbrief(void* param, base_logic::Value* value){
 	  if (rows[1] != NULL){
 			ret->SetString(L"expeience", rows[1]);
 		}
-	  if (rows[1] != NULL){
+	  if (rows[2] != NULL){
 			ret->SetString(L"achievement", rows[2]);
+		}
+	  if (rows[3] != NULL){
+			ret->SetString(L"colleage", rows[3]);
+		}
+	  if (rows[4] != NULL){
+			ret->SetString(L"work", rows[4]);
+		}
+	  if (rows[5] != NULL){
+			ret->SetString(L"birth", rows[5]);
+		}
+	  if (rows[6] != NULL){
+			ret->SetString(L"nation", rows[6]);
+		}
+	  if (rows[7] != NULL){
+			ret->SetString(L"nationality", rows[7]);
+		}
+	  if (rows[8] != NULL){
+			ret->SetString(L"name", rows[8]);
+		}
+	  if (rows[9] != NULL){
+			ret->SetString(L"pic1", rows[9]);
+		}
+	  if (rows[10] != NULL){
+			ret->SetString(L"pic2", rows[10]);
+		}
+	  if (rows[11] != NULL){
+			ret->SetString(L"pic3", rows[11]);
+		}
+	  if (rows[12] != NULL){
+			ret->SetString(L"pic4", rows[12]);
+		}
+	  if (rows[13] != NULL){
+			ret->SetString(L"pic5", rows[13]);
+		}
+	  if (rows[14] != NULL){
+			ret->SetBigInteger(L"seconds", atoi(rows[14]));
 		}
 	  //list->Append((base_logic::Value *) (ret));
 	}
@@ -204,8 +340,13 @@ bool Market_Mysql::getstarnews(const std::string& code,const std::string& name,D
 	  + name +  "');";
 	}else{
 	  sql = "call proc_getallstarnewsinfo()";
-	  dic->SetBigInteger(L"startnum", startnum);
-	  dic->SetBigInteger(L"endnum", endnum);
+	  if(startnum > 0 && endnum > 0){
+		dic->SetBigInteger(L"startnum", startnum);
+	  	dic->SetBigInteger(L"endnum", endnum);
+	  }else
+	  {
+	  	return false;
+	  }
 	}
 	
 	dic->SetString(L"sql", sql);

@@ -222,20 +222,30 @@ bool Userslogic::OnLoginWiXin(struct server* srv, int socket,
   packet_control->body_->GetString(L"deviceId",&deviceid);
 
   LOG_ERROR2("get request value  openid : %s,deviceid: %s",openid.c_str(),deviceid.c_str());
-
-  bool r = user_db_->LoginWiXin(openid, deviceid,
-                            ip, userinfo, passwd);
+  base_logic::DictionaryValue ret_list;
+  bool r = user_db_->LoginWiXin(openid, deviceid,ip, userinfo, passwd,ret_list);
   if (!r) {
     send_error(socket, ERROR_TYPE, NO_PASSWORD_ERRNOR, packet->session_id);
     return false;
   }
 
+  //userinfo.set_token(token);
+  //发送用信息
+  //SendUserInfo(socket, packet->session_id, S_WX_LOGIN, userinfo);
+
+  struct PacketControl packet_reply;
+  //base_logic::DictionaryValue ret_list;
+  MAKE_HEAD(packet_reply, S_WX_LOGIN, INFO_TYPE, 0,packet->session_id, 0);
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
   //token 计算
   std::string token;
   logic::SomeUtils::CreateToken(userinfo.uid(), passwd, &token);
-  userinfo.set_token(token);
-  //发送用信息
-  SendUserInfo(socket, packet->session_id, S_WX_LOGIN, userinfo);
+  int64 ret = 1;
+  ret_list.SetBigInteger(L"result",ret);
+  ret_list.SetString(L"token",token);
+  
+  packet_reply.body_ = &ret_list;
+  send_message(socket,&packet_reply);
   return true;
 }
 bool Userslogic::OnWXBindAccount(struct server* srv, int socket,

@@ -83,7 +83,8 @@ bool UsersDB::WXBindAccount(const std::string& phone_num,
 }
 bool UsersDB::LoginWiXin(const std::string& open_id,
                            const std::string &device_id,
-			   const std::string& ip, swp_logic::UserInfo& user, std::string &passwd) {
+			   const std::string& ip, swp_logic::UserInfo& user, 
+			   std::string &passwd,base_logic::DictionaryValue &ret) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
@@ -95,7 +96,7 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
 
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
-                              CallLoginAccount);
+                              CallLoginwxAccount);
   if (!r)
     return false;
 
@@ -106,16 +107,29 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
   r = (r && result > 0) ? true : false;
   if (!r)
     return false;
-
-  user.ValueSerialization(info_value);
-  info_value->GetString(L"passwd", &passwd); 
-
+  ret.SetString(L"phone",base::BasicUtil::StringUtil::Int64ToString(result));
   if (dict) {
     delete dict;
     dict = NULL;
   }
   return r;
 }
+void UsersDB::CallLoginwxAccount(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetInteger(L"result", atoi(rows[0]));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+}
+
 bool UsersDB::UserChangePasswd(const std::string& phone_num,const std::string& oldpasswd,
   								const std::string& newpasswd){
 	bool r = false;

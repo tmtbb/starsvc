@@ -39,6 +39,8 @@ class UsersDB {
 
   static void CallLoginAccount(void* param, base_logic::Value* value);
 
+  static void CallLoginwxAccount(void* param, base_logic::Value* value);
+  
   static void CallAccountBalance(void* param, base_logic::Value* value);
 
   static void CallCheckAccountExist(void* param, base_logic::Value* value);
@@ -50,7 +52,8 @@ class UsersDB {
 		       const std::string &head_url, const std::string &agent_id, const std::string &recommend,
 		       const std::string &device_id, const int64 member_id);
   bool LoginWiXin(const std::string& open_id, const std::string& device_id,
-                    const std::string& ip, swp_logic::UserInfo& user, std::string &passwd);
+                    const std::string& ip, swp_logic::UserInfo& user, 
+                    std::string &passwd,base_logic::DictionaryValue &ret);
 
   bool UserChangePasswd(const std::string& phone_num,const std::string& oldpasswd,
   								const std::string& newpasswd);
