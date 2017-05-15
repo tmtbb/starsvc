@@ -24,6 +24,11 @@ class Market_Mysql {
   						const double price,
   						const std::string& accid,
   						const std::string& picurl);
+  bool getstarachive(const std::string& code,DicValue &ret);
+  static void callgetstarachive(void* param, base_logic::Value* value);
+
+  bool getstarexperience(const std::string& code,DicValue &ret);
+  static void callgetstarexperience(void* param, base_logic::Value* value);
   
   bool searchstarlist(const std::string& code,DicValue &ret);
   static void callsearchstarlist(void* param, base_logic::Value* value);

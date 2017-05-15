@@ -223,7 +223,7 @@ bool Userslogic::OnLoginWiXin(struct server* srv, int socket,
 
   LOG_ERROR2("get request value  openid : %s,deviceid: %s",openid.c_str(),deviceid.c_str());
   base_logic::DictionaryValue ret_list;
-  bool r = user_db_->LoginWiXin(openid, deviceid,ip, userinfo, passwd,ret_list);
+  bool r = user_db_->LoginWiXin(openid, deviceid,ip, ret_list);
   if (!r) {
     send_error(socket, ERROR_TYPE, NO_PASSWORD_ERRNOR, packet->session_id);
     return false;

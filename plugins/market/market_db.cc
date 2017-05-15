@@ -22,7 +22,95 @@ Market_Mysql::~Market_Mysql() {
   }
   mysql_engine_ = NULL;
 }
+void Market_Mysql::callgetstarachive(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine = (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetString(L"achive", rows[0]);
+		}
+	  list->Append((base_logic::Value *) (ret));
+	  
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+bool Market_Mysql::getstarachive(const std::string& code,DicValue &ret){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	
+	std::string sql;
+	sql = "call proc_getstarachive('"
+		  + code
+		  + "')";
+	dic->SetString(L"sql", sql);
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetstarachive);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+	    ret.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+}
 
+void Market_Mysql::callgetstarexperience(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine = (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetString(L"experience", rows[0]);
+		}
+	  list->Append((base_logic::Value *) (ret));
+	  
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+bool Market_Mysql::getstarexperience(const std::string& code,DicValue &ret){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	
+	std::string sql;
+	sql = "call proc_getstarexperience('"
+		  + code
+		  + "')";
+	dic->SetString(L"sql", sql);
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetstarexperience);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+	    ret.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+}
 
 bool Market_Mysql::searchstarlist(const std::string& code,DicValue &ret){
 	bool r = false;
@@ -108,12 +196,6 @@ bool Market_Mysql::getstarbrief(const std::string& code,DicValue &ret){
 	if(result->GetString(L"introduction",&introduction)){
 		ret.SetString(L"introduction",introduction);
 	}
-	if(result->GetString(L"expeience",&expeience)){
-		ret.SetString(L"expeience",expeience);
-	}
-	if(result->GetString(L"achievement",&achievement)){
-		ret.SetString(L"achievement",achievement);
-	}
 	if(result->GetString(L"colleage",&colleage)){
 		ret.SetString(L"colleage",colleage);
 	}
@@ -166,46 +248,40 @@ void Market_Mysql::callgetstarbrief(void* param, base_logic::Value* value){
 			ret->SetString(L"introduction", rows[0]);
 		}
 	  if (rows[1] != NULL){
-			ret->SetString(L"expeience", rows[1]);
+			ret->SetString(L"colleage", rows[1]);
 		}
 	  if (rows[2] != NULL){
-			ret->SetString(L"achievement", rows[2]);
+			ret->SetString(L"work", rows[2]);
 		}
 	  if (rows[3] != NULL){
-			ret->SetString(L"colleage", rows[3]);
+			ret->SetString(L"birth", rows[3]);
 		}
 	  if (rows[4] != NULL){
-			ret->SetString(L"work", rows[4]);
+			ret->SetString(L"nation", rows[4]);
 		}
 	  if (rows[5] != NULL){
-			ret->SetString(L"birth", rows[5]);
+			ret->SetString(L"nationality", rows[5]);
 		}
 	  if (rows[6] != NULL){
-			ret->SetString(L"nation", rows[6]);
+			ret->SetString(L"name", rows[6]);
 		}
 	  if (rows[7] != NULL){
-			ret->SetString(L"nationality", rows[7]);
+			ret->SetString(L"pic1", rows[7]);
 		}
 	  if (rows[8] != NULL){
-			ret->SetString(L"name", rows[8]);
+			ret->SetString(L"pic2", rows[8]);
 		}
 	  if (rows[9] != NULL){
-			ret->SetString(L"pic1", rows[9]);
+			ret->SetString(L"pic3", rows[9]);
 		}
 	  if (rows[10] != NULL){
-			ret->SetString(L"pic2", rows[10]);
+			ret->SetString(L"pic4", rows[10]);
 		}
 	  if (rows[11] != NULL){
-			ret->SetString(L"pic3", rows[11]);
+			ret->SetString(L"pic5", rows[11]);
 		}
 	  if (rows[12] != NULL){
-			ret->SetString(L"pic4", rows[12]);
-		}
-	  if (rows[13] != NULL){
-			ret->SetString(L"pic5", rows[13]);
-		}
-	  if (rows[14] != NULL){
-			ret->SetBigInteger(L"seconds", atoi(rows[14]));
+			ret->SetBigInteger(L"seconds", atoi(rows[12]));
 		}
 	  //list->Append((base_logic::Value *) (ret));
 	}
