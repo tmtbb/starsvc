@@ -80,7 +80,7 @@ bool RegisterAccount::set_http_packet(base_logic::DictionaryValue* value) {
   int64 tmp_64;
   r = value->GetBigInteger(L"memberId", &tmp_64);
   if (r)
-    set_memberid(tmp_64);
+    set_member_id(tmp_64);
   else
     return false;
 
@@ -93,6 +93,11 @@ bool RegisterAccount::set_http_packet(base_logic::DictionaryValue* value) {
   r = value->GetString(L"recommend", &tmp);
   if (r)
     set_recommend(tmp);
+  else
+    return false;
+  r = value->GetString(L"deviceId", &tmp);
+  if (r)
+    set_device_id(tmp);
   else
     return false;
   //end 
@@ -127,6 +132,8 @@ bool LoginAccount::set_http_packet(base_logic::DictionaryValue* value) {
   std::string passwd;
   std::string phone_num;
   std::string token;
+  std::string device_id;
+
 
   if (value == NULL)
     return false;
@@ -143,6 +150,11 @@ bool LoginAccount::set_http_packet(base_logic::DictionaryValue* value) {
   else
     return false;
 
+  r = value->GetString(L"deviceId", &device_id);
+  if (r)
+    set_device_id(device_id);
+  else
+    return false;
   /*if (phone_num.length() < 11) {
    LOG_ERROR("phone is wrong");
    err = PHONE_NUM_ERR;
@@ -157,6 +169,122 @@ bool LoginAccount::set_http_packet(base_logic::DictionaryValue* value) {
 
   return true;
 }
+
+
+
+bool LoginWiXin::set_http_packet(base_logic::DictionaryValue* value) {
+  bool r = false;
+  std::string open_id;
+  std::string device_id;
+
+  if (value == NULL)
+    return false;
+
+  r = value->GetString(L"openId", &open_id);
+  if (r)
+    set_open_id(open_id);
+  else
+    return false;
+
+  r = value->GetString(L"deviceId", &device_id);
+  if (r)
+    set_device_id(device_id);
+  else
+    return false;
+
+  return true;
+}
+
+
+bool WXBindAccount::set_http_packet(base_logic::DictionaryValue* value) {
+  int32 err = 0;
+  bool r = false;
+  std::string verify_code;
+  int64 timestamp;
+  std::string verify_token;
+  std::string phone_num;
+  std::string passwd;
+
+  if (value == NULL)
+    return false;
+
+  r = value->GetString(L"vCode", &verify_code);
+  if (r)
+    set_verify_code(verify_code);
+  else
+    return false;
+
+  r = value->GetBigInteger(L"timeStamp", &timestamp);
+  if (r)
+    set_timestamp(timestamp);
+  else
+    return false;
+
+  r = value->GetString(L"vToken", &verify_token);
+  if (r)
+    set_verify_token(verify_token);
+  else
+    return false;
+
+  r = value->GetString(L"phone", &phone_num);
+  if (r)
+    set_phone_num(phone_num);
+  else
+    return false;
+
+  r = value->GetString(L"pwd", &passwd);
+  if (r)
+    set_passwd(passwd);
+  else
+    return false;
+
+  //add bytw
+  std::string tmp;
+
+  r = value->GetString(L"openid", &tmp);
+  if (r)
+    set_openid(tmp);
+  else
+    return false;
+
+  r = value->GetString(L"nickname", &tmp);
+  if (r)
+    set_nick_name(tmp);
+  else
+    return false;
+  r = value->GetString(L"headerUrl", &tmp);
+  if (r)
+    set_head_url(tmp);
+  else
+    return false;
+
+  int64 tmp_64;
+  r = value->GetBigInteger(L"memberId", &tmp_64);
+  if (r)
+    set_member_id(tmp_64);
+  else
+    return false;
+
+  r = value->GetString(L"agentId", &tmp);
+  if (r)
+    set_agentid(tmp);
+  else
+    return false;
+
+  r = value->GetString(L"recommend", &tmp);
+  if (r)
+    set_recommend(tmp);
+  else
+    return false;
+  r = value->GetString(L"deviceId", &tmp);
+  if (r)
+    set_device_id(tmp);
+  else
+    return false;
+  //end 
+  return true;
+}
+
 
 }
 }

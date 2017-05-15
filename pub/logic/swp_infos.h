@@ -14,7 +14,8 @@
 
 enum PAYTYPE {
   WX_APP = 1,
-  UNIPNPAY = 2
+  UNIPNPAY = 2,
+  ALIPAY = 3
 };
 
 enum {

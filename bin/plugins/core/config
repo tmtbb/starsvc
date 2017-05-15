@@ -4,9 +4,9 @@
                 port="16005"
                 path="/var/www/tmp/paycorefile"/>
     
-    <log_config usr_file="/home/kerry/rounter/bin/user.log"
-                sys_file="/home/kerry/rounter/bin/sys.log"
-                error_file="/home/kerry/rounter/bin/err.log"
+    <log_config usr_file="/home/liweizhao/starsvc/log/user.log"
+                sys_file="/home/liweizhao/starsvc/log/sys.log"
+                error_file="/home/liweizhao/starsvc/log/err.log"
 		log_facility="6"/>
     
     <app_config max_worker="4"

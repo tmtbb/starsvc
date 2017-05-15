@@ -21,7 +21,7 @@ static void *OnUsersStart() {
   users->id = "users";
   users->name = "users";
   users->version = "1.0.0";
-  users->provider = "kerry";
+  users->provider = "li";
   if (!users_logic::Userslogic::GetInstance())
     assert(0);
   return users;
@@ -35,14 +35,12 @@ static handler_t OnUsersShutdown(struct server *srv, void *pd) {
 
 static handler_t OnUsersConnect(struct server *srv, int fd, void *data,
                                      int len) {
-  LOG_ERROR("=============================onuserconnect");
   users_logic::Userslogic::GetInstance()->OnUsersConnect(srv, fd);
   return HANDLER_GO_ON;
 }
 
 static handler_t OnUsersMessage(struct server *srv, int fd, void *data,
                                      int len) {
-  LOG_ERROR("================================OnUsersMessage");
   bool r = users_logic::Userslogic::GetInstance()->OnUsersMessage(srv, fd,
                                                                     data, len);
   if (r)
@@ -52,7 +50,6 @@ static handler_t OnUsersMessage(struct server *srv, int fd, void *data,
 }
 
 static handler_t OnUsersClose(struct server *srv, int fd) {
-  LOG_ERROR("====================================onuserclose");
   users_logic::Userslogic::GetInstance()->OnUsersClose(srv, fd);
   return HANDLER_GO_ON;
 }

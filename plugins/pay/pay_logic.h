@@ -53,6 +53,21 @@ class Paylogic {
 
   bool OnWXPaySever(struct server* srv, int socket,
                     struct PacketHead * packet);
+
+
+  bool OnSHFJPayOrder(struct server* srv, int socket,
+                    struct PacketHead *packet);
+
+  bool OnSHFJPayClient(struct server* srv, int socket,
+                     struct PacketHead *packet);
+
+  bool OnSHFJPaySever(struct server* srv, int socket,
+                    struct PacketHead * packet);
+
+  bool OnSHFJCashOrder(struct server* srv, int socket,
+                    struct PacketHead *packet);
+  bool OnSHFJCashServer(struct server* srv, int socket,
+                    struct PacketHead * packet);
  private:
   bool Init();
  private:

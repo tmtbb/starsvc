@@ -169,7 +169,7 @@ extern std::map<int, const char*> error_code_msgs;
     struct PacketControl packet_control; \
     MAKE_HEAD(packet_control, ERROR_TYPE, type, 0, session, 0); \
     base_logic::DictionaryValue dic; \
-    dic.SetInteger(L"errorCode", error_code); \
+    dic.SetInteger(L"result", error_code); \
     packet_control.body_ = &dic; \
     send_message(socket, &packet_control); \
   } while(0)

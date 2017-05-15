@@ -1,16 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <config>
   <database>
-     <mysql host ="127.0.0.1" 
+     <mysql host ="139.224.34.22" 
             port ="3306" 
-            user = "actuals" 
-            pass = "vKjYAMUZ6NNcQ"  
-            name = "actuals"/>
-
-     <mssql host = "migdb"
-            user = "web_Test"
-            pass = "9158com"
-            name = "WeiShow_new"/>
+            user = "star" 
+            pass = "pEQrhRrG"
+            name = "star"/>
   </database>
   
   <cached>

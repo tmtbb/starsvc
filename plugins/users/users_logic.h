@@ -63,7 +63,16 @@ class Userslogic {
 
   bool SendUserInfo(const int socket, const int64 session, const int32 opcode,
                     swp_logic::UserInfo& userinfo);
+  
+  bool OnLoginWiXin(struct server* srv, int socket,
+                      struct PacketHead *packet);
+  bool OnWXBindAccount(struct server* srv, int socket,
+                      struct PacketHead *packet);
 
+  bool OnUserChangePasswd(struct server* srv, int socket,
+                      struct PacketHead *packet);
+  //重置密码
+  bool OnResetPasswd(struct server* srv, int socket,struct PacketHead *packet);
  private:
   bool Init();
  private:

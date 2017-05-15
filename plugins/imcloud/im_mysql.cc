@@ -33,9 +33,9 @@ int32 Im_Mysql::SetUserInfo(int64 userid, int64 phonenum, std::string name,std::
 
     sql = "call star_addcloudinfo("
       + base::BasicUtil::StringUtil::Int64ToString(userid) + ","
-      + base::BasicUtil::StringUtil::Int64ToString(phonenum) + ","
-      + "'" + name + "','"
-      + "'"  + accid + "','"
+      + base::BasicUtil::StringUtil::Int64ToString(phonenum) + ",'"
+      + name + "','"
+      + accid + "','"
       + token + "'" + ");";
 
     //std::string m_sql = "call star_addcloudinfo(123,1770640,'m_name','m_accid')";
@@ -110,6 +110,133 @@ void Im_Mysql::CallStaticSelect(void* param, base_logic::Value* value) {
   }
   dict->Remove(L"sql", &value);
 }
+
+bool Im_Mysql::gettalkingtimes(std::string& phone,std::string& starcode,int64 &times,
+									  std::string& accid,std::string& faccid){
+	bool r = false;
+	DicValue dic;
+	std::string sql;
+	sql = "call proc_gettalkingtimes('"
+	  + phone 
+	  + "','" + starcode 
+	  +  "');";
+	dic.SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (&dic),
+	                            Callgettalkingtimes);
+	if (!r || dic.empty()) {
+	  return false;
+	}
+
+	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	bool r1 = dic.GetDictionary(L"resultvalue", &ret);
+	bool r2 = ret->GetBigInteger(L"times", &times);
+	bool r3 = ret->GetString(L"accid", &accid);
+	bool r4 = ret->GetString(L"faccid", &faccid);
+	if(r1 && r2 &&r3 && r4&& times > 0){
+			return true;
+	}
+	return false;
+}
+void Im_Mysql::Callgettalkingtimes(void* param, base_logic::Value* value) {
+  base_storage::DBStorageEngine* engine =
+      (base_storage::DBStorageEngine*) (param);
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+
+  base_logic::DictionaryValue *userinfo = new base_logic::DictionaryValue();
+  DicValue* dict = reinterpret_cast<DicValue*>(value);
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+      if (rows[0] != NULL)
+        userinfo->SetBigInteger(L"times", atoi(rows[0]));
+	  if (rows[1] != NULL)
+        userinfo->SetString(L"accid", rows[1]);
+	  if (rows[2] != NULL)
+        userinfo->SetString(L"faccid", rows[2]);
+      dict->Set(L"resultvalue", (base_logic::Value *) (userinfo));
+    }
+  } else {
+    LOG_ERROR ("CallUserLoginSelect count < 0");
+  }
+  dict->Remove(L"sql", &value);
+}
+
+bool Im_Mysql::delorderrecord(std::string& phone,std::string& starcode){
+	bool r = false;
+	DicValue dic;
+	std::string sql;
+	sql = "call proc_delorderstar('"
+	  + phone 
+	  + "','" + starcode 
+	  +  "');";
+	dic.SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (&dic),
+	                            Callreducetalkingtimes);
+	if (!r || dic.empty()) {
+	  return false;
+	}
+
+	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	int64 result;
+	bool r1 = dic.GetDictionary(L"resultvalue", &ret);
+	bool r2 = ret->GetBigInteger(L"result", &result);
+	if(r1 && r2){
+		if(result == 1)
+			return true;
+	}
+	return false;
+}
+
+bool Im_Mysql::ReduceTalkingtimes(std::string& phone,std::string& starcode){
+	bool r = false;
+	DicValue dic;
+	std::string sql;
+	sql = "call proc_reducetalkingtimes('"
+	  + phone 
+	  + "','" + starcode 
+	  +  "');";
+	dic.SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (&dic),
+	                            Callreducetalkingtimes);
+	if (!r || dic.empty()) {
+	  return false;
+	}
+
+	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	int64 result;
+	bool r1 = dic.GetDictionary(L"resultvalue", &ret);
+	bool r2 = ret->GetBigInteger(L"result", &result);
+	if(r1 && r2){
+		if(result == 1)
+			return true;
+	}
+	return false;
+}
+void Im_Mysql::Callreducetalkingtimes(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine =
+	  (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+
+	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  if (rows[0] != NULL){
+	  		ret->SetBigInteger(L"result", atoi(rows[0]));
+	  		dict->Set(L"resultvalue", (base_logic::Value *) (ret));
+	  	}
+	}
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+
 
 }
 

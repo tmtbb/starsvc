@@ -24,6 +24,9 @@ class PayDB {
   bool OnCreateRechargeOrder(const int64 uid, const int64 rid, const double price,
                              const int32 rtype);
 
+  bool OnCreateWithdrawOrder(const int64 uid, const int64 rid,
+                                  const double price, const int64 bid,
+				  const int64 status = 0); 
   bool OnUpdateRechargeOrder(const int64 uid, const int64 rid, const int32 status,
                              const int32 rtype);
 
@@ -31,6 +34,10 @@ class PayDB {
                                      const std::string& transaction_id,
                                      const int32 astatus,int64& uid,
                                      double& balance);
+  bool OnUpdateCallBackWithdrawOrder(const std::string& rid, const double price,
+                                          const std::string& transaction_id,
+                                          const int32 astatus, int64& uid,
+                                          double& balance); 
  public:
   static void CallCreateRechargeOrder(void* param, base_logic::Value* value);
   static void CallUpdateCallBackRechargeOrder(void* param, base_logic::Value* value);
