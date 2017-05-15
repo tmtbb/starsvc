@@ -53,6 +53,8 @@ class Marketlogic {
   bool getstarexperience(struct server* srv,int socket ,struct PacketHead* packet);
 
   bool getstarachive(struct server* srv,int socket ,struct PacketHead* packet);
+
+  bool getoptionstarlist(struct server* srv,int socket ,struct PacketHead* packet);
  private:
   bool Init();
   market_mysql::Market_Mysql* sqldb;

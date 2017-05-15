@@ -22,6 +22,66 @@ Market_Mysql::~Market_Mysql() {
   }
   mysql_engine_ = NULL;
 }
+bool Market_Mysql::getoptionstarlist(const std::string& code,int64 startnum,
+									int64 endnum,DicValue &ret){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	
+	std::string sql;
+	sql = "call proc_getoptionstarlist('"
+		  + code
+		  + "')";
+	dic->SetString(L"sql", sql);
+	dic->SetBigInteger(L"startnum",startnum);
+	dic->SetBigInteger(L"endnum",endnum);
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetoptionstarlist);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+	    ret.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+
+}
+  
+void Market_Mysql::callgetoptionstarlist(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine = (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	int count_ = 1;
+	int64 startnum,endnum;
+	dict->GetBigInteger(L"startnum",&startnum);
+	dict->GetBigInteger(L"endnum",&endnum);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetString(L"starcode", rows[0]);
+		}
+	  if (rows[1] != NULL){
+			ret->SetString(L"name", rows[1]);
+		}
+	  if(count_ >= startnum && endnum >= count_){
+	  		list->Append((base_logic::Value *) (ret));
+	  	}
+	  count_++;
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
+
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+
 void Market_Mysql::callgetstarachive(void* param, base_logic::Value* value){
 	base_storage::DBStorageEngine* engine = (base_storage::DBStorageEngine*) (param);
 	MYSQL_ROW rows;
@@ -346,10 +406,14 @@ void Market_Mysql::callgetmarketstarlist(void* param, base_logic::Value* value){
 	  if (rows[4] != NULL){
 			ret->SetBigInteger(L"type", atoi(rows[4]));
 		}
+	  if (rows[5] != NULL){
+			ret->SetString(L"head", rows[5]);
+		}
 	  if(m_count <= endnum && startnum <= m_count){
 		list->Append((base_logic::Value *) (ret));
 	  }
 	  m_count++;
+
 	}
 	dict->Set(L"resultvalue", (base_logic::Value *) (list));
 	}

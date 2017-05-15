@@ -25,5 +25,8 @@ namespace market_logic {
 #define R_MARKETSTARACHIV_GET    MARKET_TYPE * 1000 + 11
 #define S_MARKETSTARACHIV_GET    MARKET_TYPE * 1000 + 12
 
+#define R_MARKSTAROPTION_GET    MARKET_TYPE * 1000 + 13
+#define S_MARKSTAROPTION_GET    MARKET_TYPE * 1000 + 14
+
 }
 #endif

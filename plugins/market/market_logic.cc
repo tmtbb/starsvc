@@ -106,11 +106,48 @@ bool Marketlogic::OnInfomationMessage(struct server *srv, const int socket,
 	  searchsatr(srv,socket,packet);
 	  break;
 	}
+	//获取自选明星列表
+	case R_MARKSTAROPTION_GET:{
+	  getoptionstarlist(srv,socket,packet);
+	  break;
+	}
     default:
       break;
   }
 
   return true;
+}
+bool Marketlogic::getoptionstarlist(struct server* srv,int socket ,struct PacketHead* packet){
+	  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		return false;
+	  }
+	  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+	  std::string phone;
+	  int64 startnum;
+	  int64 endnum;
+      bool r = packet_recv->body_->GetString(L"phone",&phone);
+	  bool r1 = packet_recv->body_->GetBigInteger(L"startnum",&startnum);
+	  bool r2 = packet_recv->body_->GetBigInteger(L"endnum",&endnum);
+	  if(!r){
+		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		return false;
+	  }
+	  DicValue ret_list;
+	  if(!sqldb->getoptionstarlist(phone,startnum,endnum,ret_list)){
+		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		return false;
+	  }
+	  
+	  struct PacketControl packet_reply;
+	  MAKE_HEAD(packet_reply, S_MARKETTYPES_GET, INFO_TYPE, 0,packet->session_id, 0);
+	  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
+	  ret_list.Set(L"result",result);
+	  packet_reply.body_ = &ret_list;
+	  send_message(socket,&packet_reply);
+	
+	  return true;
 }
 bool Marketlogic::getstarachive(struct server* srv,int socket ,struct PacketHead* packet){
 	if (packet->packet_length <= PACKET_HEAD_LENGTH) {
