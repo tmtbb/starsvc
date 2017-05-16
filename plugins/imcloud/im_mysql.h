@@ -18,7 +18,7 @@ class Im_Mysql {
   
   //从accid获取用户其他信息
   bool getuserinfofromaccid(const std::string& accid,
-  								 std::string& head, std::string& name);
+  								 std::string& head, std::string& name,std::string& type);
 
   static void Callgetuserinfofromaccid(void* param, base_logic::Value* value);
   //写入用户信息到数据库

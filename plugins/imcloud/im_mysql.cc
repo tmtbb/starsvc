@@ -39,6 +39,8 @@ void Im_Mysql::Callgetuserinfofromaccid(void* param, base_logic::Value* value){
         userinfo->SetString(L"head", rows[1]);
 	  if (rows[2] != NULL)
         userinfo->SetString(L"accid", rows[2]);
+	  if (rows[3] != NULL)
+        userinfo->SetString(L"type", rows[3]);
       dict->Set(L"resultvalue", (base_logic::Value *) (userinfo));
     }
   } else {
@@ -46,7 +48,8 @@ void Im_Mysql::Callgetuserinfofromaccid(void* param, base_logic::Value* value){
   }
   dict->Remove(L"sql", &value);
 }
-bool Im_Mysql::getuserinfofromaccid(const std::string& accid,std::string& head,std::string& name){
+bool Im_Mysql::getuserinfofromaccid(const std::string& accid,std::string& head,std::string& name,
+									std::string& type){
 	bool r = false;
 	DicValue dic;
 	std::string sql;
@@ -65,7 +68,8 @@ bool Im_Mysql::getuserinfofromaccid(const std::string& accid,std::string& head,s
 	bool r1 = dic.GetDictionary(L"resultvalue", &ret);
 	bool r2 = ret->GetString(L"head", &head);
 	bool r3 = ret->GetString(L"name", &name);
-	if(r1 && r2 &&r3){
+	bool r4 = ret->GetString(L"type",&type);
+	if(r1 && r2 &&r3 && r4){
 			return true;
 	}
 	return false;

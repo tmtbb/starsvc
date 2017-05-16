@@ -27,7 +27,7 @@ namespace im_process {
 bool ImProcess::init(){
 	bool r = false;
 	config::FileConfig* config = config::FileConfig::GetFileConfig();
-	std::string path = "./plugins/imcloud/imcloud_config.xml";
+	std::string path = "./plugins/imcloud/imcoud_config.xml";
 	if (config == NULL) {
 		LOG_ERROR("config init error");
 		return false;
@@ -304,10 +304,12 @@ bool ImProcess::getfriendlist(const std::string& accid,const std::string& create
 				std::string m_faccid = arrayObj[j]["faccid"].asString(); 
 				std::string  head;
 				std::string  name;
+				std::string  type;
 				friends->SetString(L"faccid",m_faccid);
-				if(sqlengine->getuserinfofromaccid(m_faccid,head,name)){
+				if(sqlengine->getuserinfofromaccid(m_faccid,head,name,type)){
 					friends->SetString(L"head",head);
 					friends->SetString(L"name",name);
+					friends->SetString(L"type",type);
 				}
 			}	
 			listvalue->Append((base_logic::Value*)friends);
