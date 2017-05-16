@@ -23,18 +23,63 @@ Im_Mysql::~Im_Mysql() {
   }
   mysql_engine_ = NULL;
 }
+void Im_Mysql::Callgetuserinfofromaccid(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine =
+      (base_storage::DBStorageEngine*) (param);
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+
+  base_logic::DictionaryValue *userinfo = new base_logic::DictionaryValue();
+  DicValue* dict = reinterpret_cast<DicValue*>(value);
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+      if (rows[0] != NULL)
+        userinfo->SetString(L"name", rows[0]);
+	  if (rows[1] != NULL)
+        userinfo->SetString(L"head", rows[1]);
+	  if (rows[2] != NULL)
+        userinfo->SetString(L"accid", rows[2]);
+      dict->Set(L"resultvalue", (base_logic::Value *) (userinfo));
+    }
+  } else {
+    LOG_ERROR ("CallUserLoginSelect count < 0");
+  }
+  dict->Remove(L"sql", &value);
+}
+bool Im_Mysql::getuserinfofromaccid(const std::string& accid,std::string& head,std::string& name){
+	bool r = false;
+	DicValue dic;
+	std::string sql;
+	sql = "call star_getcloudinfofromaccid('"
+	  + accid 
+	  +  "');";
+	dic.SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (&dic),
+	                            Callgetuserinfofromaccid);
+	if (!r || dic.empty()) {
+	  return false;
+	}
+
+	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	bool r1 = dic.GetDictionary(L"resultvalue", &ret);
+	bool r2 = ret->GetString(L"head", &head);
+	bool r3 = ret->GetString(L"name", &name);
+	if(r1 && r2 &&r3){
+			return true;
+	}
+	return false;
+}
 //写用户信息
-int32 Im_Mysql::SetUserInfo(int64 userid, int64 phonenum, std::string name,std::string accid,std::string token,
+int32 Im_Mysql::SetUserInfo(const std::string& phonenum,std::string accid,std::string token,
                         DicValue* dic){
   int32 err = 0;
   bool r = false;
   do {
     std::string sql;
 
-    sql = "call star_addcloudinfo("
-      + base::BasicUtil::StringUtil::Int64ToString(userid) + ","
-      + base::BasicUtil::StringUtil::Int64ToString(phonenum) + ",'"
-      + name + "','"
+    sql = "call star_addcloudinfo('"
+      + phonenum +  "','"
       + accid + "','"
       + token + "'" + ");";
 

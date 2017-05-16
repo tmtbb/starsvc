@@ -15,8 +15,14 @@ class Im_Mysql {
  public:
   Im_Mysql(config::FileConfig* config);
   ~Im_Mysql();
+  
+  //从accid获取用户其他信息
+  bool getuserinfofromaccid(const std::string& accid,
+  								 std::string& head, std::string& name);
+
+  static void Callgetuserinfofromaccid(void* param, base_logic::Value* value);
   //写入用户信息到数据库
-  int32 SetUserInfo(int64 userid, int64 phonenum, std::string name,std::string accid,std::string token,
+  int32 SetUserInfo(const std::string& phonenum,std::string accid,std::string token,
                         DicValue* dic);
 
   //获取用户信息

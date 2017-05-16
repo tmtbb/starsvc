@@ -33,5 +33,9 @@ namespace infomation_logic {
 //获取banner信息
 #define R_GET_BANNER    INFO_TYPE * 1000 + 15
 #define S_GET_BANNER    INFO_TYPE * 1000 + 16
+
+//获取粉丝评论
+#define R_GET_FANSCOMMENT    INFO_TYPE * 1000 + 17
+#define S_GET_FANSCOMMENT    INFO_TYPE * 1000 + 18
 }
 #endif

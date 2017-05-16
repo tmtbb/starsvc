@@ -101,12 +101,23 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
 
   dict->GetDictionary(L"resultvalue", &info_value);
 
-  std::string result;
-  r = info_value->GetString(L"result", &result);
-  r = (r && result.length() > 1) ? true : false;
+  std::string phone;
+  int64 type,uid;
+  r = info_value->GetString(L"phone", &phone);
+  if(!info_value->GetBigInteger(L"type",&type))
+  		return false;
+  if(!info_value->GetBigInteger(L"id",&uid))
+  		return false;
+  r = (r && phone.length() > 1) ? true : false;
   if (!r)
     return false;
-  ret.SetString(L"phone",result);
+
+  base_logic::DictionaryValue *tmp = new base_logic::DictionaryValue();
+  tmp->SetString(L"phone",phone);
+  tmp->SetBigInteger(L"type",type);
+  tmp->SetBigInteger(L"id",uid);
+
+  ret.Set(L"userinfo",(base_logic::Value*)tmp);
   if (dict) {
     delete dict;
     dict = NULL;
@@ -123,7 +134,11 @@ void UsersDB::CallLoginwxAccount(void* param, base_logic::Value* value) {
   if (num > 0) {
     while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
       if (rows[0] != NULL)
-        info_value->SetString(L"result", rows[0]);
+        info_value->SetString(L"phone", rows[0]);
+	  if (rows[1] != NULL)
+        info_value->SetBigInteger(L"type", atoi(rows[1]));
+	  if (rows[2] != NULL)
+        info_value->SetBigInteger(L"id", atoi(rows[2]));
     }
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));

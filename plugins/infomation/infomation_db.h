@@ -24,6 +24,9 @@ class Infomation_Mysql {
   						const double price,
   						const std::string& accid,
   						const std::string& picurl);
+  //获取粉丝评论
+  bool getfanscomments(const std::string& starcode,DicValue &ret,int64& startnum,int64& endnum);
+  static void Callgetfanscomments(void* param, base_logic::Value* value);
   //获取明星信息
   bool getstarinfo(const std::string& code,const std::string& phone,DicValue &ret,int64 all);
 

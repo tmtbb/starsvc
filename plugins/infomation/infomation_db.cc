@@ -22,6 +22,79 @@ Infomation_Mysql::~Infomation_Mysql() {
   }
   mysql_engine_ = NULL;
 }
+void Infomation_Mysql::Callgetfanscomments(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine =
+	  (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	int64 startnum;
+	dict->GetBigInteger(L"startnum",&startnum);
+	int64 endnum;
+	dict->GetBigInteger(L"endnum",&endnum);
+	LOG_MSG2("starnum = %d,endnum = %d",startnum,endnum);
+	if (num > 0) {
+
+	int count = 1;
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetString(L"comment", rows[0]);
+		}
+	  if (rows[1] != NULL){
+			ret->SetString(L"times", rows[1]);
+		}
+	  if (rows[2] != NULL){
+			ret->SetString(L"nickname", rows[2]);
+		}
+	  if (rows[3] != NULL){
+			ret->SetString(L"headurl", rows[3]);
+		}
+	  if(count >= startnum && count <= endnum){
+			list->Append((base_logic::Value *) (ret));
+	  }
+	  count++;
+	}
+	dict->SetInteger(L"totalnum",num);
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+bool Infomation_Mysql::getfanscomments(const std::string& starcode,DicValue &ret_result,int64& startnum,int64& endnum){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	std::string sql;
+	
+	sql = "call proc_getfanscomments('"+ starcode +  "');";
+	dic->SetBigInteger(L"startnum", startnum);
+	dic->SetBigInteger(L"endnum", endnum);
+
+	
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetfanscomments);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	int32 num;
+	base_logic::ListValue *listvalue;
+	if(!dic->GetInteger(L"totalnum",&num))
+		return false;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+		
+	    ret_result.Set("list",(base_logic::Value*)listvalue);
+		ret_result.SetInteger(L"totalnum",num);
+		return true;
+	}
+	return false;
+}
 bool Infomation_Mysql::getstarnews(const std::string& code,const std::string& name,DicValue &ret_result,
 								   int64& startnum,int64& endnum,int64& all){
 	bool r = false;

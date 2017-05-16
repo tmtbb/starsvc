@@ -15,11 +15,31 @@ namespace im_process {
 
 
  ImProcess::ImProcess(){
-
+ 	if(!init())
+		assert(0);
  }
  ImProcess::~ImProcess(){
-
+	if(sqlengine != NULL){
+		delete sqlengine;
+		sqlengine = NULL;
+	}
  }
+bool ImProcess::init(){
+	bool r = false;
+	config::FileConfig* config = config::FileConfig::GetFileConfig();
+	std::string path = "./plugins/imcloud/imcloud_config.xml";
+	if (config == NULL) {
+		LOG_ERROR("config init error");
+		return false;
+	}
+	r = config->LoadConfig(path);
+	if (!r) {
+		LOG_ERROR("config load error");
+		return false;
+	}
+	sqlengine = new im_mysql::Im_Mysql(config);
+	return true;
+}
 std::string sumHash1(std::string strin)  
 {  
     SHA_CTX c;  
@@ -281,13 +301,15 @@ bool ImProcess::getfriendlist(const std::string& accid,const std::string& create
 		{
 			base_logic::DictionaryValue* friends = new base_logic::DictionaryValue();
 			if (arrayObj[j].isMember("faccid")){
-				std::string m_faccid = arrayObj[j]["faccid"].asString();
+				std::string m_faccid = arrayObj[j]["faccid"].asString(); 
+				std::string  head;
+				std::string  name;
 				friends->SetString(L"faccid",m_faccid);
+				if(sqlengine->getuserinfofromaccid(m_faccid,head,name)){
+					friends->SetString(L"head",head);
+					friends->SetString(L"name",name);
+				}
 			}	
-			if (arrayObj[j].isMember("alias")){
-				std::string m_alias = arrayObj[j]["alias"].asString();
-				friends->SetString(L"alias",m_alias);
-			}
 			listvalue->Append((base_logic::Value*)friends);
 		}
 		ret.Set("list",(base_logic::Value*)listvalue);

@@ -16,6 +16,8 @@ class Market_Mysql {
   Market_Mysql(config::FileConfig* config);
   ~Market_Mysql();
 
+  bool addoptionstar(const std::string& phone,const std::string& starcode);
+  static void calladdoptionstar(void* param, base_logic::Value* value);
   
   bool getoptionstarlist(const std::string& code,int64 startnum,int64 endnum,DicValue &ret);
   

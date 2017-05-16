@@ -22,6 +22,52 @@ Market_Mysql::~Market_Mysql() {
   }
   mysql_engine_ = NULL;
 }
+
+bool Market_Mysql::addoptionstar(const std::string& phone,const std::string& starcode){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	
+	std::string sql;
+	sql = "call proc_addoptionstar('"
+		  + phone + "','" + starcode
+		  + "')";
+	dic->SetString(L"sql", sql);
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),calladdoptionstar);
+	if (!r) {
+	  return false;
+	}
+	DicValue* resultvalue = new DicValue();
+	if(!(dic->GetDictionary(L"resultvalue",&resultvalue))){
+		return false;
+	}
+	int64 result;
+	r = resultvalue->GetBigInteger(L"result",&result);
+	if(r && result > 0){
+		return true;
+	}
+	return false;
+}
+void Market_Mysql::calladdoptionstar(void* param, base_logic::Value* value)	{
+	base_storage::DBStorageEngine* engine = (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+
+	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  if (rows[0] != NULL){
+			ret->SetBigInteger(L"result", atoi(rows[0]));
+		}
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (ret));
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+
 bool Market_Mysql::getoptionstarlist(const std::string& code,int64 startnum,
 									int64 endnum,DicValue &ret){
 	bool r = false;
@@ -64,9 +110,14 @@ void Market_Mysql::callgetoptionstarlist(void* param, base_logic::Value* value){
 	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	  if (rows[0] != NULL){
 			ret->SetString(L"starcode", rows[0]);
+			ret->SetReal(L"price",100.5);		//实时价格暂时写死
+			ret->SetReal(L"updown",-0.34);		//价格波动暂时写死
 		}
 	  if (rows[1] != NULL){
 			ret->SetString(L"name", rows[1]);
+		}
+	  if (rows[2] != NULL){
+			ret->SetString(L"head", rows[2]);
 		}
 	  if(count_ >= startnum && endnum >= count_){
 	  		list->Append((base_logic::Value *) (ret));
@@ -413,7 +464,6 @@ void Market_Mysql::callgetmarketstarlist(void* param, base_logic::Value* value){
 		list->Append((base_logic::Value *) (ret));
 	  }
 	  m_count++;
-
 	}
 	dict->Set(L"resultvalue", (base_logic::Value *) (list));
 	}
