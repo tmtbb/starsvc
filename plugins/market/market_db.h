@@ -15,7 +15,13 @@ class Market_Mysql {
  public:
   Market_Mysql(config::FileConfig* config);
   ~Market_Mysql();
-
+  
+  bool getmarketstartransfer(const std::string& code,int64 startnum,int64 endnum,DicValue &ret);
+  static void callgetmarketstartransfer(void* param, base_logic::Value* value);
+  
+  bool getmarketstarseek(const std::string& code,int64 startnum,int64 endnum,DicValue &ret);
+  static void callgetmarketstarseek(void* param, base_logic::Value* value);
+  
   bool addoptionstar(const std::string& phone,const std::string& starcode);
   static void calladdoptionstar(void* param, base_logic::Value* value);
   

@@ -22,7 +22,135 @@ Market_Mysql::~Market_Mysql() {
   }
   mysql_engine_ = NULL;
 }
+void Market_Mysql::callgetmarketstartransfer(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine = (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	int count_ = 1;
+	int64 startnum,endnum;
+	dict->GetBigInteger(L"startnum",&startnum);
+	dict->GetBigInteger(L"endnum",&endnum);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetString(L"name", rows[0]);
+		}
+	  if (rows[1] != NULL){
+			ret->SetString(L"head", rows[1]);
+		}
+	  if (rows[2] != NULL){
+			ret->SetReal(L"price", atof(rows[2]));
+		}
+	  if (rows[3] != NULL){
+			ret->SetString(L"time", rows[3]);
+		}
+	  if(count_ >= startnum && endnum >= count_){
+	  		list->Append((base_logic::Value *) (ret));
+	  	}
+	  count_++;
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
 
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+
+bool Market_Mysql::getmarketstartransfer(const std::string& code,int64 startnum,
+										int64 endnum,DicValue &ret){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	
+	std::string sql;
+	sql = "call proc_getstartransferlist('"
+		  + code
+		  + "')";
+	dic->SetString(L"sql", sql);
+	dic->SetBigInteger(L"startnum",startnum);
+	dic->SetBigInteger(L"endnum",endnum);
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetmarketstartransfer);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+	    ret.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+}
+
+void Market_Mysql::callgetmarketstarseek(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine = (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	int count_ = 1;
+	int64 startnum,endnum;
+	dict->GetBigInteger(L"startnum",&startnum);
+	dict->GetBigInteger(L"endnum",&endnum);
+	if (num > 0) {
+	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	  if (rows[0] != NULL){
+			ret->SetString(L"name", rows[0]);
+		}
+	  if (rows[1] != NULL){
+			ret->SetString(L"head", rows[1]);
+		}
+	  if (rows[2] != NULL){
+			ret->SetReal(L"price", atof(rows[2]));
+		}
+	  if (rows[3] != NULL){
+			ret->SetString(L"time", rows[3]);
+		}
+	  if(count_ >= startnum && endnum >= count_){
+	  		list->Append((base_logic::Value *) (ret));
+	  	}
+	  count_++;
+	}
+	dict->Set(L"resultvalue", (base_logic::Value *) (list));
+
+	}
+	else {
+		LOG_ERROR ("CallUserLoginSelect count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+
+bool Market_Mysql::getmarketstarseek(const std::string& code,int64 startnum,
+										int64 endnum,DicValue &ret){
+	bool r = false;
+    DicValue* dic = new DicValue();
+	
+	std::string sql;
+	sql = "call proc_getstarseeklist('"
+		  + code
+		  + "')";
+	dic->SetString(L"sql", sql);
+	dic->SetBigInteger(L"startnum",startnum);
+	dic->SetBigInteger(L"endnum",endnum);
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetmarketstarseek);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+	    ret.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+}
 bool Market_Mysql::addoptionstar(const std::string& phone,const std::string& starcode){
 	bool r = false;
     DicValue* dic = new DicValue();
@@ -444,6 +572,8 @@ void Market_Mysql::callgetmarketstarlist(void* param, base_logic::Value* value){
 	  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	  if (rows[0] != NULL){
 			ret->SetString(L"code", rows[0]);
+			ret->SetReal(L"price",123.4);	//ÔÝÊ±Ð´ËÀ¼Û¸ñ
+			ret->SetReal(L"updown",0.18);	//ÔÝÊ±Ð´ËÀÕÇµø·ù±È
 		}
 	  if (rows[1] != NULL){
 			ret->SetString(L"name", rows[1]);
