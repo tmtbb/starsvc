@@ -349,19 +349,35 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
+
+  im_logic::net_request::tokencode tokencode;
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  std::string name;
+  std::string accid;
+  std::string phone;
+  bool r1 = packet_control->body_->GetString(L"name_value", &name);
+  bool r2 = packet_control->body_->GetString(L"accid_value", &accid);
+  bool r3 = packet_control->body_->GetString(L"phone", &phone);
+
+  bool r = (r1 && r2 && r3);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }	
+  /*
   im_logic::net_request::tokencode tokencode;
   struct PacketControl* packet_recv = (struct PacketControl*) (packet);
   tokencode.set_http_packet(packet_recv->body_);
 
   LOG_MSG2("getmessage-----:%s,%s",tokencode.name().c_str(),tokencode.accid().c_str());
-
+  */
   im_process::ImProcess tokenfun;
-  std::string tokenvalue = tokenfun.gettoken(tokencode.name(),tokencode.accid());
-  LOG_MSG2("tokenvalue ============ %s ,length = %d\n",tokenvalue.c_str(),tokenvalue.length());
+  std::string tokenvalue = tokenfun.gettoken(name,accid);
   if(tokenvalue.length()<=0){
-    tokenvalue = tokenfun.refreshtoken(tokencode.accid());
+    tokenvalue = tokenfun.refreshtoken(accid);
   }
-  LOG_MSG2("token ==== %s,length = %d",tokenvalue.c_str(),tokenvalue.length());
+
   if(tokenvalue.length() > 0){
     //构建回复包
     im_logic::net_reply::tokenreply reply;
@@ -377,7 +393,7 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
     DicValue *dic = new base_logic::DictionaryValue();
     int64 userid = 0;
     int64 phonenum = 0;
-    sqlengine->SetUserInfo(userid,phonenum,tokencode.name(),tokencode.accid(),tokenvalue,dic);
+    sqlengine->SetUserInfo(phone,accid,tokenvalue,dic);
   }else{
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	return false;

@@ -16,6 +16,7 @@
 #include <openssl/rsa.h>
 #include <openssl/err.h>
 #include "basic/base64.h"
+#include "im_mysql.h"
  
 namespace im_process {
 
@@ -23,7 +24,9 @@ class ImProcess {
  public:
   ImProcess();
   ~ImProcess();
-
+ private:
+  im_mysql::Im_Mysql *sqlengine;
+  bool init();
  public:
   std::string gettoken(std::string accid,std::string name);
   std::string refreshtoken(std::string accid);

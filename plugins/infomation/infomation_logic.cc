@@ -100,9 +100,49 @@ bool Infomationlogic::OnInfomationMessage(struct server *srv, const int socket,
 	  Getbannerlist(srv,socket,packet);
 	  break;
 	}
+	//»ñÈ¡·ÛË¿ÆÀÂÛ
+	case R_GET_FANSCOMMENT:{
+	  Getfanscomment(srv,socket,packet);
+	  break;
+	}
     default:
       break;
   }
+
+  return true;
+}
+bool Infomationlogic::Getfanscomment(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string starcode;
+  int64 startnum;
+  int64 endnum;
+  bool r1 = packet_recv->body_->GetString(L"starcode",&starcode);
+  bool r2 = packet_recv->body_->GetBigInteger(L"startnum",&startnum);
+  bool r3 = packet_recv->body_->GetBigInteger(L"endnum",&endnum);
+  bool r = r1  && r2 && r3;
+  if(!r){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+
+  DicValue ret_list;
+  if(!sqldb->getfanscomments(starcode,ret_list,startnum,endnum)){
+	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	return false;
+  }
+  
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_STARINFOLIST_ADD, INFO_TYPE, 0,packet->session_id, 0);
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
+  ret_list.Set(L"result",result);
+  packet_reply.body_ = &ret_list;
+  send_message(socket,&packet_reply);
 
   return true;
 }
