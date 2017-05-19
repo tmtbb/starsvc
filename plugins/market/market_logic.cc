@@ -218,20 +218,8 @@ bool Marketlogic::getmarketstarprice(struct server* srv,int socket ,struct Packe
 		return false;
 	  }
 	  DicValue ret_list;
-
-	  /*
-	  base_logic::DictionaryValue* stastic = new base_logic::DictionaryValue();
-	  std::stringstream ss;
-	  std::string curtime;
-	  ss<<time(NULL);
-	  ss>>curtime;
-	  int64 _time;
-	  base::BasicUtil::StringUtil::StringToInt64(curtime,&_time);
-	  for(int64 i =1;i<= 40 ;i++){
-	  		int key = rand()%20;
-			stastic->SetInteger(base::BasicUtil::StringUtil::Int64ToString(_time-i*60*10),key);
-	  }
-	  */
+	  DicValue ret_list1;
+	  
 	  std::stringstream ss;
 	  std::string curtime;
 	  ss<<time(NULL);
@@ -239,23 +227,34 @@ bool Marketlogic::getmarketstarprice(struct server* srv,int socket ,struct Packe
 	  int64 _time;
 	  base::BasicUtil::StringUtil::StringToInt64(curtime,&_time);
 	  
-	  base_logic::ListValue* stastic = new base_logic::ListValue();
+	  base_logic::ListValue* stastic1 = new base_logic::ListValue();
+	  base_logic::ListValue* stastic2 = new base_logic::ListValue();
 	  for(int i = 0 ;i< 40 ;i++){
 	  	    int key = rand()%20;
 			base_logic::DictionaryValue* tmp = new base_logic::DictionaryValue();
 			tmp->SetBigInteger(L"timestamp",_time-i*60*10);
 			tmp->SetInteger(L"value",key);
-			stastic->Append((base_logic::Value*) tmp);
+			if(i<20){
+				stastic1->Append((base_logic::Value*) tmp);
+			}else
+				stastic2->Append((base_logic::Value*) tmp);
 	  }
-	  
+	  //·Ö°ü·¢ËÍ
 	  struct PacketControl packet_reply;
-	  MAKE_HEAD(packet_reply, S_MARKETTYPES_GET, INFO_TYPE, 0,packet->session_id, 0);
+	  MAKE_HEAD(packet_reply, S_MARKSTARPRICE_GET, INFO_TYPE, 0,packet->session_id, 0);
 	  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
 	  ret_list.Set(L"result",result);
-	  ret_list.Set(L"stastic",(base_logic::Value*)stastic);
+	  ret_list.Set(L"stastic",(base_logic::Value*)stastic1);
 	  packet_reply.body_ = &ret_list;
 	  send_message(socket,&packet_reply);
-	
+
+	  struct PacketControl packet_reply1;
+	  MAKE_HEAD(packet_reply1, S_MARKSTARPRICE_GET, INFO_TYPE, 0,packet->session_id, 0);
+	  base_logic::FundamentalValue* result1 = new base_logic::FundamentalValue(1);
+	  ret_list1.Set(L"result",result1);
+	  ret_list1.Set(L"stastic",(base_logic::Value*)stastic2);
+	  packet_reply1.body_ = &ret_list1;
+	  send_message(socket,&packet_reply1);
 	  return true;
 }
 bool Marketlogic::addoptionstar(struct server* srv,int socket ,struct PacketHead* packet){
@@ -473,16 +472,17 @@ bool Marketlogic::getmarketstarlist(struct server* srv,int socket ,struct Packet
 	  }
 	  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
 
-	  int64 type,startnum,endnum;
+	  int64 type,startnum,endnum,sorttype;
       bool r1 = packet_recv->body_->GetBigInteger(L"type",&type);
 	  bool r2 = packet_recv->body_->GetBigInteger(L"startnum",&startnum);
 	  bool r3 = packet_recv->body_->GetBigInteger(L"endnum",&endnum);
-	  if(!(r1&&r2&&r3)){
+	  bool r4 = packet_recv->body_->GetBigInteger(L"sorttype",&sorttype);
+	  if(!(r1&&r2&&r3&&r4)){
 		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 		return false;
 	  }
 	  DicValue ret_list;
-	  if(!sqldb->getmarketstarlist(type,ret_list,startnum,endnum)){
+	  if(!sqldb->getmarketstarlist(type,ret_list,startnum,endnum,sorttype)){
 		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 		return false;
 	  }

@@ -52,7 +52,7 @@ class Market_Mysql {
   bool getmarkettypes(DicValue &ret);
   static void callgetmarkettypes(void* param, base_logic::Value* value);
 
-  bool getmarketstarlist(int64& type,DicValue &ret,int64& startnum,int64& endnum);
+  bool getmarketstarlist(int64& type,DicValue &ret,int64& startnum,int64& endnum,int64 sorttype);
   static void callgetmarketstarlist(void* param, base_logic::Value* value);
   //获取明星信息
   bool getstarinfo(const std::string& code,const std::string& phone,DicValue &ret,int64 all);
