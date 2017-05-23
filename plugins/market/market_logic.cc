@@ -1,5 +1,4 @@
 #include "market_logic.h"
-#include "logic/swp_infos.h"
 #include "comm/comm_head.h"
 #include "config/config.h"
 #include "core/common.h"
@@ -13,7 +12,7 @@
 
 #define DEFAULT_CONFIG_PATH "./plugins/market/market_config.xml"
 
-#define TIME_DISTRIBUTION_TASK 10001
+#define TIME_RELOADSTARINFO_TASK 10001
 
 namespace market_logic {
 
@@ -28,6 +27,7 @@ Marketlogic::~Marketlogic() {
   	delete sqldb;
   	sqldb = NULL;
   }
+  DeinitThreadrw(lock_);
 }
 
 bool Marketlogic::Init() {
@@ -44,6 +44,9 @@ bool Marketlogic::Init() {
     return false;
   }
   sqldb = new market_mysql::Market_Mysql(config);
+  InitThreadrw(&lock_);
+
+  InitStarInfo();
   return true;
 }
 
@@ -239,7 +242,7 @@ bool Marketlogic::getmarketstarprice(struct server* srv,int socket ,struct Packe
 			}else
 				stastic2->Append((base_logic::Value*) tmp);
 	  }
-	  //·Ö°ü·¢ËÍ
+	  
 	  struct PacketControl packet_reply;
 	  MAKE_HEAD(packet_reply, S_MARKSTARPRICE_GET, INFO_TYPE, 0,packet->session_id, 0);
 	  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
@@ -543,7 +546,7 @@ bool Marketlogic::OnBroadcastClose(struct server *srv, const int socket) {
 bool Marketlogic::OnIniTimer(struct server *srv) {
   if (srv->add_time_task != NULL) {
     if (srv->add_time_task != NULL) {
-      srv->add_time_task(srv, "infamation", TIME_DISTRIBUTION_TASK, 3, -1);
+      srv->add_time_task(srv, "infamation", TIME_RELOADSTARINFO_TASK, 3, -1);
     }
   }
   return true;
@@ -552,9 +555,29 @@ bool Marketlogic::OnIniTimer(struct server *srv) {
 bool Marketlogic::OnTimeout(struct server *srv, char *id, int opcode,
                              int time) {
   switch (opcode) {
+    case TIME_RELOADSTARINFO_TASK:
+    {
+      InitStarInfo();
+      break;
+    }
     default:
       break;
   }
   return true;
 }
+void Marketlogic::InitStarInfo() {
+  base_logic::WLockGd lk(lock_);
+  std::list<swp_logic::StarInfo> list;
+  
+  sqldb->OnStarsInfo(&list);
+  while (list.size() > 0) {
+    swp_logic::StarInfo item = list.front();
+    list.pop_front();
+
+    stars_map_[item.code()] = item;
+  }
+  
+}
+
+
 }  // namespace
