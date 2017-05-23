@@ -1002,6 +1002,129 @@ class Quotations {
   Data* data_;
 };
 
+//
+
+class StarInfo {
+ public:
+  StarInfo();
+  StarInfo(const StarInfo& starinfo);
+  StarInfo& operator =(const StarInfo& starinfo);
+
+  ~StarInfo() {
+    if (data_ != NULL) {
+      data_->Release();
+    }
+  }
+  const double updown() const {
+    return data_->updown_;
+  }
+
+  const int64 gender() const {
+    return data_->gender_;
+  }
+  const int64 owntimes() const {
+    return data_->owntimes_;
+  }
+  const int32 type() const {
+    return data_->type_;
+  }
+  const int32 vip() const {
+    return data_->vip_;
+  }
+  const std::string& code() const {
+    return data_->code_;
+  }
+  const std::string& phone() const {
+    return data_->phone_;
+  }
+  const std::string& name() const {
+    return data_->name_;
+  }
+  const std::string& brief_url() const {
+    return data_->brief_url_;
+  }
+  const std::string& pic() const {
+    return data_->pic_;
+  }
+  const std::string& accid() const {
+    return data_->accid_;
+  }
+//----
+  void set_gender(const int64 gender) {
+    data_->gender_ = gender;
+  }
+  void set_owntimes(const int64 owntimes) {
+    data_->owntimes_ = owntimes;
+  }
+  void set_type(const int32 type) {
+    data_->type_ = type;
+  }
+  void set_vip(const int64 vip) {
+    data_->vip_ = vip;
+  }
+
+  void set_updown(const double updown) {
+    data_->updown_ = updown;
+  }
+
+  void set_code(const std::string& code) {
+    data_->code_ = code;
+  }
+  void set_phone(const std::string& phone) {
+    data_->phone_ = phone;
+  }
+  void set_name(const std::string& value) {
+    data_->name_ = value;
+  }
+  void set_brief_url(const std::string& value) {
+    data_->brief_url_ = value;
+  }
+  void set_pic(const std::string& value) {
+    data_->pic_ = value;
+  }
+  void set_accid(const std::string& value) {
+    data_->accid_ = value;
+  }
+
+  void ValueSerialization(base_logic::DictionaryValue* dict);
+
+  class Data {
+   public:
+    Data()
+        : refcount_(1),
+          owntimes_(0),
+          gender_(0),
+          type_(0),
+          vip_(0),
+          updown_(0.0){
+    }
+
+   public:
+    int64 gender_;
+    int64 owntimes_;
+    int32 type_;
+    int32 vip_; //加v明星
+    double updown_;
+    std::string code_; //明星代码
+    std::string phone_;
+    std::string name_;
+    std::string brief_url_;
+    std::string pic_;
+    std::string accid_; //云信ip
+    void AddRef() {
+      __sync_fetch_and_add(&refcount_, 1);
+    }
+    void Release() {
+      __sync_fetch_and_sub(&refcount_, 1);
+      if (!refcount_)
+        delete this;
+    }
+   private:
+    int refcount_;
+  };
+  Data* data_;
+};
+
 }  // namespace quotations_logic
 
 #endif /* QUOTATIONS_PUB_LOGIC_QUOTATIONS_INFOS_H_ */

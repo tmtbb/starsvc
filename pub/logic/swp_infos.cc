@@ -259,5 +259,46 @@ std::string Quotations::ValueSerialize() {
   bool r = engine->Serialize(dict, &json_content);
   return json_content;
 }
+//---------------------------------
+
+StarInfo::StarInfo() {
+  data_ = new Data();
+}
+
+StarInfo::StarInfo(const StarInfo& starinfo)
+    : data_(starinfo.data_) {
+  if (data_ != NULL) {
+    data_->AddRef();
+  }
+}
+
+StarInfo& StarInfo::operator =(const StarInfo& starinfo) {
+  if (starinfo.data_ != NULL) {
+    starinfo.data_->AddRef();
+  }
+
+  if (data_ != NULL) {
+    data_->Release();
+  }
+
+  data_ = starinfo.data_;
+  return (*this);
+}
+
+void StarInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
+  dict->GetReal(L"updown", &data_->updown_);
+
+  dict->GetBigInteger(L"star_gender", &data_->gender_);
+  dict->GetBigInteger(L"star_owntimes", &data_->owntimes_);
+  dict->GetInteger(L"star_type", &data_->type_);
+  dict->GetInteger(L"star_vip", &data_->vip_);
+  dict->GetString(L"star_code", &data_->code_);
+  dict->GetString(L"star_phone", &data_->phone_);
+  dict->GetString(L"star_name", &data_->name_);
+  dict->GetString(L"star_pic", &data_->pic_);
+  dict->GetString(L"star_brief_url", &data_->brief_url_);
+  dict->GetString(L"star_accid", &data_->accid_);
+}
+
 
 }  // namespace quotations_logic
