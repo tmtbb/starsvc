@@ -150,6 +150,38 @@ bool HistoryDB::OnHistroyRechargeRecord(std::list<swp_logic::Recharge>* list) {
   return true;
 }
 
+bool HistoryDB::OnOwnStarRecord(std::list<swp_logic::TOwnStar>* list) {
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+
+  std::string sql;
+  sql = "call proc_GetOwnStar()";
+  base_logic::ListValue *listvalue;
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallOwnStarRecord);
+  if (!r)
+    return false;
+  dict->GetList(L"resultvalue", &listvalue);
+  while (listvalue->GetSize()) {
+    swp_logic::TOwnStar ownstar;
+    base_logic::Value *result_value;
+    listvalue->Remove(0, &result_value);
+    base_logic::DictionaryValue *dict_result_value =
+        (base_logic::DictionaryValue *) (result_value);
+    ownstar.ValueSerialization(dict_result_value);
+    list->push_back(ownstar);
+    delete dict_result_value;
+    dict_result_value = NULL;
+  }
+
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return true;
+}
+
 bool HistoryDB::OnHistroyTradesRecord(
     std::list<swp_logic::TradesPosition>* list) {
   bool r = false;
@@ -222,6 +254,45 @@ void HistoryDB::CallHistroyRechargeRecord(void* param,
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (list));
 }
+
+
+void HistoryDB::CallOwnStarRecord(void* param,
+                                          base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_logic::ListValue *list = new base_logic::ListValue();
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      base_logic::DictionaryValue *info_value =
+          new base_logic::DictionaryValue();
+
+      if (rows[0] != NULL)
+        info_value->SetBigInteger(L"uid", atoll(rows[0]));
+
+      if (rows[1] != NULL)
+        info_value->SetString(L"starname", rows[1]);
+
+      if (rows[2] != NULL)
+        info_value->SetString(L"faccid", (rows[2]));
+
+      if (rows[3] != NULL)
+        info_value->SetString(L"starcode", rows[3]);
+
+      if (rows[4] != NULL)
+        info_value->SetBigInteger(L"ownseconds", atoll(rows[4]));
+
+      if (rows[5] != NULL)
+        info_value->SetInteger(L"appoint", atol(rows[5]));
+
+      list->Append((base_logic::Value *) (info_value));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (list));
+}
+
 
 void HistoryDB::CallHistroyTradesRecord(void* param, base_logic::Value* value) {
   base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);

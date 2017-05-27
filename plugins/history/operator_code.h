@@ -28,5 +28,7 @@ namespace history_logic {
 #define S_HANDLE_WITHDRAWALS HISTORY_TYPE * 1000 + 12
 
 
+#define R_HISTORY_OWNSTAR HISTORY_TYPE * 1000 + 13
+#define S_HISTORY_OWNSTAR HISTORY_TYPE * 1000 + 14
 }
 #endif

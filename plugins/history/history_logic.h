@@ -54,6 +54,8 @@ class Historylogic {
   bool OnHistoryRecharge(struct server* srv, int socket,
                          struct PacketHead *packet);
 
+  bool OnHistoryOwnStar(struct server* srv, int socket,
+                         struct PacketHead *packet);
   bool OnHistoryWithdrawals(struct server* srv, int socket,
                             struct PacketHead * packet);
 
