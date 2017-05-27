@@ -1003,7 +1003,6 @@ class Quotations {
 };
 
 //
-
 class StarInfo {
  public:
   StarInfo();
@@ -1122,6 +1121,90 @@ class StarInfo {
    private:
     int refcount_;
   };
+  Data* data_;
+};
+
+
+class TOwnStar {
+ public:
+  TOwnStar();
+  TOwnStar(const TOwnStar& starinfo);
+  TOwnStar& operator =(const TOwnStar& starinfo);
+
+  ~TOwnStar() {
+    if (data_ != NULL) {
+      data_->Release();
+    }
+  }
+  const int64 uid() const {
+    return data_->uid_;
+  }
+  const int64 ownseconds() const {
+    return data_->ownseconds_;
+  }
+  const int32 appoint() const {
+    return data_->appoint_;
+  }
+
+  const std::string& starname() const {
+    return data_->starname_ ;
+  }
+  const std::string& starcode() const {
+    return data_->starcode_;
+  }
+  const std::string& faccid() const {
+    return data_->faccid_;
+  }
+//----
+  void set_uid(const int64 value) {
+    data_->uid_ = value;
+  }
+  void set_ownseconds(const int64 value) {
+    data_->ownseconds_ = value;
+  }
+  void set_appoint(const int32 value) {
+    data_->appoint_ = value;
+  }
+
+  void set_starcode(const std::string& code) {
+    data_->starcode_ = code;
+  }
+  void set_starname(const std::string& value) {
+    data_->starname_ = value;
+  }
+  void set_faccid(const std::string& value) {
+    data_->faccid_ = value;
+  }
+
+  void ValueSerialization(base_logic::DictionaryValue* dict);
+
+  class Data {
+   public:
+    Data()
+        : uid_(1),
+          ownseconds_(0),
+          appoint_(0){
+    }    
+
+   public:
+    int64 uid_;
+    int64 ownseconds_;
+    int32 appoint_; //预约
+    std::string starcode_; //明星代码
+    std::string starname_;
+    std::string faccid_;
+    void AddRef() {
+      __sync_fetch_and_add(&refcount_, 1);
+    }    
+    void Release() {
+      __sync_fetch_and_sub(&refcount_, 1);
+      if (!refcount_)
+        delete this;
+    }    
+   private:
+    int refcount_;
+  };
+
   Data* data_;
 };
 

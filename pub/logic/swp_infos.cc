@@ -299,6 +299,40 @@ void StarInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
   dict->GetString(L"star_brief_url", &data_->brief_url_);
   dict->GetString(L"star_accid", &data_->accid_);
 }
+///TOwnStar
 
+TOwnStar::TOwnStar() {
+  data_ = new Data();
+}
+
+TOwnStar::TOwnStar(const TOwnStar& starinfo)
+    : data_(starinfo.data_) {
+  if (data_ != NULL) {
+    data_->AddRef();
+  }
+}
+
+TOwnStar& TOwnStar::operator =(const TOwnStar& starinfo) {
+  if (starinfo.data_ != NULL) {
+    starinfo.data_->AddRef();
+  }
+
+  if (data_ != NULL) {
+    data_->Release();
+  }
+
+  data_ = starinfo.data_;
+  return (*this);
+}
+
+void TOwnStar::ValueSerialization(base_logic::DictionaryValue* dict) {
+
+  dict->GetBigInteger(L"uid", &data_->uid_);
+  dict->GetBigInteger(L"ownseconds", &data_->ownseconds_);
+  dict->GetInteger(L"appoint", &data_->appoint_);
+  dict->GetString(L"starname", &data_->starname_);
+  dict->GetString(L"starcode", &data_->starcode_);
+  dict->GetString(L"faccid", &data_->faccid_);
+}
 
 }  // namespace quotations_logic
