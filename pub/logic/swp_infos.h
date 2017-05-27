@@ -1183,7 +1183,8 @@ class TOwnStar {
     Data()
         : uid_(1),
           ownseconds_(0),
-          appoint_(0){
+          appoint_(0),
+	  refcount_(1){
     }    
 
    public:

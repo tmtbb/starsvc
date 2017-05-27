@@ -325,6 +325,7 @@ TOwnStar& TOwnStar::operator =(const TOwnStar& starinfo) {
   return (*this);
 }
 
+
 void TOwnStar::ValueSerialization(base_logic::DictionaryValue* dict) {
 
   dict->GetBigInteger(L"uid", &data_->uid_);
