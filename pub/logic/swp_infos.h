@@ -345,6 +345,9 @@ class UserInfo {
   const double balance() const {
     return data_->balance_;
   }
+  const double market_capitalization() const {
+    return data_->market_capitalization_;
+  }
   const int socket_fd() const {
     return data_->socket_fd_;
   }
@@ -386,6 +389,12 @@ class UserInfo {
   const time_t recv_last_time() const {
     return data_->recv_last_time_;
   }
+  const std::string realname() const {
+    return data_->real_name_;
+  }
+  const std::string id_card() const {
+    return data_->id_card_;
+  }
 
   void set_type(const int32 type) {
     data_->type_ = type;
@@ -410,6 +419,12 @@ class UserInfo {
   }
   void set_head_url(const std::string& head_url) {
     data_->head_url_ = head_url;
+  }
+  void set_realname(const std::string& value) {
+    data_->real_name_ = value;
+  }
+  void set_id_card(const std::string& value) {
+    data_->id_card_ = value;
   }
 
   void set_balance(const double balance) {
@@ -448,11 +463,14 @@ class UserInfo {
           gender_(0),
           type_(0),
           balance_(0.0),
+          market_capitalization_(0.0),
           is_effective_(false),
           recv_last_time_(0),
           send_last_time_(0),
           recv_error_count_(0),
           send_error_count_(0){
+      real_name_ = "";
+      id_card_ = "";
     }
 
    public:
@@ -462,7 +480,7 @@ class UserInfo {
     int32 type_;
     int32 send_error_count_;
     int32 recv_error_count_;
-    double balance_;
+    double balance_; //余额
     bool is_effective_;
     time_t send_last_time_;
     time_t recv_last_time_;
@@ -470,6 +488,9 @@ class UserInfo {
     std::string nickname_;
     std::string token_;
     std::string head_url_;
+    std::string real_name_;
+    std::string id_card_;
+    double market_capitalization_;
     void AddRef() {
       __sync_fetch_and_add(&refcount_, 1);
     }
