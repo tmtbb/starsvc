@@ -29,8 +29,9 @@ class UsersDB {
 
   bool CheckAccountExist(const std::string& phone);
 
-  bool AccountBalance(const int64 uid, double & balance);
+  bool AccountBalance(const int64 uid, double & balance, std::string &pwd);
 
+  bool AccountRealNameInfo(const int64 uid, std::string &realname,std::string &id_card); 
   bool GetUserInfo(const int64 uid, const std::string& ip,
                    swp_logic::UserInfo& userinfo);
 
@@ -46,6 +47,7 @@ class UsersDB {
   static void CallCheckAccountExist(void* param, base_logic::Value* value);
 
   static void CallChangePasswd(void* param, base_logic::Value* value);
+  static void CallAccountRealName(void* param, base_logic::Value* value); 
   
   bool WXBindAccount(const std::string& phone_num, const std::string& passwd,
                        const int32 type,int64& uid, int32& result, const std::string &openid, const std::string &nick_name, 
@@ -58,6 +60,8 @@ class UsersDB {
   								const std::string& newpasswd);
 
   bool ResetAccount(const std::string& phone_num,const std::string& passwd);
+  bool ModifyPwd(const int64 &uid, const std::string &newpwd);
+  bool Certification(const int64 &uid, const std::string &idcard, const std::string &realname);
  private:
   base_logic::DataEngine* mysql_engine_;
 };

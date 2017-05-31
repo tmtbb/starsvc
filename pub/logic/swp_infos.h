@@ -345,6 +345,9 @@ class UserInfo {
   const double balance() const {
     return data_->balance_;
   }
+  const double market_capitalization() const {
+    return data_->market_capitalization_;
+  }
   const int socket_fd() const {
     return data_->socket_fd_;
   }
@@ -386,6 +389,12 @@ class UserInfo {
   const time_t recv_last_time() const {
     return data_->recv_last_time_;
   }
+  const std::string realname() const {
+    return data_->real_name_;
+  }
+  const std::string id_card() const {
+    return data_->id_card_;
+  }
 
   void set_type(const int32 type) {
     data_->type_ = type;
@@ -410,6 +419,12 @@ class UserInfo {
   }
   void set_head_url(const std::string& head_url) {
     data_->head_url_ = head_url;
+  }
+  void set_realname(const std::string& value) {
+    data_->real_name_ = value;
+  }
+  void set_id_card(const std::string& value) {
+    data_->id_card_ = value;
   }
 
   void set_balance(const double balance) {
@@ -448,11 +463,14 @@ class UserInfo {
           gender_(0),
           type_(0),
           balance_(0.0),
+          market_capitalization_(0.0),
           is_effective_(false),
           recv_last_time_(0),
           send_last_time_(0),
           recv_error_count_(0),
           send_error_count_(0){
+      real_name_ = "";
+      id_card_ = "";
     }
 
    public:
@@ -462,7 +480,7 @@ class UserInfo {
     int32 type_;
     int32 send_error_count_;
     int32 recv_error_count_;
-    double balance_;
+    double balance_; //余额
     bool is_effective_;
     time_t send_last_time_;
     time_t recv_last_time_;
@@ -470,6 +488,9 @@ class UserInfo {
     std::string nickname_;
     std::string token_;
     std::string head_url_;
+    std::string real_name_;
+    std::string id_card_;
+    double market_capitalization_;
     void AddRef() {
       __sync_fetch_and_add(&refcount_, 1);
     }
@@ -999,6 +1020,213 @@ class Quotations {
    private:
     int refcount_;
   };
+  Data* data_;
+};
+
+//
+class StarInfo {
+ public:
+  StarInfo();
+  StarInfo(const StarInfo& starinfo);
+  StarInfo& operator =(const StarInfo& starinfo);
+
+  ~StarInfo() {
+    if (data_ != NULL) {
+      data_->Release();
+    }
+  }
+  const double updown() const {
+    return data_->updown_;
+  }
+
+  const int64 gender() const {
+    return data_->gender_;
+  }
+  const int64 owntimes() const {
+    return data_->owntimes_;
+  }
+  const int32 type() const {
+    return data_->type_;
+  }
+  const int32 vip() const {
+    return data_->vip_;
+  }
+  const std::string& code() const {
+    return data_->code_;
+  }
+  const std::string& phone() const {
+    return data_->phone_;
+  }
+  const std::string& name() const {
+    return data_->name_;
+  }
+  const std::string& brief_url() const {
+    return data_->brief_url_;
+  }
+  const std::string& pic() const {
+    return data_->pic_;
+  }
+  const std::string& accid() const {
+    return data_->accid_;
+  }
+//----
+  void set_gender(const int64 gender) {
+    data_->gender_ = gender;
+  }
+  void set_owntimes(const int64 owntimes) {
+    data_->owntimes_ = owntimes;
+  }
+  void set_type(const int32 type) {
+    data_->type_ = type;
+  }
+  void set_vip(const int64 vip) {
+    data_->vip_ = vip;
+  }
+
+  void set_updown(const double updown) {
+    data_->updown_ = updown;
+  }
+
+  void set_code(const std::string& code) {
+    data_->code_ = code;
+  }
+  void set_phone(const std::string& phone) {
+    data_->phone_ = phone;
+  }
+  void set_name(const std::string& value) {
+    data_->name_ = value;
+  }
+  void set_brief_url(const std::string& value) {
+    data_->brief_url_ = value;
+  }
+  void set_pic(const std::string& value) {
+    data_->pic_ = value;
+  }
+  void set_accid(const std::string& value) {
+    data_->accid_ = value;
+  }
+
+  void ValueSerialization(base_logic::DictionaryValue* dict);
+
+  class Data {
+   public:
+    Data()
+        : refcount_(1),
+          owntimes_(0),
+          gender_(0),
+          type_(0),
+          vip_(0),
+          updown_(0.0){
+    }
+
+   public:
+    int64 gender_;
+    int64 owntimes_;
+    int32 type_;
+    int32 vip_; //加v明星
+    double updown_;
+    std::string code_; //明星代码
+    std::string phone_;
+    std::string name_;
+    std::string brief_url_;
+    std::string pic_;
+    std::string accid_; //云信ip
+    void AddRef() {
+      __sync_fetch_and_add(&refcount_, 1);
+    }
+    void Release() {
+      __sync_fetch_and_sub(&refcount_, 1);
+      if (!refcount_)
+        delete this;
+    }
+   private:
+    int refcount_;
+  };
+  Data* data_;
+};
+
+
+class TOwnStar {
+ public:
+  TOwnStar();
+  TOwnStar(const TOwnStar& starinfo);
+  TOwnStar& operator =(const TOwnStar& starinfo);
+
+  ~TOwnStar() {
+    if (data_ != NULL) {
+      data_->Release();
+    }
+  }
+  const int64 uid() const {
+    return data_->uid_;
+  }
+  const int64 ownseconds() const {
+    return data_->ownseconds_;
+  }
+  const int32 appoint() const {
+    return data_->appoint_;
+  }
+
+  const std::string& starname() const {
+    return data_->starname_ ;
+  }
+  const std::string& starcode() const {
+    return data_->starcode_;
+  }
+  const std::string& faccid() const {
+    return data_->faccid_;
+  }
+//----
+  void set_uid(const int64 value) {
+    data_->uid_ = value;
+  }
+  void set_ownseconds(const int64 value) {
+    data_->ownseconds_ = value;
+  }
+  void set_appoint(const int32 value) {
+    data_->appoint_ = value;
+  }
+
+  void set_starcode(const std::string& code) {
+    data_->starcode_ = code;
+  }
+  void set_starname(const std::string& value) {
+    data_->starname_ = value;
+  }
+  void set_faccid(const std::string& value) {
+    data_->faccid_ = value;
+  }
+
+  void ValueSerialization(base_logic::DictionaryValue* dict);
+
+  class Data {
+   public:
+    Data()
+        : uid_(1),
+          ownseconds_(0),
+          appoint_(0),
+	  refcount_(1){
+    }    
+
+   public:
+    int64 uid_;
+    int64 ownseconds_;
+    int32 appoint_; //预约
+    std::string starcode_; //明星代码
+    std::string starname_;
+    std::string faccid_;
+    void AddRef() {
+      __sync_fetch_and_add(&refcount_, 1);
+    }    
+    void Release() {
+      __sync_fetch_and_sub(&refcount_, 1);
+      if (!refcount_)
+        delete this;
+    }    
+   private:
+    int refcount_;
+  };
+
   Data* data_;
 };
 

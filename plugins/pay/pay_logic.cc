@@ -12,8 +12,12 @@
 #include "core/common.h"
 #include "logic/logic_comm.h"
 #include "logic/logic_unit.h"
+#include "http/http_api.h"
 #include "net/errno.h"
 #include <string>
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
 
 #define DEFAULT_CONFIG_PATH "./plugins/pay/pay_config.xml"
 
@@ -33,6 +37,7 @@ Paylogic::~Paylogic() {
     delete pay_db_;
     pay_db_ = NULL;
   }
+  delete kafka_;
 }
 
 bool Paylogic::Init() {
@@ -56,6 +61,7 @@ bool Paylogic::Init() {
     assert(0);
 
   pay_logic::PayEngine::GetSchdulerManager()->InitSchdulerEngine(schduler_engine_);
+  //kafka_ = new pay_logic::StroagerKafka(config);
   return true;
 }
 
@@ -105,25 +111,13 @@ try
       OnWXPaySever(srv, socket, packet);
       break;
     }
+    case R_UNION_PAY: {
+      OnUnionPayOrder(srv, socket, packet);
+      break;
+    }
 
-    case R_THIRD_PAY: {
-      OnSHFJPayOrder(srv, socket, packet);
-      break;
-    }
-    case R_THIRD_CLT: {
-      OnSHFJPayClient(srv, socket, packet);
-      break;
-    }
-    case R_THIRD_SVC: {
-      OnSHFJPaySever(srv, socket, packet);
-      break;
-    }
-    case R_THIRD_CASH: {
-      OnSHFJCashOrder(srv, socket, packet);
-      break;
-    }
-    case R_THIRD_CASH_SVC: {
-      OnSHFJCashServer(srv, socket, packet);
+    case R_CERTIFICATION: {
+      OnCertification(srv, socket, packet);
       break;
     }
     default:
@@ -151,7 +145,6 @@ bool Paylogic::OnBroadcastConnect(struct server *srv, const int socket,
 
 bool Paylogic::OnBroadcastMessage(struct server *srv, const int socket,
                                   const void *msg, const int len) {
-
   return true;
 }
 
@@ -187,14 +180,41 @@ bool Paylogic::OnWXPayOrder(struct server* srv, int socket,
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
-
+//____________________________________________________
+  //kafka_
+/*
   pay_logic::PayEngine::GetSchdulerManager()->OnWXCreateOrder(
+      socket, packet->session_id, packet->reserved, wx_pay_order.uid(),
+      wx_pay_order.title(), wx_pay_order.price(),wx_pay_order.pay_type(),
+      wx_pay_order.open_id());
+*/
+  return true;
+}
+
+
+bool Paylogic::OnUnionPayOrder(struct server* srv, int socket,
+                            struct PacketHead *packet) {
+  pay_logic::net_request::WXPayOrder wx_pay_order;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  bool r = wx_pay_order.set_http_packet(packet_control->body_);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  pay_logic::PayEngine::GetSchdulerManager()->OnUnionPayCreateOrder(
       socket, packet->session_id, packet->reserved, wx_pay_order.uid(),
       wx_pay_order.title(), wx_pay_order.price(),wx_pay_order.pay_type(),
       wx_pay_order.open_id());
 
   return true;
 }
+
 
 bool Paylogic::OnWXPayClient(struct server* srv, int socket,
                              struct PacketHead *packet) {
@@ -241,167 +261,69 @@ bool Paylogic::OnWXPaySever(struct server* srv, int socket,
   return true;
 }
 
-
-
-bool Paylogic::OnSHFJPayOrder(struct server* srv, int socket,
+bool Paylogic::OnCertification(struct server* srv, int socket,
                             struct PacketHead *packet) {
- 
-  pay_logic::net_request::SHFJPayOrder shfj_pay_order;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
+
+  std::string idcard = "411325199005217439";
+  std::string name = "唐伟";
+  //阿里云接口
+  std::string strUrl = "http://idcardreturnphoto.haoservice.com/idcard/VerifyIdcardReturnPhoto";
+  ////阿里云接口code
+  std::string strHeader = "Authorization:APPCODE 900036feeee64ae089177dd06b25faa9";
+  std::string strResult;
+  base_logic::DictionaryValue dic;
+  dic.SetString(L"cardNo", idcard);
+  dic.SetString(L"realName", name);
+  //base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+  LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
+
+  //pay_logic::net_reply::TResult r_ret;;
+  //r_ret.set_result(1);
+//_________________________________________________________
+  base_logic::ValueSerializer* serializer = base_logic::ValueSerializer::Create(
+  				base_logic::IMPL_JSON, &strResult, false);
+  std::string err_str;
+  DicValue* dicResultJosn;
+  int32 err = 0;
+  DicValue* dicJosn = (DicValue*)serializer->Deserialize(&err, &err_str);
+  bool r = false;
+  if (dicJosn != NULL){
+    r = dicJosn->GetDictionary(L"result", &dicResultJosn);
+    if (r)
+    {
+      //解析第二层
+      int32 err = 0;
+      bool bResultIsOk = false;
+      if (dicResultJosn != NULL){
+        r = dicResultJosn->GetBoolean(L"isok", &bResultIsOk);
+        if (r)
+        {
+          //更新数据
+          std::stringstream strsql;
+          if (bResultIsOk)
+            LOG_DEBUG("strResult [%s]___________________________________________________ok" );
+          else
+            LOG_DEBUG("strResult []___________________________________________________ err" );
+        //mysql_engine_->WriteData(strsql.str());
+        //map_IdCard_Info_.erase(l_it);
+  //        r_ret.set_result(0);
+        }
+      }
+    }
   }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = shfj_pay_order.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
+  else {
+    LOG_DEBUG("josn Deserialize error[]___________________________________________________ err" );
   }
-
-  pay_logic::PayEngine::GetSchdulerManager()->OnSHFJCreateOrder(
-      socket, packet->session_id, packet->reserved, 
-      shfj_pay_order.uid(),
-      shfj_pay_order.amount(),
-      shfj_pay_order.pay_type(),
-      shfj_pay_order.wechat_openid(),
-      shfj_pay_order.wechat_appid(),
-      shfj_pay_order.content());
-
-  return true;
-}
-
-
-bool Paylogic::OnSHFJCashOrder(struct server* srv, int socket,
-                            struct PacketHead *packet) {
-  pay_logic::net_request::SHFJCashOrder shfj_cash_order;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = shfj_cash_order.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-
-  pay_logic::PayEngine::GetSchdulerManager()->OnSHFJCreateCashOrder(
-      socket, packet->session_id, packet->reserved, shfj_cash_order.uid(),
-      shfj_cash_order.amount(),shfj_cash_order.bid(),shfj_cash_order.rec_bank_name(),
-      shfj_cash_order.rec_branch_bank_name(),shfj_cash_order.rec_card_no(), shfj_cash_order.rec_account_name());
-
-
-  return true;
-}
-
-
-bool Paylogic::OnSHFJPayClient(struct server* srv, int socket,
-                             struct PacketHead *packet) {
+//_____________________________________________________________________________________________
 /*
-  pay_logic::net_request::WXPayClient wx_pay_client;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = wx_pay_client.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-
-  pay_logic::PayEngine::GetSchdulerManager()->OnWXClient(
-      socket, packet->session_id, packet->reserved, wx_pay_client.uid(),
-      wx_pay_client.rid(), wx_pay_client.pay_result());
+  struct PacketControl packet_control;
+  MAKE_HEAD(packet_control, S_CERTIFICATION, USERS_TYPE, 0, packet->session_id, 0);
+  packet_control.body_ = r_ret.get();
+  send_message(socket, &packet_control);
+/*
 */
   return true;
 }
 
-bool Paylogic::OnSHFJPaySever(struct server* srv, int socket,
-                            struct PacketHead * packet) {
-
-  LOG_DEBUG2("_______________________packet_length________________ %d",packet->packet_length);
-  LOG_DEBUG2("_______________________packet_length________________ %d",packet->packet_length);
-  LOG_DEBUG2("_______________________packet_length________________ %d",packet->packet_length);
-  LOG_DEBUG2("_______________________packet_length________________ %d",packet->packet_length);
-  LOG_DEBUG2("_______________________packet_length________________ %d",packet->packet_length);
-  pay_logic::net_request::SHFJPayServer shfj_pay_sever;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = shfj_pay_sever.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    const std::string r_rt = "{\"shfj_pay\":\"\"}";
-    send_full(socket, r_rt.c_str(), r_rt.length());
-    return false;
-  }
-//out_trade_no --> int64 status--> type
-  try
-  {
-    int64 result = 1;//成功
-    if (shfj_pay_sever.status() == "PAYED_FAILED"
-       || shfj_pay_sever.status() == "SETTLED_FAILED" )
-    {
-      result = 2; //失败
-      return false;
-    }
-    else if (shfj_pay_sever.status() != "PAYED"
-    	&& shfj_pay_sever.status() != "SETTLED")
-	result = 3; //
-
-    pay_logic::PayEngine::GetSchdulerManager()->OnSHFJServer(
-        socket, shfj_pay_sever.pay_type(), shfj_pay_sever.mch_id(),
-        shfj_pay_sever.amount(), atoll(shfj_pay_sever.out_trade_no().c_str()),
-        result , shfj_pay_sever.trade_no());
-  }
-  catch (...)
-  {
-    LOG_ERROR2("OnSHFJPayServer exception socket %d___________", socket);
-    LOG_ERROR2("OnSHFJPayServer exception socket %d___________", socket);
-    LOG_ERROR2("OnSHFJPayServer exception socket %d___________", socket);
-    LOG_ERROR2("OnSHFJPayServer exception socket %d___________", socket);
-  }
-
-  return true;
-}
-
-
-bool Paylogic::OnSHFJCashServer(struct server* srv, int socket,
-                            struct PacketHead * packet) {
-
-  LOG_DEBUG2("OnSHFJCashServer_______________________packet_length________________ %d",packet->packet_length);
-  LOG_DEBUG2("_______________________packet_length________________ %d",packet->packet_length);
-  LOG_DEBUG2("_______________________packet_length________________ %d",packet->packet_length);
-  LOG_DEBUG2("_______________________packet_length________________ %d",packet->packet_length);
-  LOG_DEBUG2("_______________________packet_length________________ %d",packet->packet_length);
-  pay_logic::net_request::SHFJCashServer shfj_cash_sever;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = shfj_cash_sever.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    const std::string r_rt = "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>";
-    send_full(socket, r_rt.c_str(), r_rt.length());
-    return false;
-  }
-  int64 status = pay_logic::GetSHFJCashStatus(shfj_cash_sever.status());
-  
-  //if (shfj_cash_sever.status() == "PAYED")
-   // status = 2;
-  pay_logic::PayEngine::GetSchdulerManager()->OnSHFJCashServer(
-      socket, shfj_cash_sever.mch_id(),
-      shfj_cash_sever.amount(), shfj_cash_sever.pay_no(),
-      status, shfj_cash_sever.out_pay_no());
-
-  return true;
-}
 }  // namespace trades_logic

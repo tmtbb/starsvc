@@ -72,6 +72,19 @@ void HistoryManager::InitHistoryRechargeData() {
   }
 }
 
+void HistoryManager::InitOwnStarData() {
+  base_logic::WLockGd lk(lock_);
+  std::list<swp_logic::TOwnStar> list;
+  history_db_->OnOwnStarRecord(&list);
+  while (list.size() > 0) {
+  //LOG_DEBUG2("list.size[%d]____________________________________________",list.size() );
+    swp_logic::TOwnStar star = list.front();
+    list.pop_front();
+    SetOwnStarNoLock(star);
+
+  }
+}
+
 void HistoryManager::HandleHistoryTrade(const int socket, const int64 session,
                                         const int32 revered, const int64 uid,
                                         const int64 tid, const int32 handle) {
@@ -228,23 +241,31 @@ void HistoryManager::SendHistoryRecharge(const int socket, const int64 session,
   }
 }
 
-void HistoryManager::SendHistoryTrades(const int socket, const int64 session,
-                                       const int32 reversed, const int64 uid,
-                                       const std::string& symbol,
-                                       const int64 pos, const int64 count) {
-  std::list<swp_logic::TradesPosition> trades_list;
+void HistoryManager::SendHistoryOwnStar(const int socket, const int64 session,
+                                         const int32 revered, const int64 uid,
+                                         const int32 status, const int64 pos,
+                                         const int64 count) {
+  std::list<swp_logic::TOwnStar> ownstar_list;
+  //LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
   {
-    base_logic::RLockGd lk(lock_);
-    GetHistoryTradesNoLock(uid, trades_list, 0, 0);
+    base_logic::RLockGd lk(lock_);  //
+    GetHistoryOwnStarNoLock(uid, status, ownstar_list, 0, 0);
   }
 
+  //LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
   //没有对应的历史记录
-  if (trades_list.size() <= 0) {
+  if (ownstar_list.size() <= 0) {
     send_error(socket, ERROR_TYPE, NO_HAVE_HISTROY_DATA, session);
     return;
   }
+/*
+    LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
+    LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
+    LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
+    LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
+*/
   int32 base_num = 10;
-  if (reversed / 1000 == HTTP)
+  if (revered / 1000 == HTTP)
     base_num = count;
   else
     base_num = base_num < count ? base_num : count;
@@ -252,64 +273,40 @@ void HistoryManager::SendHistoryTrades(const int socket, const int64 session,
   int32 t_start = 0;
   int32 t_count = 0;
 
-  history_logic::net_reply::AllTradesPosition net_trades_positions;
-  trades_list.sort(swp_logic::TradesPosition::close_after);
-  while (trades_list.size() > 0 && t_count < count) {
-    swp_logic::TradesPosition trades_position = trades_list.front();
-    trades_list.pop_front();
+  history_logic::net_reply::AllOwnStar all_net_ownstar;
+  //ownstar_list.sort(swp_logic::Recharge::close_after);
+  while (ownstar_list.size() > 0 && t_count < count) {
+    swp_logic::TOwnStar ownstar = ownstar_list.front();
+    ownstar_list.pop_front();
     t_start++;
-
-    if (trades_position.symbol() != symbol && symbol != "all")
-      continue;
-
     if (t_start < pos)
       continue;
 
-    net_reply::TradesPosition* net_trades_position =
-        new net_reply::TradesPosition;
-    net_trades_position->set_amount(trades_position.amount());
-    net_trades_position->set_buy_sell(trades_position.buy_sell());
-    net_trades_position->set_close_price(trades_position.close_price());
-    net_trades_position->set_close_time(trades_position.close_position_time());
-    net_trades_position->set_close_type(trades_position.close_type());
-    net_trades_position->set_gross_profit(trades_position.gross_profit());
-    net_trades_position->set_code_id(trades_position.code_id());
-    net_trades_position->set_deferred(trades_position.deferred());
-    net_trades_position->set_gross_profit(trades_position.gross_profit());
-    net_trades_position->set_id(trades_position.uid());
-    net_trades_position->set_close_type(trades_position.close_type());
-    net_trades_position->set_interval(
-        trades_position.close_position_time()
-            - trades_position.open_position_time());
-    net_trades_position->set_result(trades_position.result());
-    net_trades_position->set_is_deferred(trades_position.is_deferred());
-    net_trades_position->set_limit(trades_position.limit());
-    net_trades_position->set_name(trades_position.name());
-    net_trades_position->set_open_charge(trades_position.open_charge());
-    net_trades_position->set_open_cost(trades_position.open_cost());
-    net_trades_position->set_open_price(trades_position.open_price());
-    net_trades_position->set_position_id(trades_position.position_id());
-    net_trades_position->set_position_time(
-        trades_position.open_position_time());
-    net_trades_position->set_stop(trades_position.stop());
-    net_trades_position->set_symbol(trades_position.symbol());
-    net_trades_position->set_handle(trades_position.handle());
-    net_trades_positions.set_unit(net_trades_position->get());
+    net_reply::OwnStar* net_ownstar = new net_reply::OwnStar;
+
+    net_ownstar->set_uid(ownstar.uid());
+    net_ownstar->set_ownseconds(ownstar.ownseconds());
+    net_ownstar->set_appoint(ownstar.appoint());
+    net_ownstar->set_starcode(ownstar.starcode());
+    net_ownstar->set_starname(ownstar.starname());
+    net_ownstar->set_faccid(ownstar.faccid());
+
+    all_net_ownstar.set_unit(net_ownstar->get());
     t_count++;
-    if (net_trades_positions.Size() % base_num == 0
-        && net_trades_positions.Size() != 0) {
+    if (all_net_ownstar.Size() % base_num == 0
+        && all_net_ownstar.Size() != 0) {
       struct PacketControl packet_control;
-      MAKE_HEAD(packet_control, S_HISTORY_TRADES, HISTORY_TYPE, 0, session, 0);
-      packet_control.body_ = net_trades_positions.get();
+      MAKE_HEAD(packet_control, S_HISTORY_RECHARGE, 1, 0, session, 0);
+      packet_control.body_ = all_net_ownstar.get();
       send_message(socket, &packet_control);
-      net_trades_positions.Reset();
+      all_net_ownstar.Reset();
     }
   }
 
-  if (net_trades_positions.Size() > 0) {
+  if (all_net_ownstar.Size() > 0) {
     struct PacketControl packet_control;
-    MAKE_HEAD(packet_control, S_HISTORY_TRADES, HISTORY_TYPE, 0, session, 0);
-    packet_control.body_ = net_trades_positions.get();
+    MAKE_HEAD(packet_control, S_HISTORY_OWNSTAR, 1, 0, session, 0);
+    packet_control.body_ = all_net_ownstar.get();
     send_message(socket, &packet_control);
   }
 }
@@ -452,6 +449,21 @@ void HistoryManager::GetHistoryRechargeNoLock(
   }
 }
 
+void HistoryManager::GetHistoryOwnStarNoLock(
+    const int64 uid, const int32 status, std::list<swp_logic::TOwnStar>& list,
+    const int64 pos, const int64 count) {
+  //LOG_DEBUG2("GetHistoryOwnStarNoLock________________ [%d] _ [%d]",uid,  history_cache_->all_ownstar_map_.size() );
+  OWNSTAR_MAP ownstar_map;
+  base::MapGet<ALL_OWNSTAR_MAP, ALL_OWNSTAR_MAP::iterator, int64, OWNSTAR_MAP>(
+      history_cache_->all_ownstar_map_, uid, ownstar_map);
+
+  for (OWNSTAR_MAP::iterator it = ownstar_map.begin();
+      it != ownstar_map.end(); it++) {
+    swp_logic::TOwnStar ownstar = it->second;
+    list.push_back(ownstar);
+  }
+}
+
 void HistoryManager::SetHistoryTradesNoLock(swp_logic::TradesPosition& trades) {
   TRADES_MAP trades_map;
   base::MapGet<ALL_TRADES_MAP, ALL_TRADES_MAP::iterator, int64, TRADES_MAP>(
@@ -466,6 +478,25 @@ void HistoryManager::SetHistoryRechargeNoLock(swp_logic::Recharge& recharge) {
       history_cache_->all_rechage_map_, recharge.uid(), recharge_map);
   recharge_map[recharge.rid()] = recharge;
   history_cache_->all_rechage_map_[recharge.uid()] = recharge_map;
+}
+
+void HistoryManager::SetOwnStarNoLock(swp_logic::TOwnStar& ownstar) {
+
+  //LOG_DEBUG("test ___ownstar.size[%]____________________________________________" );
+  OWNSTAR_MAP ownstar_map;
+
+  //LOG_DEBUG("test222 ___ownstar.size[%]____________________________________________" );
+  base::MapGet<ALL_OWNSTAR_MAP, ALL_OWNSTAR_MAP::iterator, int64, OWNSTAR_MAP>(
+      history_cache_->all_ownstar_map_, ownstar.uid(), ownstar_map);
+
+  //LOG_DEBUG("test333 ___ownstar.size[%]____________________________________________" );
+  //history_cache_->all_ownstar_map_.find(ownstar.uid());
+  ownstar_map[atoll(ownstar.starcode().c_str())] = ownstar;
+  //LOG_DEBUG2("ownstar.size[%d]__________ starcode[%s] __________________________________",ownstar_map.size() , ownstar.starcode().c_str());
+  history_cache_->all_ownstar_map_[ownstar.uid()] = ownstar_map;
+  //LOG_DEBUG2("allownstar.size[%d]ownstar.uid[%d]____________________________________________",history_cache_->all_ownstar_map_.size(), ownstar.uid() );
+
+
 }
 
 void HistoryManager::SetHistoryWithDrawlsNoLock(

@@ -22,11 +22,15 @@ typedef std::map<int64, RECHARGE_MAP> ALL_RECHAGE_MAP;/*用户ID 为KEY*/
 typedef std::map<int64, swp_logic::Withdrawals> WITHDRAWALS_MAP;/*提现ID*/
 typedef std::map<int64, WITHDRAWALS_MAP> ALLWITHDRAWALS_MAP;/*用户ID 为KEY*/
 
+typedef std::map<int64, swp_logic::TOwnStar> OWNSTAR_MAP;
+typedef std::map<int64, OWNSTAR_MAP> ALL_OWNSTAR_MAP;/*uid 为KEY*/
+
 class HistoryCache {
  public:
   ALL_TRADES_MAP all_trades_map_;
   ALL_RECHAGE_MAP all_rechage_map_;
   ALLWITHDRAWALS_MAP all_withdrawals_map_;
+  ALL_OWNSTAR_MAP all_ownstar_map_;
 };
 
 class HistoryManager {
@@ -36,16 +40,23 @@ class HistoryManager {
   void InitDB(history_logic::HistoryDB* history_db);
   void InitHistoryTradesData();
   void InitHistoryRechargeData();
+  void InitOwnStarData();
   void InitHistoryWithDrawals();
 
   void InitSchdulerEngine(manager_schduler::SchdulerEngine* schduler_engine);
 
+/*
   void SendHistoryTrades(const int socket, const int64 session,
                          const int32 reversed,
                          const int64 uid, const std::string& symbol,
                          const int64 pos,
                          const int64 count = 10);
+*/
 
+  void SendHistoryOwnStar(const int socket, const int64 session,
+                           const int32 revered, const int64 uid,
+                           const int32 status, const int64 pos,
+                           const int64 count = 10);
   void SendHistoryRecharge(const int socket, const int64 session,
                            const int32 revered, const int64 uid,
                            const int32 status, const int64 pos,
@@ -87,6 +98,13 @@ class HistoryManager {
   void GetHistoryDrawlNoLock(const int64 uid, const int32 status,
                              std::list<swp_logic::Withdrawals>& list,
                              const int64 pos = 0, const int64 count = 10);
+//________--
+
+  void SetOwnStarNoLock(swp_logic::TOwnStar& ownstar);
+
+  void GetHistoryOwnStarNoLock(const int64 uid, const int32 status,
+                                std::list<swp_logic::TOwnStar>& list,
+                                const int64 pos = 0, const int64 count = 10);
  private:
   history_logic::HistoryDB* history_db_;
   HistoryCache *history_cache_;

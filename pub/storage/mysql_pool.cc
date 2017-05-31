@@ -68,6 +68,8 @@ base_storage::DBStorageEngine* MYSQL_Pool::DBConnectionPop() {
   if (db_conn_pool_.size() <= 0)
     return NULL;
   base_logic::WLockGd lk(db_pool_lock_);
+  if (db_conn_pool_.size() <= 0)
+    return NULL;
   base_storage::DBStorageEngine* engine = db_conn_pool_.front();
   db_conn_pool_.pop_front();
 

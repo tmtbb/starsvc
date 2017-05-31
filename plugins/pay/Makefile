@@ -44,6 +44,7 @@ INCLUDE_PATHS = -I/usr/local/libmemcached-1.0.7/include \
 				-I/usr/include/mysql\
 				-I$(USER_DIR)\
 				-I$(CUSTOM_THIRD_PATH)/hiredis\
+				-I$(CUSTOM_THIRD_PATH)/librdkafka/src\
 				-I$(CUSTOM_THIRD_PATH)\
 				-I$(LIB_DIR)/mylib/base\
 				-I../\
@@ -102,8 +103,6 @@ pay_proto_buf.o : ./pay_proto_buf.cc ./pay_proto_buf.h
 schduler_engine.o : ./schduler_engine.cc ./schduler_engine.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./schduler_engine.cc $(INCLUDE_PATHS)
 
-shfj_order.o : ./shfj_order.cc ./shfj_order.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./shfj_order.cc $(INCLUDE_PATHS)
 wx_order.o : ./wx_order.cc ./wx_order.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./wx_order.cc $(INCLUDE_PATHS)
 	
@@ -133,12 +132,16 @@ mysql_pool.o :  $(USER_DIR)/storage/mysql_pool.cc $(USER_DIR)/storage/mysql_pool
 
 redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/storage/redis_pool.cc $(INCLUDE_PATHS)
+
+storager_kafka.o :  ./storager_kafka.cc ./storager_kafka.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./storager_kafka.cc $(INCLUDE_PATHS)
 	
 
 
-$(PLUGIN) : unionpay_order.o pay_init.o pay_logic.o pay_db.o pay_proto_buf.o schduler_engine.o shfj_order.o wx_order.o logic_unit.o\
-	swp_infos.o packet_processing.o data_engine.o data_engine.o data_mysql_engine.o \
+$(PLUGIN) : unionpay_order.o pay_init.o pay_logic.o pay_db.o pay_proto_buf.o schduler_engine.o wx_order.o logic_unit.o\
+	swp_infos.o packet_processing.o data_engine.o data_engine.o data_mysql_engine.o storager_kafka.o \
 	data_redis_engine.o mysql_pool.o redis_pool.o \
-	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a
+	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a\
+	$(CUSTOM_THIRD_PATH)/lib/librdkafka.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lcurl \
 	$^ -o $@
