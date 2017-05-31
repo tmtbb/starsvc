@@ -8,14 +8,17 @@
 #include "net/packet_processing.h"
 #include "manager/data_share_mgr.h"
 #include "market_db.h"
+#include "thread/base_thread_lock.h"
 namespace market_logic {
+
+typedef std::map<std::string, swp_logic::StarInfo> STARTS_MAP;/*明星ID为key*/
 
 class Marketlogic {
  public:
   Marketlogic();
   virtual ~Marketlogic();
  private:
-  bool OnQutations(struct server* srv, int socket, struct PacketHead *packet);
+  //bool OnQutations(struct server* srv, int socket, struct PacketHead *packet);
  private:
   static Marketlogic *instance_;
  public:
@@ -65,7 +68,12 @@ class Marketlogic {
   bool getmarketstarseek(struct server* srv,int socket ,struct PacketHead* packet);
  private:
   bool Init();
+  void InitStarInfo(); 
+
   market_mysql::Market_Mysql* sqldb;
+
+  struct threadrw_t* lock_;
+  STARTS_MAP stars_map_;
 };
 }  // namespace im_logic
 

@@ -25,6 +25,7 @@ class HistoryDB {
   bool OnHistroyTradesRecord(std::list<swp_logic::TradesPosition>* list);
 
   bool OnHistroyRechargeRecord(std::list<swp_logic::Recharge>* list);
+  bool OnOwnStarRecord(std::list<swp_logic::TOwnStar>* list);
 
   bool OnHistroyWithDraw(std::list<swp_logic::Withdrawals>* list);
 
@@ -40,6 +41,8 @@ class HistoryDB {
   static void CallHistroyTradesRecord(void* param, base_logic::Value* value);
 
   static void CallHistroyRechargeRecord(void* param, base_logic::Value* value);
+
+  static void CallOwnStarRecord(void* param, base_logic::Value* value);
 
   static void CallHistorWithDrawRecord(void* param, base_logic::Value* value);
 

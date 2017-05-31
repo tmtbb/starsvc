@@ -15,6 +15,7 @@
 #include "net/errno.h"
 #include <string>
 #include <sstream>
+#include "http/http_api.h"
 
 #define DEFAULT_CONFIG_PATH "./plugins/users/users_config.xml"
 
@@ -119,6 +120,8 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
     send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
     return false;
   }
+try
+{
   switch (packet->operate_code) {
     case R_ACCOUNT_REGISTER: {
       OnRegisterAccount(srv, socket, packet);
@@ -128,6 +131,11 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
       OnLoginAccount(srv, socket, packet);
       break;
     }
+    case R_RESET_PAY_PASS: { //重置支付密码
+      OnResetPayPassWD(srv, socket, packet);
+      break;
+    }
+
     case R_ACCOUNT_ASSET: {
       OnUserAccount(srv, socket, packet);
       break;
@@ -153,13 +161,27 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
       OnWXBindAccount(srv, socket, packet);
       break;
     }
-	case R_ACCOUNT_CHANGEPASSWD:{
-	  OnUserChangePasswd(srv, socket, packet);
-	  break;
-	}
+    case R_ACCOUNT_CHANGEPASSWD:{
+      OnUserChangePasswd(srv, socket, packet);
+      break;
+    }
+    case R_CERTIFICATION: {
+      OnCertification(srv, socket, packet);
+      break;
+    }
+    case R_ACCOUNT_REALINFO :
+    {
+      OnUserRealInfo(srv, socket, packet);
+      break;
+    }
     default:
       break;
   }
+}
+catch(...)
+{
+  LOG_ERROR2("catch : operator[%d]", packet->operate_code);
+}
   return true;
 }
 
@@ -419,15 +441,69 @@ bool Userslogic::OnUserAccount(struct server* srv, int socket,
   r = schduler_engine_->GetUserInfoSchduler(user_account.uid(), &userinfo);
   if (!r)
     return r;
-
-  r = user_db_->AccountBalance(user_account.uid(), balance);
+  std::string pwd;
+  r = user_db_->AccountBalance(user_account.uid(), balance, pwd);
   userinfo.set_balance(balance);
 
   net_balance.set_balance(userinfo.balance());
+  net_balance.set_total_amt(0.0);
+  net_balance.set_market_cap(0.0);
+  if (pwd.length() > 0)
+    net_balance.set_is_setpwd(0);
+  else
+    net_balance.set_is_setpwd(1);
+
   struct PacketControl net_packet_control;
   MAKE_HEAD(net_packet_control, S_ACCOUNT_ASSET, USERS_TYPE, 0,
             packet->session_id, 0);
   net_packet_control.body_ = net_balance.get();
+  send_message(socket, &net_packet_control);
+
+  return true;
+}
+
+bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
+                               struct PacketHead *packet) {
+  users_logic::net_request::UserRealInfo user_real_info;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  bool r = user_real_info.set_http_packet(packet_control->body_);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  //
+  //double balance = 0.0;
+  swp_logic::UserInfo userinfo;
+  users_logic::net_reply::RealInfo net_real_info;
+  //获取用户信息
+  r = schduler_engine_->GetUserInfoSchduler(user_real_info.uid(), &userinfo);
+  if (!r)
+    return r;
+  if (userinfo.id_card().length() < 10) //如果没有实名认证信息则获取
+  {
+    std::string r_name = "" , id_card = "";
+    r = user_db_->AccountRealNameInfo(user_real_info.uid(), r_name, id_card);
+    if (r_name != "")
+    {
+      userinfo.set_realname(r_name);
+      userinfo.set_id_card(id_card);
+    }
+    LOG_DEBUG2("realname[%s], id_card[%s], realname2[%s], id_card2[%s], ",
+        r_name.c_str(), id_card.c_str(), userinfo.realname().c_str(), userinfo.id_card().c_str());
+  }
+ // net_real_info.set_balance(userinfo.balance());
+  net_real_info.set_realname(userinfo.realname());
+  net_real_info.set_id_card(userinfo.id_card());
+  struct PacketControl net_packet_control;
+  MAKE_HEAD(net_packet_control, S_ACCOUNT_REALINFO, USERS_TYPE, 0,
+            packet->session_id, 0);
+  net_packet_control.body_ = net_real_info.get();
   send_message(socket, &net_packet_control);
 
   return true;
@@ -580,8 +656,6 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
-
-  
   
   std::string phone = register_vercode.phone();
 
@@ -657,4 +731,151 @@ bool Userslogic::SendUserInfo(const int socket, const int64 session,
   send_message(socket, &net_packet_control);
   return true;
 }
+
+bool Userslogic::OnResetPayPassWD(struct server* srv, int socket,
+                                struct PacketHead *packet) {
+  users_logic::net_request::ModifyPwd modifypwd;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  } 
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  bool r = modifypwd.set_http_packet(packet_control->body_);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  } 
+
+  std::string v_token = SMS_KEY + base::BasicUtil::StringUtil::Int64ToString(modifypwd.timestamp()) +
+      modifypwd.vcode().c_str() + modifypwd.phone();
+  base::MD5Sum md5(v_token.c_str());
+  std::string token = md5.GetHash();
+  
+  users_logic::net_reply::ModifyPwd net_modifypwd;
+  int status = 1; //0 sucess ,1 failed
+  LOG_DEBUG2("v_token[%s]token[%s]vtoken[%s]", v_token.c_str(), token.c_str(),modifypwd.vtoken().c_str());
+  LOG_DEBUG2("type [%d]", modifypwd.type());
+  if (!strcmp(token.c_str(), modifypwd.vtoken().c_str())
+  || modifypwd.type() == 0) //验证token type 0-设置密码1-重置密码
+  {  
+    LOG_DEBUG2("phone[%s]token[%s]vtoken[%s]___________________", modifypwd.phone().c_str(), token.c_str(),modifypwd.vtoken().c_str());
+    LOG_DEBUG2("pwd[%s]___________________", modifypwd.pwd().c_str());
+    //std::string phone = modifypwd.phone() ;
+    std::string pwd = modifypwd.pwd() ;
+    r = user_db_->ModifyPwd(modifypwd.uid(), pwd);
+    if (r) status = 0;
+  } 
+  net_modifypwd.set_status(status);
+  struct PacketControl net_packet_control;
+  MAKE_HEAD(net_packet_control, S_RESET_PAY_PASS, USERS_TYPE, 0,
+            packet->session_id, 0);
+  net_packet_control.body_ = net_modifypwd.get();
+  send_message(socket, &net_packet_control);
+
+  return true;
+}
+
+bool Userslogic::OnCertification(struct server* srv, int socket,
+                            struct PacketHead *packet) {
+
+  users_logic::net_request::Certification cerfic;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_= (struct PacketControl*) (packet);
+  bool r = cerfic.set_http_packet(packet_->body_);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  //std::string idcard = cerfic.id_card();//"411325199005217439";
+  //std::string name = cerfic.realname();//"唐伟";
+  std::string idcard = "411325199005217439";
+  std::string name = "唐伟";
+  //阿里云接口
+  std::string strUrl = "http://idcardreturnphoto.haoservice.com/idcard/VerifyIdcardReturnPhoto";
+  ////阿里云接口code
+  std::string strHeader = "Authorization:APPCODE 900036feeee64ae089177dd06b25faa9";
+  std::string strResult;
+  base_logic::DictionaryValue dic;
+  dic.SetString(L"cardNo", idcard);
+  dic.SetString(L"realName", name);
+  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+  LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
+
+  users_logic::net_reply::TResult r_ret;;
+  r_ret.set_result(1);
+  r_ret.set_result(0);
+//_________________________________________________________
+  base_logic::ValueSerializer* serializer = base_logic::ValueSerializer::Create(
+  				base_logic::IMPL_JSON, &strResult, false);
+  std::string err_str;
+  DicValue* dicResultJosn;
+  int32 err = 0;
+  DicValue* dicJosn = (DicValue*)serializer->Deserialize(&err, &err_str);
+  r = false;
+  if (dicJosn != NULL){
+    r = dicJosn->GetDictionary(L"result", &dicResultJosn);
+    if (r)
+    {
+      //解析第二层
+      int32 err = 0;
+      bool bResultIsOk = false;
+      if (dicResultJosn != NULL){
+        r = dicResultJosn->GetBoolean(L"isok", &bResultIsOk);
+        if (r)
+        {
+          //更新数据
+          std::stringstream strsql;
+          if (bResultIsOk)
+          {
+            LOG_DEBUG("strResult ___________________________________________________ok" );
+            //mysql_engine_->WriteData(strsql.str());
+            //map_IdCard_Info_.erase(l_it);
+            r = user_db_->Certification(cerfic.uid(), cerfic.id_card(), cerfic.realname());
+	    if (r)
+              r_ret.set_result(0);
+	  }
+          else
+            LOG_DEBUG("strResult ___________________________________________________ err" );
+        }
+      }
+    }
+  }
+  else {
+    LOG_DEBUG("josn Deserialize error[]___________________________________________________ err" );
+  }
+//_____________________________________________________________________________________________
+
+  struct PacketControl packet_control;
+  MAKE_HEAD(packet_control, S_CERTIFICATION, USERS_TYPE, 0, packet->session_id, 0);
+  packet_control.body_ = r_ret.get();
+  send_message(socket, &packet_control);
+/*
+  pay_logic::net_request::WXPayOrder wx_pay_order;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  bool r = wx_pay_order.set_http_packet(packet_control->body_);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+*
+  pay_logic::PayEngine::GetSchdulerManager()->OnUnionPayCreateOrder(
+      socket, packet->session_id, packet->reserved, wx_pay_order.uid(),
+      wx_pay_order.title(), wx_pay_order.price(),wx_pay_order.pay_type(),
+      wx_pay_order.open_id());
+*/
+  return true;
+}
+
 }  // namespace trades_logic

@@ -47,9 +47,10 @@ bool Historylogic::Init() {
   r = config->LoadConfig(path);
   history_db_ = new history_logic::HistoryDB(config);
   history_logic::HistoryEngine::GetSchdulerManager()->InitDB(history_db_);
-  history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryTradesData();
+  //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryTradesData();
   history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryRechargeData();
-  history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
+  history_logic::HistoryEngine::GetSchdulerManager()->InitOwnStarData();
+  //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
 
   std::string schduler_library = "./data_share.so";
   std::string schduler_func = "GetManagerSchdulerEngine";
@@ -126,6 +127,11 @@ bool Historylogic::OnHistoryMessage(struct server *srv, const int socket,
       OnHandleWithdrawals(srv, socket, packet);
       break;
     }
+    case R_HISTORY_OWNSTAR: {
+      OnHistoryOwnStar(srv, socket, packet);
+      break;
+    }
+ 
     default:
       break;
   }
@@ -164,10 +170,11 @@ bool Historylogic::OnTimeout(struct server *srv, char *id, int opcode,
                              int time) {
   switch (opcode) {
     case TIME_DISTRIBUTION_TASK: {
-      history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryTradesData();
+      //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryTradesData();
       history_logic::HistoryEngine::GetSchdulerManager()
           ->InitHistoryRechargeData();
-      history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
+      history_logic::HistoryEngine::GetSchdulerManager()->InitOwnStarData();
+      //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
       break;
     }
     default:
@@ -178,6 +185,7 @@ bool Historylogic::OnTimeout(struct server *srv, char *id, int opcode,
 
 bool Historylogic::OnHistoryTrades(struct server* srv, int socket,
                                    struct PacketHead *packet) {
+/*
   history_logic::net_request::HistoryPosition history_position;
   if (packet->packet_length <= PACKET_HEAD_LENGTH) {
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
@@ -194,6 +202,28 @@ bool Historylogic::OnHistoryTrades(struct server* srv, int socket,
       socket, packet->session_id, packet->reserved, history_position.id(),
       history_position.symbol(), history_position.start(),
       history_position.count());
+*/
+  return true;
+}
+
+bool Historylogic::OnHistoryOwnStar(struct server* srv, int socket,
+                                     struct PacketHead *packet) {
+  history_logic::net_request::HistoryOwnStar history_ownstar;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  bool r = history_ownstar.set_http_packet(packet_control->body_);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  history_logic::HistoryEngine::GetSchdulerManager()->SendHistoryOwnStar(
+      socket, packet->session_id, packet->reserved, history_ownstar.id(),
+      history_ownstar.status(), history_ownstar.start(),
+      history_ownstar.count());
   return true;
 }
 

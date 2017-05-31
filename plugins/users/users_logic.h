@@ -55,6 +55,8 @@ class Userslogic {
 
   bool OnUserAccount(struct server* srv, int socket, struct PacketHead *packet);
 
+  bool OnUserRealInfo(struct server* srv, int socket,
+                               struct PacketHead *packet); 
   bool OnUserCheckToken(struct server* srv, int socket,
                         struct PacketHead *packet);
 
@@ -73,6 +75,9 @@ class Userslogic {
                       struct PacketHead *packet);
   //重置密码
   bool OnResetPasswd(struct server* srv, int socket,struct PacketHead *packet);
+  bool OnResetPayPassWD(struct server* srv, int socket, struct PacketHead *packet); 
+  bool OnCertification(struct server* srv, int socket,
+                            struct PacketHead *packet); 
  private:
   bool Init();
  private:

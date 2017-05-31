@@ -106,14 +106,14 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
       OnRefreshTokenImcloud(srv, socket, packet);
       break;
     }
-	case R_IMCLOUD_ADDFRIEND:{
-	  OnAddCloudFriend(srv, socket, packet);	
-	  break;
-	}
-	case R_IMCLOUD_DELFRIEND:{
-	  OnDelCloudFriend(srv, socket, packet);
-	  break;
-	}
+    case R_IMCLOUD_ADDFRIEND:{
+      OnAddCloudFriend(srv, socket, packet);	
+      break;
+    }
+    case R_IMCLOUD_DELFRIEND:{
+      OnDelCloudFriend(srv, socket, packet);
+      break;
+    }
     case R_IMCLOUD_LOGIN:{
       OnLoginImcloud(srv, socket, packet);
       break;

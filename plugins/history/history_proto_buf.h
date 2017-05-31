@@ -412,6 +412,7 @@ class HistoryRecharge {
 };
 
 typedef HistoryRecharge HistoryWithDrawals;
+typedef HistoryRecharge HistoryOwnStar;
 typedef HistoryPosition HandlePosition;
 
 }
@@ -724,6 +725,74 @@ class Recharge {
   base_logic::DictionaryValue* value_;
 };
 
+
+class OwnStar{
+ public:
+  OwnStar()
+      : uid_(NULL),
+        ownseconds_(NULL),
+        appoint_(NULL),
+        starcode_(NULL),
+        starname_(NULL),
+        faccid_(NULL),
+        value_(NULL) {
+  }
+
+  ~OwnStar() {
+    if (value_) {
+      delete value_;
+      value_ = NULL;
+    }
+  }
+
+  void set_uid(const int64 uid) {
+    uid_ = new base_logic::FundamentalValue(uid);
+  }
+
+  void set_ownseconds(const int64 rid) {
+    ownseconds_ = new base_logic::FundamentalValue(rid);
+  }
+  void set_appoint(const int32 deposit_type) {
+    appoint_ = new base_logic::FundamentalValue(deposit_type);
+  }
+
+  void set_starcode(const std::string& deposit_name) {
+    starcode_ = new base_logic::StringValue(deposit_name);
+  }
+  void set_starname(const std::string& deposit_name) {
+    starname_ = new base_logic::StringValue(deposit_name);
+  }
+  void set_faccid(const std::string& deposit_name) {
+    faccid_ = new base_logic::StringValue(deposit_name);
+  }
+
+  base_logic::DictionaryValue* get() {
+    value_ = new base_logic::DictionaryValue();
+    if (uid_ != NULL)
+      value_->Set(L"uid", uid_);
+    if (ownseconds_ != NULL)
+      value_->Set(L"ownseconds", ownseconds_);
+    if (appoint_ != NULL)
+      value_->Set(L"appoint", appoint_);
+    if (starcode_ != NULL)
+      value_->Set(L"starcode", starcode_);
+    if (starname_ != NULL)
+      value_->Set(L"starname", starname_);
+    if (faccid_ != NULL)
+      value_->Set(L"faccid", faccid_);
+    return value_;
+  }
+
+ private:
+  base_logic::FundamentalValue* uid_;
+  base_logic::FundamentalValue* ownseconds_;
+  base_logic::FundamentalValue* appoint_;
+  base_logic::StringValue* starcode_;
+  base_logic::StringValue* starname_;
+  base_logic::StringValue* faccid_;
+
+  base_logic::DictionaryValue* value_;
+};
 class WithDrawals {
  public:
   WithDrawals()
@@ -899,6 +968,53 @@ class AllRecharge {
   }
 
   ~AllRecharge() {
+    if (value_) {
+      delete value_;
+      value_ = NULL;
+    }
+  }
+
+  void set_unit(base_logic::DictionaryValue* value) {
+    deposits_info_->Append((base_logic::Value*) (value));
+  }
+
+  base_logic::DictionaryValue* get() {
+    value_ = new base_logic::DictionaryValue();
+    if (!deposits_info_->empty()) {
+      value_->Set(L"depositsinfo", deposits_info_);
+    } else {
+      delete deposits_info_;
+      deposits_info_ = NULL;
+    }
+    return value_;
+  }
+
+  const int32 Size() {
+    return deposits_info_->GetSize();
+  }
+
+  void Reset() {
+    if (value_) {
+      delete value_;
+      value_ = NULL;
+    }
+    deposits_info_ = new base_logic::ListValue;
+  }
+ private:
+  base_logic::ListValue* deposits_info_;
+  base_logic::DictionaryValue* value_;
+};
+
+
+class AllOwnStar {
+ public:
+  AllOwnStar ()
+      : deposits_info_(NULL),
+        value_(NULL) {
+    deposits_info_ = new base_logic::ListValue;
+  }
+
+  ~AllOwnStar() {
     if (value_) {
       delete value_;
       value_ = NULL;
