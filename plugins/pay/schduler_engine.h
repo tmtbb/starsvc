@@ -9,9 +9,9 @@
 #include "pay/pay_proto_buf.h"
 #include "pay/pay_db.h"
 #include "pay/wx_order.h"
-#include "pay/shfj_order.h"
 #include "thread/base_thread_handler.h"
 #include "thread/base_thread_lock.h"
+#include "pay/unionpay_order.h"
 
 namespace pay_logic {
 
@@ -32,17 +32,10 @@ class PayManager {
                        const std::string& title, const double price,const int32 pay_type,
                        const std::string& open_id);
 
-  bool OnSHFJCreateCashOrder(const int socket, const int64 session,
+  bool OnUnionPayCreateOrder(const int socket, const int64 session,
                        const int32 reversed, const int64 uid,
-                       const double price,const int64 bid,const std::string& rec_bank_name, const std::string& rec_bra_bank_name, 
-		       const std::string &rec_card_no, const std::string &rec_account_name);
-  bool OnSHFJCreateOrder(const int socket, const int64 session,
-                       const int32 reversed, const int64 uid,
-                       const double price,
-		       const std::string& pay_type,
-		       const std::string &wechat_openid,
-		       const std::string &wechat_appid,
-                       const std::string& content);
+                       const std::string& title, const double price,const int32 pay_type,
+                       const std::string& open_id);
 
   bool OnWXClient(const int socket, const int64 session, const int32 reversed,
                   const int64 uid, const int64 rid, const int32 pay_result);
@@ -55,7 +48,7 @@ class PayManager {
                   const int64 total_fee, const int64 rid,
                   const int64 result, const std::string& transaction_id);
 
-bool OnSHFJCashServer(const int socket, const std::string& mch_id, 
+  bool OnSHFJCashServer(const int socket, const std::string& mch_id, 
 			const int64 total_fee, const std::string& transaction_id, 
 			const int64 status, const std::string& rid); 
  private:
@@ -64,20 +57,15 @@ bool OnSHFJCashServer(const int socket, const std::string& mch_id,
                pay_logic::WXOrder& wx_order);
 
   bool ParserWXOrderResult(std::string& result, std::string& prepay_id);
+//---unionpay
+
+  bool UnionPayOrder(const int socket, const std::string& title, const int64 rid,
+               const double price,const int32 pay_type, const std::string& open_id,
+               pay_logic::UnionpayOrder &unionpay_order);
+
+  bool ParserUnionPayOrderResult(std::string& result);
 
 
-  bool SHFJOrder(const int socket, const int64 rid,
-  		const double price,const std::string& pay_type, 
-  		const std::string& wechat_openid,
-		const std::string& wechat_appid, 
-		const std::string& content,
-               pay_logic::SHFJOrder& shfj_order);
-  bool SHFJCashOrder(const int socket, const int64 rid,
-               const double price,const std::string& rec_bank_name, const std::string& rec_bra_bank_name, const std::string &rec_card_no, const std::string &rec_account_name,
-               pay_logic::SHFJOrder& shfj_order, pay_logic::net_reply::SHFJCashOrder &r_shfj_cash_order);
-
-  bool ParserSHFJOrderResult(std::string& result, std::string& prepay_id);
-  bool ParserSHFJCashOrderResult(std::string& result, pay_logic::net_reply::SHFJCashOrder &r_shfj_cash_order);
  private:
   pay_logic::PayDB* pay_db_;
   PayCache *pay_cache_;

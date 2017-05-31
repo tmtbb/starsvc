@@ -10,6 +10,7 @@
 #include "core/common.h"
 #include "net/comm_head.h"
 #include "net/packet_processing.h"
+#include "pay/storager_kafka.h"
 
 namespace pay_logic {
 
@@ -55,23 +56,15 @@ class Paylogic {
                     struct PacketHead * packet);
 
 
-  bool OnSHFJPayOrder(struct server* srv, int socket,
-                    struct PacketHead *packet);
-
-  bool OnSHFJPayClient(struct server* srv, int socket,
-                     struct PacketHead *packet);
-
-  bool OnSHFJPaySever(struct server* srv, int socket,
-                    struct PacketHead * packet);
-
-  bool OnSHFJCashOrder(struct server* srv, int socket,
-                    struct PacketHead *packet);
-  bool OnSHFJCashServer(struct server* srv, int socket,
-                    struct PacketHead * packet);
+  bool OnUnionPayOrder(struct server* srv, int socket,
+                            struct PacketHead *packet); 
+  bool OnCertification(struct server* srv, int socket,
+                            struct PacketHead *packet); 
  private:
   bool Init();
  private:
   pay_logic::PayDB* pay_db_;
+  pay_logic::StroagerKafka* kafka_;
 
   manager_schduler::SchdulerEngine* schduler_engine_;
 };
