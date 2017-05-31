@@ -285,6 +285,94 @@ bool WXBindAccount::set_http_packet(base_logic::DictionaryValue* value) {
   return true;
 }
 
+bool ModifyPwd::set_http_packet(base_logic::DictionaryValue* value) {
+  std::string tmp;
+  bool r = false;
+
+  if (value == NULL)
+    return false;
+
+  int64 temp = 0, type;
+  r = value->GetBigInteger(L"type", &type);
+  if (r) 
+    set_type(type);
+  else
+    return false;
+
+  r = value->GetString(L"phone", &tmp);
+  if (r) 
+    set_phone (tmp);
+  else
+    set_phone ("130");
+    //return false;
+//type 0-设置密码1-重置密码
+  r = value->GetString(L"vCode", &tmp);
+  if (r) 
+    set_vcode (tmp);
+  else if (type == 1)
+    return false;
+  else 
+    set_vcode ("123062");
+
+  r = value->GetString(L"vToken", &tmp);
+  if (r) 
+    set_vtoken (tmp);
+  else if (type == 1)
+    return false;
+  else 
+    set_vtoken ("vToken");
+
+  r = value->GetString(L"pwd", &tmp);
+  if (r) 
+    set_pwd (tmp);
+  else
+    return false;
+
+  r = value->GetBigInteger(L"id", &temp);
+  if (r) 
+    set_uid(temp);
+  else
+    return false;
+  r = value->GetBigInteger(L"timestamp", &temp);
+  if (r) 
+    set_timestamp(temp);
+  else if (type == 1)
+    return false;
+  else 
+    set_timestamp(12346);
+
+  return true;
+}
+
+bool Certification::set_http_packet(base_logic::DictionaryValue* value) {
+
+
+  if (value == NULL)
+    return false;
+
+  bool r = false;
+  std::string tmp;
+  int64 id;
+  r = value->GetBigInteger(L"id", &id);
+  if (r)
+    set_uid(id);
+  else
+    return false;
+
+  r = value->GetString(L"realname", &tmp);
+  if (r)
+    set_realname(tmp);
+  else
+    return false;
+
+  r = value->GetString(L"id_card", &tmp);
+  if (r)
+    set_id_card(tmp);
+  else
+    return false;
+
+  return true;
+}
 
 }
 }

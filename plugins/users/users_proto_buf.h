@@ -325,6 +325,68 @@ class LoginAccount {
 
 };
 
+class Certification {
+ public:
+  Certification()
+      : uid_(NULL),
+        realname_(NULL),
+	id_card_(NULL){
+  }
+
+  ~Certification() {
+    if (uid_) {
+      delete uid_;
+      uid_ = NULL;
+    }
+    if (realname_) {
+      delete realname_;
+      realname_ = NULL;
+    }
+    if (id_card_) {
+      delete id_card_;
+      id_card_ = NULL;
+    }
+  }
+
+  bool set_http_packet(base_logic::DictionaryValue* value);
+
+  void set_uid(int64 id) {
+    uid_ = new base_logic::FundamentalValue(id);
+  }
+
+  void set_realname(std::string& value) {
+    realname_ = new base_logic::StringValue(value);
+  }
+  void set_id_card(std::string& value) {
+    id_card_ = new base_logic::StringValue(value);
+  }
+
+  int64 uid() const {
+    int64 uid;
+    uid_->GetAsBigInteger(&uid);
+    return uid;
+  }
+
+  std::string realname() const {
+    std::string tmp;
+    if (realname_)
+      realname_->GetAsString(&tmp);
+    return tmp;
+  }
+
+  std::string id_card() const {
+    std::string tmp;
+    if (id_card_)
+      id_card_->GetAsString(&tmp);
+    return tmp;
+  }
+
+ private:
+  base_logic::FundamentalValue* uid_;    //用户id
+  base_logic::StringValue* realname_;
+  base_logic::StringValue* id_card_;
+
+};
 
 class LoginWiXin {
  public:
@@ -594,7 +656,127 @@ class WXBindAccount {
   base_logic::StringValue* device_id_;
 };
 
+
+class ModifyPwd {
+ public:
+  ModifyPwd()
+      : phone_(NULL),vcode_(NULL),
+      vtoken_(NULL),pwd_(NULL),
+      type_(NULL),timestamp_(NULL),
+      uid_(NULL)
+      {
+  }
+
+  ~ModifyPwd() {
+    if (phone_) {
+      delete phone_;
+    }
+    if (vcode_) {
+      delete vcode_;
+    }
+    if (vtoken_) {
+      delete vtoken_;
+    }
+    if (pwd_) {
+      delete pwd_;
+    }
+
+    if (type_) {
+      delete type_;
+    }
+
+    if (timestamp_) {
+      delete timestamp_;
+    }
+
+    if (uid_) {
+      delete uid_;
+    }
+  }
+
+  void set_phone(const std::string& phone) {
+    phone_ = new base_logic::StringValue(phone);
+  }
+
+  void set_vcode(const std::string& value) {
+    vcode_ = new base_logic::StringValue(value);
+  }
+
+  void set_vtoken(const std::string& value) {
+    vtoken_ = new base_logic::StringValue(value);
+  }
+
+  void set_pwd(const std::string& value) {
+    pwd_ = new base_logic::StringValue(value);
+  }
+
+  void set_type(const int64 type) {
+    type_ = new base_logic::FundamentalValue(type);
+  }
+
+  void set_uid(const int64 value) {
+    uid_ = new base_logic::FundamentalValue(value);
+  }
+
+  void set_timestamp(const int64 value) {
+    timestamp_ = new base_logic::FundamentalValue(value);
+  }
+
+  int64 type() const {
+    int64 type;
+    type_->GetAsBigInteger(&type);
+    return type;
+  }
+
+  int64 uid() const {
+    int64 uid;
+    uid_->GetAsBigInteger(&uid);
+    return uid;
+  }
+
+  int64 timestamp() const {
+    int64 timestamp;
+    timestamp_->GetAsBigInteger(&timestamp);
+    return timestamp;
+  }
+
+  const std::string& phone() const {
+    std::string phone;
+    phone_->GetAsString(&phone);
+    return phone;
+  }
+
+  const std::string& vcode() const {
+    std::string vcode;
+    vcode_->GetAsString(&vcode);
+    return vcode;
+  }
+
+  const std::string& vtoken() const {
+    std::string vtoken;
+    vtoken_->GetAsString(&vtoken);
+    return vtoken;
+  }
+
+  const std::string& pwd() const {
+    std::string pwd;
+    pwd_->GetAsString(&pwd);
+    return pwd;
+  }
+
+  bool set_http_packet(base_logic::DictionaryValue* value);
+
+ private:
+  base_logic::StringValue* phone_;
+  base_logic::StringValue* vcode_;
+  base_logic::StringValue* vtoken_;
+  base_logic::StringValue* pwd_;
+  base_logic::FundamentalValue* uid_;    //用户id
+  base_logic::FundamentalValue* type_;   //0：登录密码 1：交易密码，提现密码
+  base_logic::FundamentalValue* timestamp_;   //时间戳
+};
 typedef UserAccount CheckToken;
+typedef UserAccount UserRealInfo;
 
 }
 
@@ -603,7 +785,7 @@ namespace net_reply {
 class Balance {
  public:
   Balance()
-      : balance_(NULL),
+      : balance_(NULL),market_cap_(NULL), total_amt_(NULL),is_setpwd_(NULL),
         value_(NULL) {
   }
 
@@ -618,14 +800,70 @@ class Balance {
     value_ = new base_logic::DictionaryValue();
     if (balance_ != NULL)
       value_->Set("balance", balance_);
+    if (market_cap_ != NULL)
+      value_->Set("market_cap", market_cap_);
+    if (total_amt_ != NULL)
+      value_->Set("total_amt", total_amt_);
+    if (is_setpwd_ != NULL)
+      value_->Set(L"is_setpwd", is_setpwd_);
     return value_;
   }
 
   void set_balance(double balance) {
     balance_ = new base_logic::FundamentalValue(balance);
   }
+  void set_market_cap(double value) {
+    market_cap_ = new base_logic::FundamentalValue(value);
+  }
+  void set_total_amt(double value) {
+    total_amt_ = new base_logic::FundamentalValue(value);
+  }
+  void set_is_setpwd(int32 value) {
+    is_setpwd_ = new base_logic::FundamentalValue(value);
+  }
  private:
   base_logic::FundamentalValue* balance_;
+  base_logic::FundamentalValue* market_cap_;
+  base_logic::FundamentalValue* total_amt_;
+
+  base_logic::FundamentalValue* is_setpwd_;
+
+  base_logic::DictionaryValue* value_;
+
+};
+
+class RealInfo{
+ public:
+  RealInfo()
+      : realname_(NULL),id_card_(NULL),
+        value_(NULL) {
+  }
+
+  ~RealInfo() {
+    if (value_ != NULL) {
+      delete value_;
+      value_ = NULL;
+    }
+  }
+
+  base_logic::DictionaryValue* get() {
+    value_ = new base_logic::DictionaryValue();
+    if (realname_ != NULL)
+      value_->Set(L"realname", realname_);
+    if (id_card_ != NULL)
+      value_->Set(L"id_card", id_card_);
+    return value_;
+  }
+
+   void set_realname(const std::string& value) {
+     realname_ = new base_logic::StringValue(value);
+   }
+   void set_id_card(const std::string& value) {
+     id_card_ = new base_logic::StringValue(value);
+   }
+ private:
+  base_logic::StringValue* realname_;
+  base_logic::StringValue* id_card_;
   base_logic::DictionaryValue* value_;
 };
 
@@ -849,6 +1087,68 @@ class RegisterVerfiycode {
   base_logic::FundamentalValue* code_time_;
   base_logic::FundamentalValue* result_;
   base_logic::StringValue* token_;
+  base_logic::DictionaryValue* value_;
+};
+
+
+class ModifyPwd{
+ public:
+  ModifyPwd()
+       : status_(NULL),
+         value_(NULL) {
+   }
+
+   ~ModifyPwd() {
+
+     if (value_) {
+       delete value_;
+       value_ = NULL;
+     }
+   }
+
+   void set_status(const int64 status) {
+     status_ = new base_logic::FundamentalValue(status);
+   }
+
+ public:
+  base_logic::DictionaryValue* get() {
+    value_ = new base_logic::DictionaryValue();
+    if (status_ != NULL)
+      value_->Set(L"status", status_);
+
+    return value_;
+  }
+ private:
+  base_logic::FundamentalValue* status_;
+  //base_logic::StringValue* token_;
+  base_logic::DictionaryValue* value_;
+};
+class TResult{
+ public:
+  TResult()
+      : result_(NULL),
+        value_(NULL) {
+  }
+
+  ~TResult() {
+    if (value_ != NULL) {
+      delete value_;
+      value_ = NULL;
+    }
+  }
+
+  base_logic::DictionaryValue* get() {
+    value_ = new base_logic::DictionaryValue();
+    if (result_ != NULL)
+      value_->Set(L"result", result_);
+    return value_;
+  }
+
+  void set_result(int32 value) {
+    result_ = new base_logic::FundamentalValue(value);
+  }
+ private:
+  base_logic::FundamentalValue* result_;
   base_logic::DictionaryValue* value_;
 };
 }

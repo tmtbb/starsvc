@@ -16,6 +16,9 @@ namespace users_logic {
 #define R_ACCOUNT_LOGIN  USERS_TYPE * 1000 + 3
 #define S_ACCOUNT_LOGIN  USERS_TYPE * 1000 + 4
 
+#define R_RESET_PAY_PASS USERS_TYPE * 1000 + 5
+#define S_RESET_PAY_PASS USERS_TYPE * 1000 + 6
+
 #define R_ACCOUNT_ASSET   USERS_TYPE * 1000 + 7
 #define S_ACCOUNT_ASSET   USERS_TYPE * 1000 + 8
 
@@ -38,5 +41,10 @@ namespace users_logic {
 #define S_USRES_RESET_PASSWD USERS_TYPE * 1000 + 20
 
 
+#define R_CERTIFICATION USERS_TYPE * 1000 + 21
+#define S_CERTIFICATION USERS_TYPE * 1000 + 22
+ 
+#define R_ACCOUNT_REALINFO   USERS_TYPE * 1000 + 27
+#define S_ACCOUNT_REALINFO   USERS_TYPE * 1000 + 28
 }
 #endif

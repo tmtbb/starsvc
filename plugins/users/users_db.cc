@@ -269,16 +269,18 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
 
   dict->GetDictionary(L"resultvalue", &info_value);
 
-  int32 uid;
+  int64 uid;
   int32 type;
   std::string phone;
-  if(info_value->GetInteger(L"uid", &uid)){
-  		user.set_uid(uid);
-		if(uid <= 0)
-			return false;
-	}else{
-		return false;
-	}
+  if(info_value->GetBigInteger(L"uid", &uid)){
+    if(uid <= 0)
+      return false;
+    user.set_uid(uid);
+  }
+  else
+  {
+    return false;
+  }
   if(info_value->GetInteger(L"type", &type))
   		user.set_type(type);
   if(info_value->GetString(L"phone",&phone))
@@ -291,7 +293,7 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
   return r;
 }
 
-bool UsersDB::AccountBalance(const int64 uid, double & balance) {
+bool UsersDB::AccountBalance(const int64 uid, double & balance, std::string &pwd) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
@@ -311,6 +313,7 @@ bool UsersDB::AccountBalance(const int64 uid, double & balance) {
   dict->GetDictionary(L"resultvalue", &info_value);
 
   r = info_value->GetReal(L"balance", &balance);
+  r = info_value->GetString(L"passwd", &pwd);
   if (dict) {
     delete dict;
     dict = NULL;
@@ -318,6 +321,34 @@ bool UsersDB::AccountBalance(const int64 uid, double & balance) {
   return r;
 }
 
+bool UsersDB::AccountRealNameInfo(const int64 uid, std::string &realname,std::string &id_card) {
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+
+//call actuals.proc_AccountBalance(68)
+  sql = "call proc_AccountRealInfo("
+      + base::BasicUtil::StringUtil::Int64ToString(uid) + ");";
+
+  base_logic::ListValue *listvalue;
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallAccountRealName);
+  if (!r)
+    return false;
+
+  dict->GetDictionary(L"resultvalue", &info_value);
+  double balance = 0.0;
+  //r = info_value->GetReal(L"balance", &balance);
+  r = info_value->GetString(L"realname", &realname);
+  r = info_value->GetString(L"id_card", &id_card);
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
 void UsersDB::CallLoginAccount(void* param, base_logic::Value* value) {
   base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
   base_storage::DBStorageEngine *engine =
@@ -328,7 +359,8 @@ void UsersDB::CallLoginAccount(void* param, base_logic::Value* value) {
   if (num > 0) {
     while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
     if (rows[0] != NULL){
-        info_value->SetInteger(L"uid", atoi(rows[0]));
+        info_value->SetBigInteger(L"uid", atoll(rows[0]));
+        //info_value->SetInteger(L"uid", atoi(rows[0]));
     }
 	if (rows[1] != NULL){
         info_value->SetString(L"phone", rows[1]);
@@ -370,6 +402,26 @@ void UsersDB::CallAccountBalance(void* param, base_logic::Value* value) {
     while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
       if (rows[0] != NULL)
         info_value->SetReal(L"balance", atof(rows[0]));
+      if (rows[1] != NULL)
+        info_value->SetString(L"passwd", (rows[1]));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+}
+
+void UsersDB::CallAccountRealName(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetString(L"realname", (rows[0]));
+      if (rows[1] != NULL)
+        info_value->SetString(L"id_card", (rows[1]));
     }
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
@@ -410,6 +462,84 @@ bool UsersDB::ResetAccount(const std::string& phone_num,const std::string& passw
 	return true;
 }	
 
+bool UsersDB::ModifyPwd(const int64 &uid, const std::string &newpwd)
+{ 
+  
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+try
+{ 
+  //sql = "call proc_ModifyPwd('" + phone + "','" + newpwd + "');";
+  sql = "call proc_ModifyPayPwd('" + base::BasicUtil::StringUtil::Int64ToString(uid) + "','" + newpwd + "');";
+  
+  base_logic::ListValue *listvalue;
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallRegisterAccount);
+  if (!r)
+    return false;
+  
+  dict->GetDictionary(L"resultvalue", &info_value);
+  int64 ruid = 0;
+  int result = 0;
+  r = info_value->GetBigInteger(L"uid", &ruid);
+  r = info_value->GetInteger(L"result", &result);
+  r = (r && ruid > 0) ? true : false;
+  
+}   
+catch (...)
+{
+    LOG_ERROR("UsersDB::ModifyPwd Error!!!" );
+    r = false;
+}   
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
 
+
+bool UsersDB::Certification(const int64 &uid, const std::string &idcard, const std::string &realname)
+{ 
+  
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+try
+{ 
+  //sql = "call proc_ModifyPwd('" + phone + "','" + newpwd + "');";
+  sql = "call proc_Certification('" + base::BasicUtil::StringUtil::Int64ToString(uid) 
+  + "','" + idcard + "','" + realname + "');";
+  
+  base_logic::ListValue *listvalue;
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallRegisterAccount);
+  if (!r)
+    return false;
+  
+  dict->GetDictionary(L"resultvalue", &info_value);
+  int64 ruid = 0;
+  int result = 0;
+  r = info_value->GetBigInteger(L"uid", &ruid);
+  r = info_value->GetInteger(L"result", &result);
+  r = (r && ruid > 0) ? true : false;
+  
+}   
+catch (...)
+{
+    LOG_ERROR("UsersDB::ModifyPwd Error!!!" );
+    r = false;
+}   
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
 }  // namespace history_logic
 
