@@ -1,10 +1,11 @@
-//  Copyright (c) 2015-2015 The swp Authors. All rights reserved.
+//  Copyright (c) 2015-2015 The star Authors. All rights reserved.
 //  Created on: 2016年12月30日 Author: kerry
 
-#ifndef SWP_QUOTATIONS_QUOTATIONS_LOGIC_
-#define SWP_QUOTATIONS_QUOTATIONS_LOGIC_
+#ifndef STAR_QUOTATIONS_QUOTATIONS_LOGIC_
+#define STAR_QUOTATIONS_QUOTATIONS_LOGIC_
 
 #include "quotations/quotations_redis.h"
+#include "quotations/quotations_db.h"
 #include "basic/basictypes.h"
 #include "core/common.h"
 #include "net/comm_head.h"
@@ -50,6 +51,9 @@ private:
 
   bool OnKChartTimeLine(struct server* srv, int socket, struct PacketHead *packet);
 
+
+  bool OnSymbolList(struct server* srv, int socket, struct PacketHead* packet);
+
   void Test();
 
 private:
@@ -57,6 +61,7 @@ private:
 
 private:
   QuotationsRedis* quotations_redis_;
+  quotations_logic::QuotationsDB* quotations_db_;
 };
 } // namespace quatations_logic
 

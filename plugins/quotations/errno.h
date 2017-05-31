@@ -1,8 +1,8 @@
-//  Copyright (c) 2017-2018 The SWP Authors. All rights reserved.
-//  Created on: 2017年2月12日 Author: kerry
+//  Copyright (c) 2017-2018 The starsvc Authors. All rights reserved.
+//  Created on: 2017年5月30日 Author: kerry
 
-#ifndef SWP_QUOTATIONS_ERRNO_H_
-#define SWP_QUOTATIONS_ERRNO_H_
+#ifndef STAR_QUOTATIONS_ERRNO_H_
+#define STAR_QUOTATIONS_ERRNO_H_
 
 enum QUOTATIONSERRNO {
   NO_HAVE_REAL_TIME_DATA = -401,

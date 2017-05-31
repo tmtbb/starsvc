@@ -22,7 +22,7 @@ QuotationsRedis::~QuotationsRedis() {
 
 bool QuotationsRedis::ReadHisTimeGoodsData(
     const std::string& name,
-    std::list<swp_logic::Quotations>& quotations_list) {
+    std::list<star_logic::Quotations>& quotations_list) {
   //[hash name] rule : platform:exchangename:type: FX:PMEC:AG
   // [key name] rule : unix - minute
   base_logic::DictionaryValue value;
@@ -38,7 +38,7 @@ bool QuotationsRedis::ReadHisTimeGoodsData(
   if (!r)
     return false;
   for (base_logic::ListValue::iterator it = list->begin(); it != list->end(); ++it) {
-    swp_logic::Quotations quotations;
+    star_logic::Quotations quotations;
     base_logic::Value* string_value = (*it);
     std::string str;
     r = string_value->GetAsString(&str);

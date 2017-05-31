@@ -282,9 +282,7 @@ namespace net_request {
 class KChartTimeLine {
  public:
   KChartTimeLine()
-      : exchange_name_(NULL),
-        platform_name_(NULL),
-        symbol_(NULL),
+      : symbol_(NULL),
         chart_type_(NULL),
         start_time_(NULL),
         end_time_(NULL),
@@ -293,14 +291,6 @@ class KChartTimeLine {
   }
 
   ~KChartTimeLine() {
-    if (exchange_name_) {
-      delete exchange_name_;
-      exchange_name_ = NULL;
-    }
-    if (platform_name_) {
-      delete platform_name_;
-      platform_name_ = NULL;
-    }
     if (symbol_) {
       delete symbol_;
       symbol_ = NULL;
@@ -325,13 +315,6 @@ class KChartTimeLine {
 
   bool set_http_packet(base_logic::DictionaryValue* value);
 
-  void set_exchange_name(const std::string& exchange_name) {
-    exchange_name_ = new base_logic::StringValue(exchange_name);
-  }
-
-  void set_platform_name(const std::string& platform_name) {
-    platform_name_ = new base_logic::StringValue(platform_name);
-  }
 
   void set_chart_type(const int32 chart_type) {
     chart_type_ = new base_logic::FundamentalValue(chart_type);
@@ -352,17 +335,6 @@ class KChartTimeLine {
     symbol_ = new base_logic::StringValue(symbol);
   }
 
-  const std::string exchange_name() const {
-    std::string exchange_name;
-    exchange_name_->GetAsString(&exchange_name);
-    return exchange_name;
-  }
-
-  const std::string platform_name() const {
-    std::string platform_name;
-    platform_name_->GetAsString(&platform_name);
-    return platform_name;
-  }
 
   const std::string symbol() const {
     std::string symbol;
@@ -395,8 +367,6 @@ class KChartTimeLine {
   }
 
  public:
-  base_logic::StringValue* exchange_name_;
-  base_logic::StringValue* platform_name_;
   base_logic::StringValue* symbol_;
   base_logic::FundamentalValue* chart_type_;
   base_logic::FundamentalValue* start_time_;
@@ -407,22 +377,12 @@ class KChartTimeLine {
 class RealTimeUnit {
  public:
   RealTimeUnit()
-      : exchange_name_(NULL),
-        platform_name_(NULL),
-        atype_(NULL),
+      : atype_(NULL),
         symbol_(NULL) {
 
   }
 
   ~RealTimeUnit() {
-    if (exchange_name_) {
-      delete exchange_name_;
-      exchange_name_ = NULL;
-    }
-    if (platform_name_) {
-      delete platform_name_;
-      platform_name_ = NULL;
-    }
     if (symbol_) {
       delete symbol_;
       symbol_ = NULL;
@@ -435,32 +395,12 @@ class RealTimeUnit {
 
   bool set_htt_packet(base_logic::DictionaryValue* value);
 
-  void set_exchange_name(const std::string& exchange_name) {
-    exchange_name_ = new base_logic::StringValue(exchange_name);
-  }
-
-  void set_platform_name(const std::string& platform_name) {
-    platform_name_ = new base_logic::StringValue(platform_name);
-  }
-
   void set_atype(const int32 atype) {
     atype_ = new base_logic::FundamentalValue(atype);
   }
 
   void set_symbol(const std::string& symbol) {
     symbol_ = new base_logic::StringValue(symbol);
-  }
-
-  const std::string exchange_name() const {
-    std::string exchange_name;
-    exchange_name_->GetAsString(&exchange_name);
-    return exchange_name;
-  }
-
-  const std::string platform_name() const {
-    std::string platform_name;
-    platform_name_->GetAsString(&platform_name);
-    return platform_name;
   }
 
   const std::string symbol() const {
@@ -476,8 +416,6 @@ class RealTimeUnit {
   }
 
  public:
-  base_logic::StringValue* exchange_name_;
-  base_logic::StringValue* platform_name_;
   base_logic::StringValue* symbol_;
   base_logic::FundamentalValue* atype_;
 };
@@ -532,13 +470,88 @@ class RealTime {
   base_logic::ListValue* symbol_infos_;
 };
 
+class SymbolList {
+ public:
+   SymbolList()
+	: id_(NULL)
+	, token_(NULL)
+	, atype_(NULL)
+        , pos_(NULL)
+        , count_(NULL) {}
+
+   ~SymbolList() {
+     if (id_) {delete id_; id_ = NULL;}
+     if (token_) {delete token_; token_ = NULL;}
+     if (atype_) {delete atype_; atype_ = NULL;}
+     if (pos_) {delete pos_; pos_ = NULL;}
+     if (count_) {delete count_; count_ = NULL;}
+   }
+
+   bool set_http_packet(base_logic::DictionaryValue* value);
+
+   void set_id(const int64 id) {
+      id_ = new base_logic::FundamentalValue(id);
+   }
+
+   void set_token(const std::string& token) {
+      token_ = new base_logic::StringValue(token);
+   }
+
+   void set_atype(const int32 atype) {
+     atype_ = new base_logic::FundamentalValue(atype);
+   }
+
+   void set_pos(const int32 pos) {
+     pos_ = new base_logic::FundamentalValue(pos);
+   }
+
+   void set_count(const int32 count) {
+     count_ = new base_logic::FundamentalValue(count);
+   }
+
+   const int64 id() const {
+     int64 id = 0;
+     id_->GetAsBigInteger(&id);
+     return id;
+   }
+   
+   const std::string token() const {
+     std::string token;
+     token_->GetAsString(&token);
+     return token;
+   }
+
+   const int32 atype() const {
+     int32 atype = 0;
+     atype_->GetAsInteger(&atype);
+     return atype;
+   }
+
+   const int32 pos() const {
+     int32 pos = 0;
+     pos_->GetAsInteger(&pos);
+     return pos;
+   }
+
+   const int32 count() const {
+     int32 count = 0;
+     count_->GetAsInteger(&count);
+     return count;
+   }
+   
+ public:
+  base_logic::FundamentalValue* id_;
+  base_logic::StringValue*  token_;
+  base_logic::FundamentalValue* atype_;
+  base_logic::FundamentalValue*  pos_;
+  base_logic::FundamentalValue*  count_;
+};
+
 class TimeLine {
  public:
   TimeLine()
       : id_(NULL),
         token_(NULL),
-        exchange_name_(NULL),
-        platform_name_(NULL),
         symbol_(NULL),
         atype_(NULL),
         start_time_(NULL),
@@ -554,14 +567,6 @@ class TimeLine {
     if (token_) {
       delete token_;
       token_ = NULL;
-    }
-    if (exchange_name_) {
-      delete exchange_name_;
-      exchange_name_ = NULL;
-    }
-    if (platform_name_) {
-      delete platform_name_;
-      platform_name_ = NULL;
     }
     if (symbol_) {
       delete symbol_;
@@ -594,14 +599,6 @@ class TimeLine {
 
   void set_token(const std::string& token) {
     token_ = new base_logic::StringValue(token);
-  }
-
-  void set_exchange_name(const std::string& exchange_name) {
-    exchange_name_ = new base_logic::StringValue(exchange_name);
-  }
-
-  void set_platform_name(const std::string& platform_name) {
-    platform_name_ = new base_logic::StringValue(platform_name);
   }
 
   void set_symbol(const std::string& symbol) {
@@ -660,17 +657,6 @@ class TimeLine {
     return token;
   }
 
-  const std::string exchange_name() const {
-    std::string exchange_name;
-    exchange_name_->GetAsString(&exchange_name);
-    return exchange_name;
-  }
-
-  const std::string platform_name() const {
-    std::string platform_name;
-    platform_name_->GetAsString(&platform_name);
-    return platform_name;
-  }
 
   const std::string symbol() const {
     std::string symbol;
