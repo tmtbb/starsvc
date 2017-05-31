@@ -75,8 +75,9 @@ void HistoryManager::InitHistoryRechargeData() {
 void HistoryManager::InitOwnStarData() {
   base_logic::WLockGd lk(lock_);
   std::list<swp_logic::TOwnStar> list;
-  //history_db_->OnHistroyRechargeRecord(&list);
+  history_db_->OnOwnStarRecord(&list);
   while (list.size() > 0) {
+  //LOG_DEBUG2("list.size[%d]____________________________________________",list.size() );
     swp_logic::TOwnStar star = list.front();
     list.pop_front();
     SetOwnStarNoLock(star);
@@ -245,21 +246,24 @@ void HistoryManager::SendHistoryOwnStar(const int socket, const int64 session,
                                          const int32 status, const int64 pos,
                                          const int64 count) {
   std::list<swp_logic::TOwnStar> ownstar_list;
-  LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
+  //LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
   {
     base_logic::RLockGd lk(lock_);  //
     GetHistoryOwnStarNoLock(uid, status, ownstar_list, 0, 0);
   }
 
+  //LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
   //没有对应的历史记录
   if (ownstar_list.size() <= 0) {
     send_error(socket, ERROR_TYPE, NO_HAVE_HISTROY_DATA, session);
     return;
   }
+/*
     LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
     LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
     LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
     LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
+*/
   int32 base_num = 10;
   if (revered / 1000 == HTTP)
     base_num = count;
@@ -448,6 +452,7 @@ void HistoryManager::GetHistoryRechargeNoLock(
 void HistoryManager::GetHistoryOwnStarNoLock(
     const int64 uid, const int32 status, std::list<swp_logic::TOwnStar>& list,
     const int64 pos, const int64 count) {
+  //LOG_DEBUG2("GetHistoryOwnStarNoLock________________ [%d] _ [%d]",uid,  history_cache_->all_ownstar_map_.size() );
   OWNSTAR_MAP ownstar_map;
   base::MapGet<ALL_OWNSTAR_MAP, ALL_OWNSTAR_MAP::iterator, int64, OWNSTAR_MAP>(
       history_cache_->all_ownstar_map_, uid, ownstar_map);
@@ -477,11 +482,20 @@ void HistoryManager::SetHistoryRechargeNoLock(swp_logic::Recharge& recharge) {
 
 void HistoryManager::SetOwnStarNoLock(swp_logic::TOwnStar& ownstar) {
 
+  //LOG_DEBUG("test ___ownstar.size[%]____________________________________________" );
   OWNSTAR_MAP ownstar_map;
+
+  //LOG_DEBUG("test222 ___ownstar.size[%]____________________________________________" );
   base::MapGet<ALL_OWNSTAR_MAP, ALL_OWNSTAR_MAP::iterator, int64, OWNSTAR_MAP>(
       history_cache_->all_ownstar_map_, ownstar.uid(), ownstar_map);
-  ownstar_map[ownstar.starcode()] = ownstar;
+
+  //LOG_DEBUG("test333 ___ownstar.size[%]____________________________________________" );
+  //history_cache_->all_ownstar_map_.find(ownstar.uid());
+  ownstar_map[atoll(ownstar.starcode().c_str())] = ownstar;
+  //LOG_DEBUG2("ownstar.size[%d]__________ starcode[%s] __________________________________",ownstar_map.size() , ownstar.starcode().c_str());
   history_cache_->all_ownstar_map_[ownstar.uid()] = ownstar_map;
+  //LOG_DEBUG2("allownstar.size[%d]ownstar.uid[%d]____________________________________________",history_cache_->all_ownstar_map_.size(), ownstar.uid() );
+
 
 }
 

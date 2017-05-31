@@ -22,7 +22,7 @@ typedef std::map<int64, RECHARGE_MAP> ALL_RECHAGE_MAP;/*用户ID 为KEY*/
 typedef std::map<int64, swp_logic::Withdrawals> WITHDRAWALS_MAP;/*提现ID*/
 typedef std::map<int64, WITHDRAWALS_MAP> ALLWITHDRAWALS_MAP;/*用户ID 为KEY*/
 
-typedef std::map<std::string, swp_logic::TOwnStar> OWNSTAR_MAP;
+typedef std::map<int64, swp_logic::TOwnStar> OWNSTAR_MAP;
 typedef std::map<int64, OWNSTAR_MAP> ALL_OWNSTAR_MAP;/*uid 为KEY*/
 
 class HistoryCache {

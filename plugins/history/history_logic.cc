@@ -47,9 +47,10 @@ bool Historylogic::Init() {
   r = config->LoadConfig(path);
   history_db_ = new history_logic::HistoryDB(config);
   history_logic::HistoryEngine::GetSchdulerManager()->InitDB(history_db_);
-  history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryTradesData();
+  //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryTradesData();
   history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryRechargeData();
-  history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
+  history_logic::HistoryEngine::GetSchdulerManager()->InitOwnStarData();
+  //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
 
   std::string schduler_library = "./data_share.so";
   std::string schduler_func = "GetManagerSchdulerEngine";
@@ -172,8 +173,7 @@ bool Historylogic::OnTimeout(struct server *srv, char *id, int opcode,
       //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryTradesData();
       history_logic::HistoryEngine::GetSchdulerManager()
           ->InitHistoryRechargeData();
-      history_logic::HistoryEngine::GetSchdulerManager()
-          ->InitOwnStarData();
+      history_logic::HistoryEngine::GetSchdulerManager()->InitOwnStarData();
       //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
       break;
     }

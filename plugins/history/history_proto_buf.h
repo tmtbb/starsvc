@@ -773,7 +773,7 @@ class OwnStar{
     if (ownseconds_ != NULL)
       value_->Set(L"ownseconds", ownseconds_);
     if (appoint_ != NULL)
-      value_->Set(L"appoint_", appoint_);
+      value_->Set(L"appoint", appoint_);
     if (starcode_ != NULL)
       value_->Set(L"starcode", starcode_);
     if (starname_ != NULL)
