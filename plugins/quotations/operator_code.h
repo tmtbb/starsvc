@@ -17,6 +17,7 @@ namespace quatations_logic {
 #define S_QUOTATIONS_TIME_LINE_DATA    QUOTATIONS_TYPE * 1000 + 4
 #define R_KCHART_TIME_LINE_DATA        QUOTATIONS_TYPE * 1000 + 5
 #define S_KCHART_TIME_LINE_DATA        QUOTATIONS_TYPE * 1000 + 6
-
+#define R_SYMBOL_LIST                  QUOTATIONS_TYPE * 1000 + 7
+#define S_SYMBOL_LIST                  QUOTATIONS_TYPE * 1000 + 8
 }
 #endif

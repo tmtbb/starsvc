@@ -244,6 +244,8 @@ bool SymbolList::set_http_packet(base_logic::DictionaryValue* value) {
    std::string token;
    int32 atype = 0;
    int64 big_atype = 0;
+   int32 sort = 0;
+   int64 big_sort = 0;
    int32 pos = 0;
    int64 big_pos = 0;
    int32 count = 0;
@@ -264,13 +266,19 @@ bool SymbolList::set_http_packet(base_logic::DictionaryValue* value) {
   else
      return false;
 
-  r = value->GetBigInteger(L"atype", &big_atype);
+  r = value->GetBigInteger(L"aType", &big_atype);
   if (r){
      atype = big_atype;
      set_atype(atype);
   }else
      return false;
 
+  r = value->GetBigInteger(L"sort", &big_sort);
+  if (r)
+    sort = big_sort;
+  else
+    sort = 0;
+  set_sort(sort);
   r = value->GetBigInteger(L"pos", &big_pos);
   if (r)
     pos = big_pos;
@@ -284,6 +292,7 @@ bool SymbolList::set_http_packet(base_logic::DictionaryValue* value) {
   else
     count = 10;
   set_count(count);
+  return true;
 } 
 
 }

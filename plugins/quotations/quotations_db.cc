@@ -40,7 +40,7 @@ bool QuotationsDB::OnGetStarInfo(std::map<std::string,star_logic::StarInfo>& map
     base_logic::DictionaryValue *dict_result_value =
         (base_logic::DictionaryValue *) (result_value);
     star_info.ValueSerialization(dict_result_value);
-    map[star_info.symbol()] = star_info;
+    map[star_info.weibo_index_id()] = star_info;
     delete dict_result_value;
     dict_result_value = NULL;
   }

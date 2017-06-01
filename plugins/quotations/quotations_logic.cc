@@ -101,6 +101,10 @@ bool Quotationslogic::OnQuotationsMessage(struct server *srv, const int socket,
         OnKChartTimeLine(srv, socket, packet);
         break;
       }
+      case R_SYMBOL_LIST: {
+        OnSymbolList(srv, socket ,packet);
+        break;
+      }
       default:
         break;
     }
@@ -177,7 +181,7 @@ bool Quotationslogic::OnSymbolList(struct server* srv, int socket,
     return false;
   }
   quotations_logic::QuotationsEngine::GetSchdulerManager()->SendSymbolList(
-	socket, packet->session_id,symbol_list.atype(),symbol_list.pos(),
+	socket, packet->session_id,packet->reserved,symbol_list.atype(),symbol_list.sort(),symbol_list.pos(),
         symbol_list.count()	
   );
 }
