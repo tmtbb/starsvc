@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 
 RECEIVER=$1      #接收方手机号
-SIGN="云巅"            #签名
+SIGN="逢喆投资"            #签名
 if [ $3 -eq 0 ];then
-  TEMP_CODE="SMS_14221547"      #注册账号
+  TEMP_CODE="SMS_64420047"      #注册账号
 fi
 if [ $3 -eq 1 ];then
-  TEMP_CODE="SMS_14251903"     #验证码登录
+  TEMP_CODE="SMS_66920063"     #验证码登录
+fi
+if [ $3 -eq 2 ];then
+  TEMP_CODE="SMS_67176467"     #微信绑定
 fi
 PARAMS="{\"no\":\"$2\"}" #模板参数（json格式）
 
-K="23447975" #AppKey，从管理控制台获取，下同
-S="152cee1b237b87e62210f55ea85840c8" #AppSecret
+K="23790150" #AppKey，从管理控制台获取，下同
+S="afc32113aee2bebbf949b08332ce7b01" #AppSecret
 
 NL="
 "
