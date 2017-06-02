@@ -657,7 +657,7 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
     return false;
   }
   
-  std::string phone = register_vercode.phone();
+  std::string phone = register_vercode.phone().c_str();
 
   /*
   ////检测号码是否已经注册
@@ -719,6 +719,8 @@ bool Userslogic::SendUserInfo(const int socket, const int64 session,
   net_userinfo.set_phone(userinfo.phone_num());
   net_userinfo.set_uid(userinfo.uid());
   net_userinfo.set_type(userinfo.type());
+  net_userinfo.set_agent_name(userinfo.nickname());
+  net_userinfo.set_avatar_large(userinfo.head_url());
   net_login_account.set_userinfo(net_userinfo.get());
   net_login_account.set_token(userinfo.token());
   schduler_engine_->SetUserInfoSchduler(userinfo.uid(), &userinfo);
@@ -746,9 +748,9 @@ bool Userslogic::OnResetPayPassWD(struct server* srv, int socket,
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   } 
-
+  std::string phone = modifypwd.phone();
   std::string v_token = SMS_KEY + base::BasicUtil::StringUtil::Int64ToString(modifypwd.timestamp()) +
-      modifypwd.vcode().c_str() + modifypwd.phone();
+      modifypwd.vcode().c_str() + phone;
   base::MD5Sum md5(v_token.c_str());
   std::string token = md5.GetHash();
   
@@ -792,14 +794,15 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
     return false;
   }
 
-  //std::string idcard = cerfic.id_card();//"411325199005217439";
-  //std::string name = cerfic.realname();//"唐伟";
-  std::string idcard = "411325199005217439";
-  std::string name = "唐伟";
+  std::string idcard = cerfic.id_card();//"411325199005217439";
+  std::string name = cerfic.realname();//"唐伟";
+  //std::string idcard = "411325199005217439";
+  //std::string name = "唐伟";
   //阿里云接口
   std::string strUrl = "http://idcardreturnphoto.haoservice.com/idcard/VerifyIdcardReturnPhoto";
   ////阿里云接口code
-  std::string strHeader = "Authorization:APPCODE 900036feeee64ae089177dd06b25faa9";
+  //std::string strHeader = "Authorization:APPCODE 900036feeee64ae089177dd06b25faa9";
+  std::string strHeader = "Authorization:APPCODE e361298186714a6faea52316ff1d5c32";
   std::string strResult;
   base_logic::DictionaryValue dic;
   dic.SetString(L"cardNo", idcard);
@@ -809,7 +812,7 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
 
   users_logic::net_reply::TResult r_ret;;
   r_ret.set_result(1);
-  r_ret.set_result(0);
+  //r_ret.set_result(0);
 //_________________________________________________________
   base_logic::ValueSerializer* serializer = base_logic::ValueSerializer::Create(
   				base_logic::IMPL_JSON, &strResult, false);
@@ -856,24 +859,6 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
   packet_control.body_ = r_ret.get();
   send_message(socket, &packet_control);
 /*
-  pay_logic::net_request::WXPayOrder wx_pay_order;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = wx_pay_order.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-
-*
-  pay_logic::PayEngine::GetSchdulerManager()->OnUnionPayCreateOrder(
-      socket, packet->session_id, packet->reserved, wx_pay_order.uid(),
-      wx_pay_order.title(), wx_pay_order.price(),wx_pay_order.pay_type(),
-      wx_pay_order.open_id());
 */
   return true;
 }

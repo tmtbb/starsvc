@@ -7,6 +7,7 @@
 #include "net/errno.h"
 #include <string>
 #include "operator_code.h"
+#include "error.h"
 #include <sstream>
 
 
@@ -455,7 +456,8 @@ bool Marketlogic::getstarbrief(struct server* srv,int socket ,struct PacketHead*
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->getstarbrief(code,ret_list)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		//send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_HAVE_DATA, packet->session_id);
 		return false;
 	  }
 	  

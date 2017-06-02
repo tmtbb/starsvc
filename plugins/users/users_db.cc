@@ -101,19 +101,23 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
 
   dict->GetDictionary(L"resultvalue", &info_value);
 
-  std::string phone;
+  std::string phone, agentName, avatar_Large;
   int64 type,uid;
   r = info_value->GetString(L"phone", &phone);
+  r = info_value->GetString(L"nickname", &agentName);
+  r = info_value->GetString(L"head_url", &avatar_Large);
   if(!info_value->GetBigInteger(L"type",&type))
-  		return false;
+    return false;
   if(!info_value->GetBigInteger(L"id",&uid))
-  		return false;
+    return false;
   r = (r && phone.length() > 1) ? true : false;
   if (!r)
     return false;
 
   base_logic::DictionaryValue *tmp = new base_logic::DictionaryValue();
   tmp->SetString(L"phone",phone);
+  tmp->SetString(L"nickname",agentName);
+  tmp->SetString(L"head_url",avatar_Large);
   tmp->SetBigInteger(L"type",type);
   tmp->SetBigInteger(L"id",uid);
 
@@ -135,10 +139,14 @@ void UsersDB::CallLoginwxAccount(void* param, base_logic::Value* value) {
     while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
       if (rows[0] != NULL)
         info_value->SetString(L"phone", rows[0]);
-	  if (rows[1] != NULL)
+      if (rows[1] != NULL)
         info_value->SetBigInteger(L"type", atoi(rows[1]));
-	  if (rows[2] != NULL)
+      if (rows[2] != NULL)
         info_value->SetBigInteger(L"id", atoi(rows[2]));
+      if (rows[3] != NULL && strlen(rows[3]) > 0)
+        info_value->SetString(L"nickname", (rows[3]));
+      if (rows[4] != NULL && strlen(rows[4]) > 0)
+        info_value->SetString(L"head_url", (rows[4]));
     }
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
@@ -362,11 +370,17 @@ void UsersDB::CallLoginAccount(void* param, base_logic::Value* value) {
         info_value->SetBigInteger(L"uid", atoll(rows[0]));
         //info_value->SetInteger(L"uid", atoi(rows[0]));
     }
-	if (rows[1] != NULL){
-        info_value->SetString(L"phone", rows[1]);
+    if (rows[1] != NULL){
+      info_value->SetString(L"phone", rows[1]);
     }
-  	if (rows[2] != NULL){
-        info_value->SetInteger(L"type", atoi(rows[2]));
+    if (rows[2] != NULL){
+      info_value->SetInteger(L"type", atoi(rows[2]));
+    }
+    if (rows[3] != NULL&& strlen(rows[3]) > 0){
+      info_value->SetString(L"nickname", (rows[3]));
+    }
+    if (rows[4] != NULL && strlen(rows[4]) > 0){
+      info_value->SetString(L"head_url", (rows[4]));
     }
   }
   }
