@@ -1,4 +1,4 @@
-killall -9 loader.out
+killall -9 kid_runner_kafka.out
 rm -rf nohup.*
-nohup ./loader.out &
+nohup ./kid_runner_kafka.out &
 
