@@ -6,7 +6,7 @@
 
 #include "config/config.h"
 #include "storage/data_engine.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 
 namespace quotations_logic {
 
@@ -16,7 +16,7 @@ class QuotationsRedis {
   virtual ~QuotationsRedis();
  public:
   bool ReadHisTimeGoodsData(const std::string& name,
-                            std::list<swp_logic::Quotations>& quotations_list);
+                            std::list<star_logic::Quotations>& quotations_list);
  private:
   base_logic::DataEngine* redis_engine_;
 };
