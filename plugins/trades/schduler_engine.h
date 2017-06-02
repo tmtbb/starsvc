@@ -1,17 +1,17 @@
 //  Copyright (c) 2016-2017 The quotations Authors. All rights reserved.
 //  Created on: 2017年1月7日 Author: kerry
 
-#ifndef TRADES_SCHDULER_ENGINE_H__
-#define TRADES_SCHDULER_ENGINE_H__
+#ifndef STAR_SCHDULER_ENGINE_H__
+#define STAR_SCHDULER_ENGINE_H__
 
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "trades/trades_db.h"
 #include "trades/trades_info.h"
 #include "thread/base_thread_handler.h"
 #include "thread/base_thread_lock.h"
 
-typedef std::map<int32, trades_logic::GoodsInfo> GOODS_MAP;
-typedef std::map<int32, GOODS_MAP> PLAT_GOODS_MAP; /*对应平台能交易的商品*/
+typedef std::map<std::string, start_logic::StarInfo> STAR_MAP;
+typedef std::map<int32, STAR_MAP> PLAT_STAR_MAP; /*对应平台能交易的商品*/
 
 typedef std::map<int64, swp_logic::TradesPosition> TRADES_MAP; /*交易记录 uid或pid<->Trades*/
 typedef std::map<int32, TRADES_MAP> GOODS_TRADES_MAP;/*交易标的  商品ID<->交易记录*/

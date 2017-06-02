@@ -1,8 +1,8 @@
 //  Copyright (c) 2016-2017 The quotations Authors. All rights reserved.
 //  Created on: 2017年1月3日 Author: kerry
 
-#ifndef SWP_TRADES_OPERATOR_CODE_H_
-#define SWP_TRADES_OPERATOR_CODE_H_
+#ifndef STAR_TRADES_OPERATOR_CODE_H_
+#define STAR_TRADES_OPERATOR_CODE_H_
 
 
 #include "net/comm_head.h"
