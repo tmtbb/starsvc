@@ -1068,7 +1068,7 @@ void Market_Mysql::CallStarInfo(void* param, base_logic::Value* value) {
   dict->Set(L"resultvalue", (base_logic::Value *) (list));
 }
 
-bool Market_Mysql::OnStarsInfo(std::list<swp_logic::StarInfo>* list) {
+bool Market_Mysql::OnStarsInfo(std::list<star_logic::StarInfo>* list) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
 
@@ -1082,7 +1082,7 @@ bool Market_Mysql::OnStarsInfo(std::list<swp_logic::StarInfo>* list) {
     return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
-    swp_logic::StarInfo item;
+    star_logic::StarInfo item;
     base_logic::Value *result_value;
     listvalue->Remove(0, &result_value);
     base_logic::DictionaryValue *dict_result_value =

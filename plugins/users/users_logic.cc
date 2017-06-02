@@ -5,7 +5,7 @@
 #include "users/users_proto_buf.h"
 #include "users/operator_code.h"
 #include "users/errno.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "comm/comm_head.h"
 #include "net/comm_head.h"
 #include "config/config.h"
@@ -95,7 +95,7 @@ bool Userslogic::OnUsersConnect(struct server *srv, const int socket) {
   const std::string phonenum = "phonenumtest";
   const std::string passwd = "passwdtest";
   const std::string ipaddr = "0.0.0.0";
-  swp_logic::UserInfo userinfo;
+  star_logic::UserInfo userinfo;
   bool r = user_db_->LoginAccount(phonenum, passwd,
                              ipaddr, userinfo);
   if (!r || userinfo.uid() == 0) {
@@ -236,7 +236,7 @@ bool Userslogic::OnLoginWiXin(struct server* srv, int socket,
   std::string ip, passwd = "";
   int port;
   logic::SomeUtils::GetIPAddress(socket, ip, port);
-  swp_logic::UserInfo userinfo;
+  star_logic::UserInfo userinfo;
   
   std::string openid;
   std::string deviceid;
@@ -436,7 +436,7 @@ bool Userslogic::OnUserAccount(struct server* srv, int socket,
 
   //数据库获取用户余额
   double balance = 0.0;
-  swp_logic::UserInfo userinfo;
+  star_logic::UserInfo userinfo;
   users_logic::net_reply::Balance net_balance;
   r = schduler_engine_->GetUserInfoSchduler(user_account.uid(), &userinfo);
   if (!r)
@@ -479,7 +479,7 @@ bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
 
   //
   //double balance = 0.0;
-  swp_logic::UserInfo userinfo;
+  star_logic::UserInfo userinfo;
   users_logic::net_reply::RealInfo net_real_info;
   //获取用户信息
   r = schduler_engine_->GetUserInfoSchduler(user_real_info.uid(), &userinfo);
@@ -527,7 +527,7 @@ bool Userslogic::OnLoginAccount(struct server* srv, int socket,
   int port;
   logic::SomeUtils::GetIPAddress(socket, ip, port);
 
-  swp_logic::UserInfo userinfo;
+  star_logic::UserInfo userinfo;
   r = user_db_->LoginAccount(login_account.phone_num(), login_account.passwd(),
                              ip, userinfo);
   if (!r) {
@@ -561,7 +561,7 @@ bool Userslogic::OnUserCheckToken(struct server* srv, int socket,
     return false;
   }
 
-  swp_logic::UserInfo userinfo;
+  star_logic::UserInfo userinfo;
   std::string ip;
   int port;
   logic::SomeUtils::GetIPAddress(socket, ip, port);
@@ -708,7 +708,7 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
 
 bool Userslogic::SendUserInfo(const int socket, const int64 session,
                               const int32 opcode,
-                              swp_logic::UserInfo& userinfo) {
+                              star_logic::UserInfo& userinfo) {
   userinfo.set_socket_fd(socket);
   userinfo.set_is_effective(true);
 
@@ -725,7 +725,7 @@ bool Userslogic::SendUserInfo(const int socket, const int64 session,
   net_login_account.set_token(userinfo.token());
   schduler_engine_->SetUserInfoSchduler(userinfo.uid(), &userinfo);
 
-  swp_logic::UserInfo tuserinfo;
+  star_logic::UserInfo tuserinfo;
   schduler_engine_->GetUserInfoSchduler(userinfo.uid(), &tuserinfo);
   struct PacketControl net_packet_control;
   MAKE_HEAD(net_packet_control, opcode, 1, 0, session, 0);

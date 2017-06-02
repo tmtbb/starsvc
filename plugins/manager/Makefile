@@ -85,13 +85,13 @@ clean :
 data_share_mgr.o : ./data_share_mgr.cc ./data_share_mgr.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./data_share_mgr.cc $(INCLUDE_PATHS)
 	
-swp_infos.o :  $(USER_DIR)/logic/swp_infos.cc $(USER_DIR)/logic/swp_infos.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/swp_infos.cc $(INCLUDE_PATHS)
+star_infos.o :  $(USER_DIR)/logic/star_infos.cc $(USER_DIR)/logic/star_infos.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/star_infos.cc $(INCLUDE_PATHS)
 
 logic_unit.o :  $(USER_DIR)/logic/logic_unit.cc $(USER_DIR)/logic/logic_unit.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/logic_unit.cc $(INCLUDE_PATHS)
 	
-$(PLUGIN) : logic_unit.o data_share_mgr.o swp_infos.o\
+$(PLUGIN) : logic_unit.o data_share_mgr.o star_infos.o\
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient \
 	$^ -o $@

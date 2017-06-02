@@ -6,7 +6,7 @@
 #include "bank/operator_code.h"
 #include "bank/errno.h"
 #include "bank/bank_info.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "comm/comm_head.h"
 #include "config/config.h"
 #include "core/common.h"

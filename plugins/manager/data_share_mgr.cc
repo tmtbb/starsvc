@@ -14,14 +14,14 @@ manager_schduler::SchdulerEngine *GetManagerSchdulerEngine(void) {
 namespace manager_schduler {
 
 bool SchdulerEngineImpl::SetUserInfoSchduler(const int64 id,
-                                             swp_logic::UserInfo* user) {
+                                             star_logic::UserInfo* user) {
   ManagerSchdulerEngine* schduler_mgr =
       EngineSchdulerEngine::GetSchdulerManager();
   return schduler_mgr->SetUserInfoSchduler(id, user);
 }
 
 bool SchdulerEngineImpl::GetUserInfoSchduler(const int64 id,
-                                             swp_logic::UserInfo* user) {
+                                             star_logic::UserInfo* user) {
   ManagerSchdulerEngine* schduler_mgr =
       EngineSchdulerEngine::GetSchdulerManager();
   return schduler_mgr->GetUserInfoSchduler(id, user);
@@ -34,7 +34,7 @@ bool SchdulerEngineImpl::DelUserInfoSchduler(const int64 id) {
 }
 
 bool SchdulerEngineImpl::FindUserInfoSchduler(const int socket,
-                                              swp_logic::UserInfo* schduler) {
+                                              star_logic::UserInfo* schduler) {
   ManagerSchdulerEngine* schduler_mgr =
       EngineSchdulerEngine::GetSchdulerManager();
   return schduler_mgr->FindUserInfoSchduler(socket, schduler);
@@ -100,7 +100,7 @@ ManagerSchdulerEngine::~ManagerSchdulerEngine() {
 }
 
 bool ManagerSchdulerEngine::SetUserInfoSchduler(const int64 id,
-                                                swp_logic::UserInfo* user){
+                                                star_logic::UserInfo* user){
   base_logic::WLockGd lk(lock_);
   int socket = user->socket_fd();
   SOCKET_MAP::iterator it = schduler_cache_->socket_map_.find(socket);
@@ -108,33 +108,33 @@ bool ManagerSchdulerEngine::SetUserInfoSchduler(const int64 id,
     LOG_ERROR2("find old socket reconnected, socket=%d", socket);
     return false;
   }*/
-  base::MapAdd<SOCKET_MAP, int, swp_logic::UserInfo>(
+  base::MapAdd<SOCKET_MAP, int, star_logic::UserInfo>(
       schduler_cache_->socket_map_, user->socket_fd(), (*user));
-  return base::MapAdd<USER_MAP, int64, swp_logic::UserInfo>(
+  return base::MapAdd<USER_MAP, int64, star_logic::UserInfo>(
       schduler_cache_->user_map_, id, (*user));
 }
 
 bool ManagerSchdulerEngine::GetUserInfoSchduler(const int64 id,
-                                                swp_logic::UserInfo* user) {
+                                                star_logic::UserInfo* user) {
   base_logic::RLockGd lk(lock_);
   return base::MapGet<USER_MAP, USER_MAP::iterator, int64,
-      swp_logic::UserInfo>(schduler_cache_->user_map_, id,
+      star_logic::UserInfo>(schduler_cache_->user_map_, id,
                                             (*user));
 }
 
 bool ManagerSchdulerEngine::FindUserInfoSchduler(const int socket,
-                                                 swp_logic::UserInfo* user) {
+                                                 star_logic::UserInfo* user) {
   base_logic::RLockGd lk(lock_);
   return base::MapGet<SOCKET_MAP, SOCKET_MAP::iterator, int,
-      swp_logic::UserInfo>(schduler_cache_->socket_map_,
+      star_logic::UserInfo>(schduler_cache_->socket_map_,
                                             socket, (*user));
 }
 
 bool ManagerSchdulerEngine::CloseUserInfoSchduler(int socket) {
   base_logic::WLockGd lk(lock_);
-  swp_logic::UserInfo user;
+  star_logic::UserInfo user;
   base::MapGet<SOCKET_MAP, SOCKET_MAP::iterator, int,
-  swp_logic::UserInfo>(schduler_cache_->socket_map_,
+  star_logic::UserInfo>(schduler_cache_->socket_map_,
                                             socket, user);
   user.set_is_effective(false);
   base::MapDel<SOCKET_MAP, SOCKET_MAP::iterator, int>(
@@ -145,7 +145,7 @@ bool ManagerSchdulerEngine::CloseUserInfoSchduler(int socket) {
 
 bool ManagerSchdulerEngine::SetSendTime(int socket) {
   base_logic::WLockGd lk(lock_);
-  swp_logic::UserInfo& user =
+  star_logic::UserInfo& user =
       schduler_cache_->socket_map_[socket];
   user.set_send_last_time(time(NULL));
   return true;
@@ -153,7 +153,7 @@ bool ManagerSchdulerEngine::SetSendTime(int socket) {
 
 bool ManagerSchdulerEngine::SetRecvTime(int socket) {
   base_logic::WLockGd lk(lock_);
-  swp_logic::UserInfo& user =
+  star_logic::UserInfo& user =
       schduler_cache_->socket_map_[socket];
   user.set_recv_last_time(time(NULL));
   return true;
@@ -161,7 +161,7 @@ bool ManagerSchdulerEngine::SetRecvTime(int socket) {
 
 bool ManagerSchdulerEngine::SetSendErrorCount(int socket) {
   base_logic::WLockGd lk(lock_);
-  swp_logic::UserInfo& user =
+  star_logic::UserInfo& user =
       schduler_cache_->socket_map_[socket];
   user.add_send_error_count();
   return true;
@@ -169,7 +169,7 @@ bool ManagerSchdulerEngine::SetSendErrorCount(int socket) {
 
 bool ManagerSchdulerEngine::SetRecvErrorCount(int socket) {
   base_logic::WLockGd lk(lock_);
-  swp_logic::UserInfo& user =
+  star_logic::UserInfo& user =
       schduler_cache_->socket_map_[socket];
   user.add_recv_error_count();
   return true;
@@ -184,7 +184,7 @@ bool ManagerSchdulerEngine::CheckHeartPacket() {
 
   USER_MAP::iterator it = schduler_cache_->user_map_.begin();
   for (; it != schduler_cache_->user_map_.end(); it++) {
-    swp_logic::UserInfo& user = it->second;
+    star_logic::UserInfo& user = it->second;
     if ((current_time - user.recv_last_time() > 300)) {
       user.add_send_error_count();
       //LOG_DEBUG2("location of schduler=%p current_time=%d crawler_schduler out of time %d socket=%d send_error_count=%d",

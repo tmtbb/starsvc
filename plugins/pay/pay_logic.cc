@@ -6,7 +6,7 @@
 #include "pay/operator_code.h"
 #include "pay/errno.h"
 #include "pay/schduler_engine.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "comm/comm_head.h"
 #include "config/config.h"
 #include "core/common.h"

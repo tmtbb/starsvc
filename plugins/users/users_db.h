@@ -7,7 +7,7 @@
 #include <string>
 #include <list>
 #include "storage/data_engine.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "config/config.h"
 #include "basic/basictypes.h"
 #include "logic/base_values.h"
@@ -25,7 +25,7 @@ class UsersDB {
                        const int32 type,int64& uid, int32& result, const std::string &agentid, const std::string &recommend, const int64 memberid);
 
   bool LoginAccount(const std::string& phone_num, const std::string& passwd,
-                    const std::string& ip, swp_logic::UserInfo& user);
+                    const std::string& ip, star_logic::UserInfo& user);
 
   bool CheckAccountExist(const std::string& phone);
 
@@ -33,7 +33,7 @@ class UsersDB {
 
   bool AccountRealNameInfo(const int64 uid, std::string &realname,std::string &id_card); 
   bool GetUserInfo(const int64 uid, const std::string& ip,
-                   swp_logic::UserInfo& userinfo);
+                   star_logic::UserInfo& userinfo);
 
  public:
   static void CallRegisterAccount(void* param, base_logic::Value* value);

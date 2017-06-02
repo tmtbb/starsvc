@@ -95,8 +95,8 @@ infomation_logic.o : ./infomation_logic.cc ./infomation_logic.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./infomation_logic.cc $(INCLUDE_PATHS)	
 logic_unit.o :  $(USER_DIR)/logic/logic_unit.cc $(USER_DIR)/logic/logic_unit.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/logic_unit.cc $(INCLUDE_PATHS)	
-swp_infos.o :  $(USER_DIR)/logic/swp_infos.cc $(USER_DIR)/logic/swp_infos.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/swp_infos.cc $(INCLUDE_PATHS)
+star_infos.o :  $(USER_DIR)/logic/star_infos.cc $(USER_DIR)/logic/star_infos.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/star_infos.cc $(INCLUDE_PATHS)
 
 packet_processing.o :  $(USER_DIR)/net/packet_processing.cc $(USER_DIR)/net/packet_processing.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/net/packet_processing.cc $(INCLUDE_PATHS)
@@ -126,7 +126,7 @@ json_value.o :	$(USER_DIR)/json/json_value.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/json/json_value.cpp   $(INCLUDE_PATHS)
 json_writer.o :	$(USER_DIR)/json/json_writer.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/json/json_writer.cpp   $(INCLUDE_PATHS)
-$(PLUGIN) : infomation_db.o json_reader.o json_value.o json_writer.o infomation_init.o infomation_logic.o fcgimodule.o util.o swp_infos.o logic_unit.o packet_processing.o \
+$(PLUGIN) : infomation_db.o json_reader.o json_value.o json_writer.o infomation_init.o infomation_logic.o fcgimodule.o util.o star_infos.o logic_unit.o packet_processing.o \
 	data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o \
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \

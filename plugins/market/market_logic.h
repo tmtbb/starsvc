@@ -11,7 +11,7 @@
 #include "thread/base_thread_lock.h"
 namespace market_logic {
 
-typedef std::map<std::string, swp_logic::StarInfo> STARTS_MAP;/*明星ID为key*/
+typedef std::map<std::string, star_logic::StarInfo> STARTS_MAP;/*明星ID为key*/
 
 class Marketlogic {
  public:
