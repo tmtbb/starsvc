@@ -19,8 +19,6 @@ bool RealTime::set_http_packet(base_logic::DictionaryValue* value) {
   double high_price = 0.0;
   double low_price = 0.0;
   int64 type = 0.0;
-  std::string exchange_name;
-  std::string platform_name;
   std::string symbol;
 
   if (value == NULL)
@@ -62,14 +60,6 @@ bool RealTime::set_http_packet(base_logic::DictionaryValue* value) {
   if (r)
     set_type(type);
 
-  r = value->GetString(L"exchangeName", &exchange_name);
-  if (r)
-    set_exchange_name(exchange_name);
-
-  r = value->GetString(L"platformName", &platform_name);
-  if (r)
-    set_platform_name(platform_name);
-
   r = value->GetString(L"symbol", &symbol);
   if (r)
     set_symbol(symbol);
@@ -107,18 +97,6 @@ bool TimeLine::set_htt_packet(base_logic::DictionaryValue* value) {
   r = value->GetString(L"token", &token);
   if (r)
     set_token(token);
-  else
-    return false;
-
-  r = value->GetString(L"exchangeName", &exchange_name);
-  if (r)
-    set_exchange_name(exchange_name);
-  else
-    return false;
-
-  r = value->GetString(L"platformName", &platform_name);
-  if (r)
-    set_platform_name(platform_name);
   else
     return false;
 
@@ -168,18 +146,6 @@ bool RealTimeUnit::set_htt_packet(base_logic::DictionaryValue* value) {
   if (value == NULL)
     return false;
 
-  r = value->GetString(L"exchangeName", &exchange_name);
-  if (r)
-    set_exchange_name(exchange_name);
-  else
-    return false;
-
-  r = value->GetString(L"platformName", &platform_name);
-  if (r)
-    set_platform_name(platform_name);
-  else
-    return false;
-
   r = value->GetString(L"symbol", &symbol);
   if (r)
     set_symbol(symbol);
@@ -198,8 +164,6 @@ bool RealTimeUnit::set_htt_packet(base_logic::DictionaryValue* value) {
 
 bool KChartTimeLine::set_http_packet(base_logic::DictionaryValue* value) {
   bool r = false;
-  std::string exchange_name;
-  std::string platform_name;
   std::string symbol;
   int64 temp_atype;
   int32 atype;
@@ -211,52 +175,6 @@ bool KChartTimeLine::set_http_packet(base_logic::DictionaryValue* value) {
   if (value == NULL)
     return false;
 
-  r = value->GetString(L"exchangeName", &exchange_name);
-  if (r)
-    set_exchange_name(exchange_name);
-  else
-    return false;
-
-  r = value->GetString(L"platformName", &platform_name);
-  if (r)
-    set_platform_name(platform_name);
-  else
-    return false;
-  /*  r = value->GetReal(L"opening_today_price", &opening_today_price);
-  if (r)
-    set_opening_today_price(opening_today_price);
-
-  r = value->GetReal(L"closed_yesterday_price", &closed_yesterday_price);
-  if (r)
-    set_closed_yesterday_price(closed_yesterday_price);
-
-  r = value->GetReal(L"current_price", &current_price);
-  if (r)
-    set_current_price(current_price);
-
-  r = value->GetReal(L"current_unix_time", &current_unix_time);
-  if (r)
-    set_current_unix_time(current_unix_time);
-
-  r = value->GetReal(L"low_price", &low_price);
-  if (r)
-    set_low_price(low_price);
-
-  r = value->GetReal(L"high_price", &high_price);
-  if (r)
-    set_high_price(high_price);
-
-  r = value->GetReal(L"type", &type);
-  if (r)
-    set_type(type);
-
-  r = value->GetString(L"exchange_name", &exchange_name);
-  if (r)
-    set_exchange_name(exchange_name);
-
-  r = value->GetString(L"platform_name", &platform_name);
-  if (r)
-  set_platform_name(platform_name);*/
 
   r = value->GetString(L"symbol", &symbol);
   if (r)
@@ -319,6 +237,63 @@ bool RealTime::set_htt_packet(base_logic::DictionaryValue* value) {
 
   return true;
 }
+
+bool SymbolList::set_http_packet(base_logic::DictionaryValue* value) {
+   bool r = false;
+   int64 id = 0;
+   std::string token;
+   int32 atype = 0;
+   int64 big_atype = 0;
+   int32 sort = 0;
+   int64 big_sort = 0;
+   int32 pos = 0;
+   int64 big_pos = 0;
+   int32 count = 0;
+   int64 big_count = 0;
+
+   if (value == NULL)
+    return false;
+
+  r = value->GetBigInteger(L"id", &id);
+  if (r)
+     set_id(id);
+  else
+     return false;
+
+  r = value->GetString(L"token", &token);
+  if (r)
+     set_token(token);
+  else
+     return false;
+
+  r = value->GetBigInteger(L"aType", &big_atype);
+  if (r){
+     atype = big_atype;
+     set_atype(atype);
+  }else
+     return false;
+
+  r = value->GetBigInteger(L"sort", &big_sort);
+  if (r)
+    sort = big_sort;
+  else
+    sort = 0;
+  set_sort(sort);
+  r = value->GetBigInteger(L"pos", &big_pos);
+  if (r)
+    pos = big_pos;
+  else
+    pos = 0;
+  set_pos(pos);
+
+  r = value->GetBigInteger(L"count", &big_count);
+  if (r)
+    count = big_count;
+  else
+    count = 10;
+  set_count(count);
+  return true;
+} 
 
 }
 

@@ -1,8 +1,8 @@
 //  Copyright (c) 2016-2017 The quotations Authors. All rights reserved.
-//  Created on: 2017年1月3日 Author: kerry
+//  Created on: 2017年5月30日 Author: kerry
 
-#ifndef SWP_QUOTATIONS_OPERATOR_CODE_H_
-#define SWP_QUOTATIONS_OPERATOR_CODE_H_
+#ifndef STAR_QUOTATIONS_OPERATOR_CODE_H_
+#define STAR_QUOTATIONS_OPERATOR_CODE_H_
 
 
 #include "net/comm_head.h"
@@ -17,6 +17,7 @@ namespace quatations_logic {
 #define S_QUOTATIONS_TIME_LINE_DATA    QUOTATIONS_TYPE * 1000 + 4
 #define R_KCHART_TIME_LINE_DATA        QUOTATIONS_TYPE * 1000 + 5
 #define S_KCHART_TIME_LINE_DATA        QUOTATIONS_TYPE * 1000 + 6
-
+#define R_SYMBOL_LIST                  QUOTATIONS_TYPE * 1000 + 7
+#define S_SYMBOL_LIST                  QUOTATIONS_TYPE * 1000 + 8
 }
 #endif

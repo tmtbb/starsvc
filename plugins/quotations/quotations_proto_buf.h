@@ -282,9 +282,7 @@ namespace net_request {
 class KChartTimeLine {
  public:
   KChartTimeLine()
-      : exchange_name_(NULL),
-        platform_name_(NULL),
-        symbol_(NULL),
+      : symbol_(NULL),
         chart_type_(NULL),
         start_time_(NULL),
         end_time_(NULL),
@@ -293,14 +291,6 @@ class KChartTimeLine {
   }
 
   ~KChartTimeLine() {
-    if (exchange_name_) {
-      delete exchange_name_;
-      exchange_name_ = NULL;
-    }
-    if (platform_name_) {
-      delete platform_name_;
-      platform_name_ = NULL;
-    }
     if (symbol_) {
       delete symbol_;
       symbol_ = NULL;
@@ -325,13 +315,6 @@ class KChartTimeLine {
 
   bool set_http_packet(base_logic::DictionaryValue* value);
 
-  void set_exchange_name(const std::string& exchange_name) {
-    exchange_name_ = new base_logic::StringValue(exchange_name);
-  }
-
-  void set_platform_name(const std::string& platform_name) {
-    platform_name_ = new base_logic::StringValue(platform_name);
-  }
 
   void set_chart_type(const int32 chart_type) {
     chart_type_ = new base_logic::FundamentalValue(chart_type);
@@ -352,17 +335,6 @@ class KChartTimeLine {
     symbol_ = new base_logic::StringValue(symbol);
   }
 
-  const std::string exchange_name() const {
-    std::string exchange_name;
-    exchange_name_->GetAsString(&exchange_name);
-    return exchange_name;
-  }
-
-  const std::string platform_name() const {
-    std::string platform_name;
-    platform_name_->GetAsString(&platform_name);
-    return platform_name;
-  }
 
   const std::string symbol() const {
     std::string symbol;
@@ -395,8 +367,6 @@ class KChartTimeLine {
   }
 
  public:
-  base_logic::StringValue* exchange_name_;
-  base_logic::StringValue* platform_name_;
   base_logic::StringValue* symbol_;
   base_logic::FundamentalValue* chart_type_;
   base_logic::FundamentalValue* start_time_;
@@ -407,22 +377,12 @@ class KChartTimeLine {
 class RealTimeUnit {
  public:
   RealTimeUnit()
-      : exchange_name_(NULL),
-        platform_name_(NULL),
-        atype_(NULL),
+      : atype_(NULL),
         symbol_(NULL) {
 
   }
 
   ~RealTimeUnit() {
-    if (exchange_name_) {
-      delete exchange_name_;
-      exchange_name_ = NULL;
-    }
-    if (platform_name_) {
-      delete platform_name_;
-      platform_name_ = NULL;
-    }
     if (symbol_) {
       delete symbol_;
       symbol_ = NULL;
@@ -435,32 +395,12 @@ class RealTimeUnit {
 
   bool set_htt_packet(base_logic::DictionaryValue* value);
 
-  void set_exchange_name(const std::string& exchange_name) {
-    exchange_name_ = new base_logic::StringValue(exchange_name);
-  }
-
-  void set_platform_name(const std::string& platform_name) {
-    platform_name_ = new base_logic::StringValue(platform_name);
-  }
-
   void set_atype(const int32 atype) {
     atype_ = new base_logic::FundamentalValue(atype);
   }
 
   void set_symbol(const std::string& symbol) {
     symbol_ = new base_logic::StringValue(symbol);
-  }
-
-  const std::string exchange_name() const {
-    std::string exchange_name;
-    exchange_name_->GetAsString(&exchange_name);
-    return exchange_name;
-  }
-
-  const std::string platform_name() const {
-    std::string platform_name;
-    platform_name_->GetAsString(&platform_name);
-    return platform_name;
   }
 
   const std::string symbol() const {
@@ -476,8 +416,6 @@ class RealTimeUnit {
   }
 
  public:
-  base_logic::StringValue* exchange_name_;
-  base_logic::StringValue* platform_name_;
   base_logic::StringValue* symbol_;
   base_logic::FundamentalValue* atype_;
 };
@@ -532,13 +470,99 @@ class RealTime {
   base_logic::ListValue* symbol_infos_;
 };
 
+class SymbolList {
+ public:
+   SymbolList()
+	: id_(NULL)
+	, token_(NULL)
+	, atype_(NULL)
+        , pos_(NULL)
+        , count_(NULL) {}
+
+   ~SymbolList() {
+     if (id_) {delete id_; id_ = NULL;}
+     if (token_) {delete token_; token_ = NULL;}
+     if (atype_) {delete atype_; atype_ = NULL;}
+     if (pos_) {delete pos_; pos_ = NULL;}
+     if (count_) {delete count_; count_ = NULL;}
+   }
+
+   bool set_http_packet(base_logic::DictionaryValue* value);
+
+   void set_id(const int64 id) {
+      id_ = new base_logic::FundamentalValue(id);
+   }
+
+   void set_token(const std::string& token) {
+      token_ = new base_logic::StringValue(token);
+   }
+
+   void set_atype(const int32 atype) {
+     atype_ = new base_logic::FundamentalValue(atype);
+   }
+
+   void set_sort(const int32 sort) {
+     sort_ = new base_logic::FundamentalValue(sort);
+   }
+
+   void set_pos(const int32 pos) {
+     pos_ = new base_logic::FundamentalValue(pos);
+   }
+
+   void set_count(const int32 count) {
+     count_ = new base_logic::FundamentalValue(count);
+   }
+
+   const int64 id() const {
+     int64 id = 0;
+     id_->GetAsBigInteger(&id);
+     return id;
+   }
+   
+   const std::string token() const {
+     std::string token;
+     token_->GetAsString(&token);
+     return token;
+   }
+
+   const int32 atype() const {
+     int32 atype = 0;
+     atype_->GetAsInteger(&atype);
+     return atype;
+   }
+
+   const int32 sort() const {
+     int32 sort = 0;
+     sort_->GetAsInteger(&sort);
+     return sort;
+   }
+
+   const int32 pos() const {
+     int32 pos = 0;
+     pos_->GetAsInteger(&pos);
+     return pos;
+   }
+
+   const int32 count() const {
+     int32 count = 0;
+     count_->GetAsInteger(&count);
+     return count;
+   }
+   
+ public:
+  base_logic::FundamentalValue* id_;
+  base_logic::StringValue*  token_;
+  base_logic::FundamentalValue* atype_;
+  base_logic::FundamentalValue* sort_;
+  base_logic::FundamentalValue*  pos_;
+  base_logic::FundamentalValue*  count_;
+};
+
 class TimeLine {
  public:
   TimeLine()
       : id_(NULL),
         token_(NULL),
-        exchange_name_(NULL),
-        platform_name_(NULL),
         symbol_(NULL),
         atype_(NULL),
         start_time_(NULL),
@@ -554,14 +578,6 @@ class TimeLine {
     if (token_) {
       delete token_;
       token_ = NULL;
-    }
-    if (exchange_name_) {
-      delete exchange_name_;
-      exchange_name_ = NULL;
-    }
-    if (platform_name_) {
-      delete platform_name_;
-      platform_name_ = NULL;
     }
     if (symbol_) {
       delete symbol_;
@@ -594,14 +610,6 @@ class TimeLine {
 
   void set_token(const std::string& token) {
     token_ = new base_logic::StringValue(token);
-  }
-
-  void set_exchange_name(const std::string& exchange_name) {
-    exchange_name_ = new base_logic::StringValue(exchange_name);
-  }
-
-  void set_platform_name(const std::string& platform_name) {
-    platform_name_ = new base_logic::StringValue(platform_name);
   }
 
   void set_symbol(const std::string& symbol) {
@@ -660,17 +668,6 @@ class TimeLine {
     return token;
   }
 
-  const std::string exchange_name() const {
-    std::string exchange_name;
-    exchange_name_->GetAsString(&exchange_name);
-    return exchange_name;
-  }
-
-  const std::string platform_name() const {
-    std::string platform_name;
-    platform_name_->GetAsString(&platform_name);
-    return platform_name;
-  }
 
   const std::string symbol() const {
     std::string symbol;
@@ -693,6 +690,143 @@ class TimeLine {
 }
 
 namespace net_reply {
+
+class SymbolUnit {
+ public:
+   SymbolUnit()
+        : wid_(NULL)
+	, name_(NULL)
+	, pic_(NULL)
+	, symbol_(NULL)
+	, current_price_(NULL)
+	, system_unix_time_(NULL)
+	, current_unix_time_(NULL)
+	, change_(NULL) {}
+
+  ~SymbolUnit() {
+     if (value_) {delete value_; value_ = NULL;}
+  }
+  void set_wid(const std::string& wid){
+    wid_ = new base_logic::StringValue(wid);
+  }
+
+  void set_name(const std::string& name) {
+    name_ = new base_logic::StringValue(name);
+  }
+  
+  void set_pic(const std::string& pic) {
+    pic_ = new base_logic::StringValue(pic);
+  }
+
+  void set_symbol(const std::string& symbol) {
+    symbol_ = new base_logic::StringValue(symbol);
+  }
+
+  void set_current_price(const double current_price) {
+    current_price_ = new base_logic::FundamentalValue(current_price); 
+  }
+
+  void set_system_unix_time(const int64 system_unix_time) {
+    system_unix_time_ = new base_logic::FundamentalValue(system_unix_time);
+  }
+
+  void set_current_unix_time(const int64 current_unix_time) {
+   current_unix_time_ = new base_logic::FundamentalValue(current_unix_time);
+  }
+  
+  void set_change(const double change) {
+   change_ = new base_logic::FundamentalValue(change);
+  }
+
+ 
+  base_logic::DictionaryValue* get() {
+    value_ = new base_logic::DictionaryValue();
+    if (wid_ != NULL)
+      value_->Set(L"wid", wid_);
+    if (name_ != NULL)
+      value_->Set(L"name", name_);
+    if (pic_ != NULL)
+      value_->Set(L"pic", pic_);
+    if (symbol_ != NULL)
+      value_->Set(L"symbol", symbol_);
+    if (current_price_ != NULL)
+      value_->Set(L"currentPrice", current_price_);
+    if (current_unix_time_ != NULL)
+      value_->Set(L"priceTime", current_unix_time_);
+    if (system_unix_time_ != NULL)
+      value_->Set(L"sysTime", system_unix_time_);
+    if (change_ != NULL)
+      value_->Set(L"change", change_);
+    return value_;
+  }
+   
+ public:
+  base_logic::StringValue* wid_;
+  base_logic::StringValue* name_;
+  base_logic::StringValue* pic_;
+  base_logic::StringValue* symbol_;
+  base_logic::FundamentalValue*   current_price_;
+  base_logic::FundamentalValue*   system_unix_time_;
+  base_logic::FundamentalValue*   current_unix_time_;
+  base_logic::FundamentalValue*   change_;
+  base_logic::DictionaryValue* value_;
+};
+
+
+class SymbolList {
+ public:
+  SymbolList()
+      : symbol_info_(NULL),
+        stype_(NULL),
+        value_(NULL) {
+    symbol_info_ = new base_logic::ListValue;
+  }
+
+  ~SymbolList() {
+    if (value_) {
+      delete value_;
+      value_ = NULL;
+    }
+  }
+
+  void set_unit(base_logic::DictionaryValue* value) {
+    symbol_info_->Append((base_logic::Value*) (value));
+  }
+
+  void set_stype(const int32 stype) {
+    stype_ = new base_logic::FundamentalValue(stype);
+  }
+
+  base_logic::DictionaryValue* get() {
+    value_ =  new base_logic::DictionaryValue();
+    if (!symbol_info_->empty()) {
+      value_->Set(L"symbol_info", symbol_info_);
+    } else {
+      delete symbol_info_;
+      symbol_info_ = NULL;
+    }
+    if (stype_ != NULL)
+      value_->Set(L"chartType", stype_);
+    return value_;
+  }
+
+  void Reset() {
+    if (value_) {
+      delete value_;
+      value_ = NULL;
+    }
+    //if (price_info_) {delete price_info_; price_info_ = NULL;}
+    symbol_info_ = new base_logic::ListValue;
+  }
+  const int32 Size() {
+    return symbol_info_->GetSize();
+  }
+
+ private:
+  base_logic::ListValue* symbol_info_;
+  base_logic::FundamentalValue* stype_;
+  base_logic::DictionaryValue* value_;
+};
 
 class RealTimeUnit {
  public:
