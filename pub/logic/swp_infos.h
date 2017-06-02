@@ -1230,6 +1230,136 @@ class TOwnStar {
   Data* data_;
 };
 
+
+class Comments {
+ public:
+  Comments();
+
+  Comments(const Comments& comments);
+
+  Comments& operator =(const Comments& comments);
+
+  ~Comments() {
+    if (data_ != NULL) {
+      data_->Release();
+    }
+  }
+
+  static bool before(const Comments& t_info, const Comments& r_info) {
+    return Data::before(t_info.data_, r_info.data_);
+  }
+
+  static bool after(const Comments& t_info, const Comments& r_info) {
+    return Data::after(t_info.data_, r_info.data_);
+  }
+
+  static bool cmp(const Comments& t_info, const Comments& r_info) {
+    return Data::after(t_info.data_, r_info.data_);
+  }
+
+  void set_star_code(const std::string& value) {
+    if (data_)
+      data_->star_code_= value;
+  }
+
+  void set_fans_id(const std::string& value) {
+    if (data_)
+      data_->fans_id_ = value;
+  }
+  void set_nick_name(const std::string& value) {
+    if (data_)
+      data_->nick_name_ = value;
+  }
+  void set_comments(const std::string& value) {
+    if (data_)
+      data_->comments_= value;
+  }
+  void set_head_url(const std::string& value) {
+    if (data_)
+      data_->head_url_ = value;
+  }
+  void set_current_unix_time(const int64 current_unix_time) {
+    if (data_)
+      data_->current_unix_time_ = current_unix_time;
+  }
+
+  const std::string& star_code() const {
+    if (data_)
+      return data_->star_code_;
+  }
+  const std::string& comments() const {
+    if (data_)
+      return data_->comments_;
+  }
+  const std::string& head_url() const {
+    if (data_)
+      return data_->head_url_;
+  }
+
+  const std::string& fans_id() const {
+    if (data_)
+      return data_->fans_id_;
+  }
+
+  const std::string& nick_name() const {
+    if (data_)
+      return data_->nick_name_;
+  }
+
+  const int64 current_unix_time() const {
+    if (data_)
+      return data_->current_unix_time_;
+  }
+
+  std::string ValueSerialize();
+  void ValueDeserialize(std::string& str);
+
+ private:
+  class Data {
+   public:
+    Data()
+        : refcount_(1),
+          current_unix_time_(0) {
+    }
+
+    ~Data() {
+    }
+
+   public:
+    std::string star_code_; //platform_name_;
+    std::string fans_id_; //symbol_;
+    std::string nick_name_;//exchange_name_;
+    std::string comments_;
+    std::string head_url_;
+
+    int64 current_unix_time_;
+
+    static bool before(const Data* t_info, const Data* r_info) {
+      if (t_info == NULL || r_info == NULL)
+        return false;
+      return t_info->current_unix_time_ <= r_info->current_unix_time_;
+    }
+
+    static bool after(const Data* t_info, const Data* r_info) {
+      if (t_info == NULL || r_info == NULL)
+        return false;
+      return t_info->current_unix_time_ > r_info->current_unix_time_;
+    }
+
+    void AddRef() {
+      __sync_fetch_and_add(&refcount_, 1);
+    }
+    void Release() {
+      __sync_fetch_and_sub(&refcount_, 1);
+      if (!refcount_)
+        delete this;
+    }
+
+   private:
+    int refcount_;
+  };
+  Data* data_;
+};
 }  // namespace quotations_logic
 
 #endif /* QUOTATIONS_PUB_LOGIC_QUOTATIONS_INFOS_H_ */
