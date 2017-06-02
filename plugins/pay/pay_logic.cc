@@ -182,12 +182,12 @@ bool Paylogic::OnWXPayOrder(struct server* srv, int socket,
   }
 //____________________________________________________
   //kafka_
-/*
+
   pay_logic::PayEngine::GetSchdulerManager()->OnWXCreateOrder(
       socket, packet->session_id, packet->reserved, wx_pay_order.uid(),
       wx_pay_order.title(), wx_pay_order.price(),wx_pay_order.pay_type(),
       wx_pay_order.open_id());
-*/
+
   return true;
 }
 
