@@ -263,7 +263,7 @@ bool Quotationslogic::OnQutations(struct server* srv, int socket,
     return false;
   }
 
-  LOG_MSG2("symbol %s current price %f",real_time.current_price(),real_time.symbol().c_str());
+  //LOG_MSG2("symbol %s current price %f",real_time.current_price(),real_time.symbol().c_str());
   quotations.set_change(real_time.change());
   //quotations.set_closed_yesterday_price(real_time.closed_yesterday_price());
   quotations.set_current_price(real_time.current_price());

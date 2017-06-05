@@ -7,7 +7,7 @@
 #include <string>
 #include <list>
 #include "trades/trades_info.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "storage/data_engine.h"
 #include "config/config.h"
 #include "basic/basictypes.h"
@@ -22,18 +22,13 @@ class TradesDB {
   ~TradesDB();
 
  public:
-  bool OnFetchPlatformGoods(std::list<trades_logic::GoodsInfo>* list);
-  bool OnOpenPosition(swp_logic::TradesPosition& trades);
-  bool OnClosePosition(std::list<swp_logic::TradesPosition>* list);
-  bool OnFetchFlightInfo(std::list<trades_logic::FlightInfo>* list);
- public:
-  static void CallFecthPlatformGoods(void* param, base_logic::Value* value);
-  static void CallOnOpenPosition(void* param, base_logic::Value* value);
-  static void CallFetchFlightInfo(void* param, base_logic::Value* value);
+  bool OnFetchPlatformStar(std::map<std::string, trades_logic::TradesStar>& map);
+ private:
+  static void CallGetTradsRule(void* param, base_logic::Value* value);
  private:
   base_logic::DataEngine* mysql_engine_;
 };
 
 }  // namespace trades_logic
 
-#endif /* SWP_TRADES_DB_H_ */
+#endif /* STAR_TRADES_DB_H_ */

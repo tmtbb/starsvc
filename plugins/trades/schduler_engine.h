@@ -4,46 +4,21 @@
 #ifndef STAR_SCHDULER_ENGINE_H__
 #define STAR_SCHDULER_ENGINE_H__
 
+#include "logic/time.h"
 #include "logic/star_infos.h"
 #include "trades/trades_db.h"
 #include "trades/trades_info.h"
 #include "thread/base_thread_handler.h"
 #include "thread/base_thread_lock.h"
 
-typedef std::map<std::string, start_logic::StarInfo> STAR_MAP;
-typedef std::map<int32, STAR_MAP> PLAT_STAR_MAP; /*对应平台能交易的商品*/
-
-typedef std::map<int64, swp_logic::TradesPosition> TRADES_MAP; /*交易记录 uid或pid<->Trades*/
-typedef std::map<int32, TRADES_MAP> GOODS_TRADES_MAP;/*交易标的  商品ID<->交易记录*/
-typedef std::map<int64, GOODS_TRADES_MAP> PLAT_TRADES_MAP;
-
-typedef std::map<int64, TRADES_MAP> USER_TRADES_MAP;
-
-//当前报价
-typedef std::map<std::string, swp_logic::Quotations> QUOTATIONS_MAP; /*key fx_sjpycnh*/
-typedef std::map<int64, QUOTATIONS_MAP> QUOTATIONS_ALL_MAP;/*类别 外汇，股票，期货*/
-
-//定时渠道
-typedef std::map<int64, trades_logic::TimeTask> TASKINFO_MAP;
-typedef std::list<trades_logic::TimeTask> TASKINFO_LIST;
-
-
-//航班信息
-typedef std::map<int64, trades_logic::FlightInfo> FIGHT_INFO_MAP;
-
+typedef std::map<std::string, trades_logic::TradesStar> TRADES_STAR_MAP;
+typedef std::list<trades_logic::TimeTask> TIME_TASK_LIST;
 namespace trades_logic {
 
 class TradesCache {
  public:
-  PLAT_GOODS_MAP trades_map_;
-  PLAT_TRADES_MAP plat_trades_map_;
-  TRADES_MAP all_trades_map_; /*仓位ID-仓位信息*/
-  USER_TRADES_MAP user_trades_map_; /*用户ID - 仓位列表*/
-  QUOTATIONS_ALL_MAP quotations_map_;
-  TASKINFO_LIST task_temp_list_;
-  TASKINFO_MAP task_temp_map_;
-
-  FIGHT_INFO_MAP fight_info_map_;
+    TRADES_STAR_MAP  trades_star_map_;
+    TIME_TASK_LIST   trades_task_list_;
 };
 
 class TradesManager {
@@ -51,45 +26,18 @@ class TradesManager {
   TradesManager();
   virtual ~TradesManager();
 
-  void SetGoods(trades_logic::GoodsInfo& goods_info);
-
+ public:
   void TimeEvent(int opcode, int time);
-
   void InitDB(trades_logic::TradesDB* trades_db);
-
-  void InitGoodsData();
-
-  void InitFlightInfo();
-
-  void SendGoods(const int socket, const int64 session, const int32 reversed, const int32 pid,
-                 const int32 start, const int32 count);
-
-  void SendCurrentPosition(const int socket, const int64 session, const int32 reversed,
-                           const int64 uid,const int32 pos, const int32 count = 10);
-
-  void SendFightInfo(const int socket, const int64 session, const int32 reversed,
-                     const int64 uid, const int64 gid);
-
-  void OnTimePosition(const int socket, const int64 session,
-                      swp_logic::TradesPosition& trades_position);
-
-  int32 OpenPosition(swp_logic::TradesPosition& trades_position);
-
-  void SetTimePosition(swp_logic::TradesPosition& trades_position);
-
-  void SetQuotations(swp_logic::Quotations& quotation);
-
-  void GetQuotations(const std::string& key, swp_logic::Quotations& quotation);
-
-  void GetQuotationsNoLock(const std::string& key,
-                           swp_logic::Quotations& quotation);
-
-  void GetAllQuotatiosnNoLock(const int64 type ,QUOTATIONS_MAP& quotations);
-
-  bool DistributionTask();
+  void InitData();
+  void TimeStarEvent();
  private:
   void Init();
-  void SetGoodsUnit(trades_logic::GoodsInfo& goods_info);
+  //创建时间任务
+  void CreateTimeTask();
+  void ProcessTimeTask(const time_t current_time, trades_logic::TimeTask& task);
+  int64 ChangeTodayUnixTime(const base::Time::Exploded& exploded, const std::string& fromat_time);
+  void AlterTradesStarState(const std::string& symbol,const bool state);
  private:
   TradesCache *trades_cache_;
   trades_logic::TradesDB* trades_db_;

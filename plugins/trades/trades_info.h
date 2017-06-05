@@ -15,193 +15,255 @@
 namespace trades_logic {
 
 enum BSTYPE {
-  BUY_TYPE = 1,
-  SELL_TYPE = 2
+    BUY_TYPE = 1,
+    SELL_TYPE = 2
 };
 
 enum TIMETYPE {
-  ONE_MINUTE = 60,
-  FIVE_MINUTE = 300,
-  HALF_HOUR = 1800,
-  ONE_HOUR = 3600
+    ONE_MINUTE = 60,
+    FIVE_MINUTE = 300,
+    HALF_HOUR = 1800,
+    ONE_HOUR = 3600
 };
 
 enum CLOSETYPE {
-  ORDINARY_TYPE = 1,
-  AUTO_TYPE = 2,
-  LOSE_TYPE = 3,
-  CLOSED_TYPE = 4,
-  FORCED_TYPE = 5,
-  TIMER_TYPE = 6,
+    ORDINARY_TYPE = 1,
+    AUTO_TYPE = 2,
+    LOSE_TYPE = 3,
+    CLOSED_TYPE = 4,
+    FORCED_TYPE = 5,
+    TIMER_TYPE = 6,
 };
+
+enum TIMETASKTYPE {
+    TASK_START_TYPE = 1,
+    TASK_STOP_TYPE = 2
+};
+
 
 class TimeTask {
- public:
-  TimeTask();
-  TimeTask(const TimeTask& time_task);
+public:
+    TimeTask();
+    TimeTask(const TimeTask& time_task);
 
-  TimeTask& operator =(const TimeTask& time_task);
+    TimeTask& operator =(const TimeTask& time_task);
 
-  ~TimeTask() {
-    if (data_ != NULL)
-      data_->Release();
-  }
-
-  static bool cmp(const trades_logic::TimeTask& t_time_task,
-                  const trades_logic::TimeTask& r_time_task) {
-    //return t_time_task.end_time() <= t_time_task.end_time();
-    return Data::cmp(t_time_task.data_, r_time_task.data_);
-  }
-
-  void set_id(const int64 id) {
-    data_->id_ = id;
-  }
-
-  void set_start_time(const int64 start_time) {
-    data_->start_time_ = start_time;
-  }
-
-  void set_end_time(const int64 end_time) {
-    data_->end_time_ = end_time;
-  }
-
-  const int64 id() const {
-    return data_->id_;
-  }
-
-  const int64 start_time() const {
-    return data_->start_time_;
-  }
-
-  const int64 end_time() const {
-    return data_->end_time_;
-  }
-
-  void set_time(const int64 start_time, const int64 timing_time) {
-    data_->start_time_ = start_time;
-    data_->end_time_ = data_->start_time_ + timing_time;
-  }
-
- private:
-  class Data {
-   public:
-    Data()
-        : refcount_(1),
-          id_(0),
-          start_time_(0),
-          end_time_(0) {
+    ~TimeTask() {
+        if (data_ != NULL)
+            data_->Release();
     }
 
-   public:
-    int64 id_;
-    int64 start_time_;
-    int64 end_time_;
-
-    static bool cmp(const Data* t_data,
-                      const Data* r_data) {
-      return t_data->end_time_ < r_data->end_time_;
+    void set_symbol(const std::string& symbol) {
+        data_->symbol_ = symbol;
     }
 
-    void AddRef() {
-      __sync_fetch_and_add(&refcount_, 1);
+    void set_earliest_time(const std::string& earliest_time) {
+        data_->earliest_time_ = earliest_time;
     }
-    void Release() {
-      __sync_fetch_and_sub(&refcount_, 1);
-      if (!refcount_)
-        delete this;
-    }
-   private:
-    int refcount_;
-  };
 
-  Data* data_;
+    void set_latest_time(const std::string& latest_time) {
+        data_->latest_time_ = latest_time;
+    }
+
+    void set_task_time(const int64 task_time) {
+        data_->task_time_ = task_time;
+    }
+
+    void set_interval_time(const int64 interval_time) {
+        data_->interval_time_ = interval_time;
+    }
+
+    void set_task_start_time(const int64 task_start_time) {
+        data_->task_start_time_ = task_start_time;
+    }
+
+    void set_task_type(const int32 task_type) {
+        data_->task_type_ = task_type;
+    }
+
+    const std::string& symbol() const {
+        return data_->symbol_;
+    }
+
+    const std::string& earliest_time() const {
+        return data_->earliest_time_;
+    }
+
+    const std::string& latest_time() const {
+        return data_->latest_time_;
+    }
+
+    const int64 task_time() const {
+        return data_->task_time_;
+    }
+
+    const int64 interval_time() const {
+        return data_->interval_time_;
+    }
+
+    const int64 task_start_time() const {
+        return data_->task_start_time_;
+    }
+
+
+    const int32 task_type() const {
+        return data_->task_type_;
+    }
+
+    static bool cmp(const TimeTask& t_time_task, const TimeTask& r_time_task) {
+        return Data::cmp(t_time_task.data_, r_time_task.data_);
+    }
+private:
+    class Data {
+    public:
+        Data():refcount_(1),
+            task_time_(0),
+            interval_time_(0),
+            task_type_(0) {
+        }
+
+    public:
+        std::string  symbol_;
+        std::string  earliest_time_; //最早时间
+        std::string  latest_time_; //最晚时间
+        int64 task_time_; //任务执行时间
+        int64 interval_time_;//任务间隔时间
+        int64 task_start_time_; //任务到点时间
+        int32 task_type_; //任务类型
+
+        static bool cmp(const Data* t_data,
+                        const Data* r_data) {
+            return t_data->task_start_time_ < r_data->task_start_time_;
+        }
+
+        void AddRef() {
+            __sync_fetch_and_add(&refcount_, 1);
+        }
+        void Release() {
+            __sync_fetch_and_sub(&refcount_, 1);
+            if (!refcount_)
+                delete this;
+        }
+    private:
+        int refcount_;
+    };
+
+    Data* data_;
 };
 
-class FlightInfo {
- public:
- public:
-  FlightInfo();
-  FlightInfo(const FlightInfo& flight_info);
+class TradesStar {
 
-  FlightInfo& operator =(const FlightInfo& flight_info);
+public:
+    TradesStar();
+    TradesStar(const TradesStar& trades_star);
 
-  ~FlightInfo() {
-    if (data_ != NULL)
-      data_->Release();
-  }
+    TradesStar& operator =(const TradesStar& trades_task);
 
-
-  void ValueSerialization(base_logic::DictionaryValue* dict);
-
-  void set_id(const int64 id){
-    data_->id_ = id;
-  }
-
-  void set_gid(const int64 gid) {
-    data_->gid_ = gid;
-  }
-
-  void set_max(const int32 max){
-    data_->max_ = max;
-  }
-
-  void set_min(const int32 min) {
-    data_->min_ = min;
-  }
-
-  const int64 id() const {
-    return data_->id_;
-  }
-
-  const int64 gid() const {
-    return data_->gid_;
-  }
-
-  const int32 max() const {
-    return data_->max_;
-  }
-
-  const int32 min() const {
-    return data_->min_;
-  }
-
-  const std::string& name() const {
-    return data_->name_;
-  }
-
- private:
-  class Data {
-   public:
-    Data()
-        : refcount_(1),
-          id_(0),
-          gid_(0),
-          max_(0),
-          min_(0){
+    ~TradesStar() {
+        if (data_ != NULL)
+            data_->Release();
     }
 
-   public:
-    int64 id_;
-    int64 gid_;
-    int32 max_;
-    int32 min_;
-    std::string name_;
-
-
-    void AddRef() {
-      __sync_fetch_and_add(&refcount_, 1);
+    void ValueSerialization(base_logic::DictionaryValue* dict);
+    void set_symbol(const std::string& symbol) {
+        data_->symbol_ = symbol;
     }
-    void Release() {
-      __sync_fetch_and_sub(&refcount_, 1);
-      if (!refcount_)
-        delete this;
-    }
-   private:
-    int refcount_;
-  };
 
-  Data* data_;
+    void set_name(const std::string& name) {
+        data_->name_ = name;
+    }
+
+    void set_wid(const std::string& wid) {
+        data_->wid_ = wid;
+    }
+
+    void set_start_time(const std::string& start_time) {
+        data_->start_time_ = start_time;
+    }
+
+    void set_end_time(const std::string& end_time) {
+        data_->end_time_ = end_time;
+    }
+
+    void set_trades_time(const int32 trades_time) {
+        data_->trades_time_ = trades_time;
+    }
+
+    void set_interval_time(const int32 interval_time) {
+        data_->interval_time_ = interval_time;
+    }
+
+    void set_is_trading(const bool is_trading_); 
+    /*{
+        data_->is_trading_ = is_trading_;
+    }*/
+
+    const std::string& symbol() const {
+        return data_->symbol_;
+    }
+
+    const std::string& name() const {
+        return data_->name_;
+    }
+
+    const std::string& wid() const {
+        return data_->wid_;
+    }
+
+    const std::string& start_time() const {
+        return data_->start_time_;
+    }
+
+    const std::string&  end_time() const {
+        return data_->end_time_;
+    }
+
+    const int32 trades_time() const {
+        return data_->trades_time_;
+    }
+
+    const int32 interval_time() const {
+        return data_->interval_time_;
+    }
+
+    const bool is_trading() const {
+        return data_->is_trading_;
+    }
+
+private:
+    class Data {
+    public:
+        Data()
+            : refcount_(1),
+              trades_time_(0),
+              interval_time_(0),
+              is_trading_(false) {
+        }
+        std::string  symbol_;
+        std::string  name_;
+        std::string  wid_;
+        std::string  start_time_;
+        std::string  end_time_;
+        int32 trades_time_;
+        int32 interval_time_;
+        bool  is_trading_;
+
+        void AddRef() {
+            __sync_fetch_and_add(&refcount_, 1);
+        }
+
+        void Release() {
+            __sync_fetch_and_sub(&refcount_, 1);
+            if (!refcount_)
+                delete this;
+        }
+    private:
+        int refcount_;
+    };
+
+    Data* data_;
 };
+
 
 
 /*
@@ -495,256 +557,256 @@ class TradesPosition {
 */
 
 class GoodsInfo {
- public:
-  GoodsInfo();
+public:
+    GoodsInfo();
 
-  GoodsInfo(const GoodsInfo& goods_info);
+    GoodsInfo(const GoodsInfo& goods_info);
 
-  GoodsInfo& operator =(const GoodsInfo& goods_info);
+    GoodsInfo& operator =(const GoodsInfo& goods_info);
 
-  ~GoodsInfo() {
-    if (data_ != NULL) {
-      data_->Release();
-    }
-  }
-
-  static bool before(const GoodsInfo& t_goodsinfo, const GoodsInfo& r_goodsinfo){
-    return Data::before(t_goodsinfo.data_, r_goodsinfo.data_);
-  }
-
-  const int32 id() const {
-    return data_->id_;
-  }
-
-  const int32 platform_id() const {
-    return data_->plaform_id_;
-  }
-
-  const std::string& name() const {
-    return data_->name_;
-  }
-
-  const std::string& code() const {
-    return data_->code_;
-  }
-
-  const std::string& symbol() const {
-    return data_->symbol_;
-  }
-
-  const std::string& unit() const {
-    return data_->unit_;
-  }
-
-  const double amount() const {
-    return data_->amount_;
-  }
-
-  const double profit() const {
-    return data_->profit_;
-  }
-
-  const double deposit() const {
-    return data_->deposit_;
-  }
-
-  const double close() const {
-    return data_->close_;
-  }
-
-  const double open() const {
-    return data_->open_;
-  }
-
-  const double deferred() const {
-    return data_->deferred_;
-  }
-
-  const int64 max() const {
-    return data_->max_;
-  }
-
-  const int64 min() const {
-    return data_->min_;
-  }
-
-  const std::string& exchange_name() const {
-    return data_->exchange_name_;
-  }
-
-  const std::string& platform_name() const {
-    return data_->platform_name_;
-  }
-
-  const std::string& show_name() const {
-    return data_->show_name_;
-  }
-
-  const std::string show_symbol() const {
-    return data_->show_symbol_;
-  }
-
-  const int8 status() const {
-    return data_->status_;
-  }
-
-  const int8 sort() const {
-    return data_->sort_;
-  }
-
-  const int64 interval() const {
-    return data_->interval_;
-  }
-
-  void set_id(const int32 id) {
-    data_->id_ = id;
-  }
-
-  void set_platform_id(const int32 platform_id) {
-    data_->plaform_id_ = platform_id;
-  }
-
-  void set_name(const std::string& name) {
-    data_->name_ = name;
-  }
-
-  void set_code(const std::string& code) {
-    data_->code_ = code;
-  }
-
-  void set_symbol(const std::string& symbol) {
-    data_->symbol_ = symbol;
-  }
-
-  void set_unit(const std::string& unit) {
-    data_->unit_ = unit;
-  }
-
-  void set_amount(const double amount) {
-    data_->amount_ = amount;
-  }
-
-  void set_profit(const double profit) {
-    data_->profit_ = profit;
-  }
-
-  void set_deposit(const double deposit) {
-    data_->deposit_ = deposit;
-  }
-
-  void set_close(const double close) {
-    data_->close_ = close;
-  }
-
-  void set_open(const double open) {
-    data_->open_ = open;
-  }
-
-  void set_deferred(const double deferred) {
-    data_->deferred_ = deferred;
-  }
-
-  void set_max(const int64 max) {
-    data_->max_ = max;
-  }
-
-  void set_min(const int64 min) {
-    data_->min_ = min;
-  }
-
-  void set_exchange_name(const std::string& exchange_name) {
-    data_->exchange_name_ = exchange_name;
-  }
-
-  void set_platform_name(const std::string& platform_name) {
-    data_->platform_name_ = platform_name;
-  }
-
-  void set_show_name(const std::string& show_name) {
-    data_->show_name_ = show_name;
-  }
-
-  void set_show_symbol(const std::string& show_symbol) {
-    data_->show_symbol_ = show_symbol;
-  }
-
-  void set_sort(const int8 sort) {
-    data_->sort_ = sort;
-  }
-
-  void set_status(const int8 status) {
-    data_->status_ = status;
-  }
-
-  void set_interval(const int64 interval) {
-    data_->interval_ = interval;
-  }
-
-  void ValueSerialization(base_logic::DictionaryValue* dict);
- private:
-  class Data {
-   public:
-    Data()
-        : refcount_(1),
-          id_(0),
-          plaform_id_(0),
-          interval_(0),
-          amount_(0.0),
-          profit_(0.0),
-          deposit_(0.0),
-          close_(0.0),
-          open_(0.0),
-          min_(0),
-          max_(0),
-          deferred_(0.0),
-          sort_(0),
-          status_(0) {
+    ~GoodsInfo() {
+        if (data_ != NULL) {
+            data_->Release();
+        }
     }
 
-    ~Data() {
+    static bool before(const GoodsInfo& t_goodsinfo, const GoodsInfo& r_goodsinfo) {
+        return Data::before(t_goodsinfo.data_, r_goodsinfo.data_);
     }
 
-   public:
-    int32 id_;
-    int32 plaform_id_;
-    int8 sort_;
-    int8 status_;
-    std::string name_;
-    std::string code_;
-    std::string symbol_;
-    std::string unit_;
-    double amount_;
-    double profit_;
-    double deposit_;
-    double close_;
-    double open_;
-    double deferred_;
-    int64 max_;
-    int64 min_;
-    int64 interval_;
-    std::string exchange_name_;
-    std::string platform_name_;
-    std::string show_symbol_;
-    std::string show_name_;
-
-    static bool before(const Data* t_data,
-                      const Data* r_data) {
-      return t_data->id_ < r_data->id_;
+    const int32 id() const {
+        return data_->id_;
     }
 
-    void AddRef() {
-      __sync_fetch_and_add(&refcount_, 1);
-    }
-    void Release() {
-      __sync_fetch_and_sub(&refcount_, 1);
-      if (!refcount_)
-        delete this;
+    const int32 platform_id() const {
+        return data_->plaform_id_;
     }
 
-   private:
-    int refcount_;
-  };
-  Data* data_;
+    const std::string& name() const {
+        return data_->name_;
+    }
+
+    const std::string& code() const {
+        return data_->code_;
+    }
+
+    const std::string& symbol() const {
+        return data_->symbol_;
+    }
+
+    const std::string& unit() const {
+        return data_->unit_;
+    }
+
+    const double amount() const {
+        return data_->amount_;
+    }
+
+    const double profit() const {
+        return data_->profit_;
+    }
+
+    const double deposit() const {
+        return data_->deposit_;
+    }
+
+    const double close() const {
+        return data_->close_;
+    }
+
+    const double open() const {
+        return data_->open_;
+    }
+
+    const double deferred() const {
+        return data_->deferred_;
+    }
+
+    const int64 max() const {
+        return data_->max_;
+    }
+
+    const int64 min() const {
+        return data_->min_;
+    }
+
+    const std::string& exchange_name() const {
+        return data_->exchange_name_;
+    }
+
+    const std::string& platform_name() const {
+        return data_->platform_name_;
+    }
+
+    const std::string& show_name() const {
+        return data_->show_name_;
+    }
+
+    const std::string show_symbol() const {
+        return data_->show_symbol_;
+    }
+
+    const int8 status() const {
+        return data_->status_;
+    }
+
+    const int8 sort() const {
+        return data_->sort_;
+    }
+
+    const int64 interval() const {
+        return data_->interval_;
+    }
+
+    void set_id(const int32 id) {
+        data_->id_ = id;
+    }
+
+    void set_platform_id(const int32 platform_id) {
+        data_->plaform_id_ = platform_id;
+    }
+
+    void set_name(const std::string& name) {
+        data_->name_ = name;
+    }
+
+    void set_code(const std::string& code) {
+        data_->code_ = code;
+    }
+
+    void set_symbol(const std::string& symbol) {
+        data_->symbol_ = symbol;
+    }
+
+    void set_unit(const std::string& unit) {
+        data_->unit_ = unit;
+    }
+
+    void set_amount(const double amount) {
+        data_->amount_ = amount;
+    }
+
+    void set_profit(const double profit) {
+        data_->profit_ = profit;
+    }
+
+    void set_deposit(const double deposit) {
+        data_->deposit_ = deposit;
+    }
+
+    void set_close(const double close) {
+        data_->close_ = close;
+    }
+
+    void set_open(const double open) {
+        data_->open_ = open;
+    }
+
+    void set_deferred(const double deferred) {
+        data_->deferred_ = deferred;
+    }
+
+    void set_max(const int64 max) {
+        data_->max_ = max;
+    }
+
+    void set_min(const int64 min) {
+        data_->min_ = min;
+    }
+
+    void set_exchange_name(const std::string& exchange_name) {
+        data_->exchange_name_ = exchange_name;
+    }
+
+    void set_platform_name(const std::string& platform_name) {
+        data_->platform_name_ = platform_name;
+    }
+
+    void set_show_name(const std::string& show_name) {
+        data_->show_name_ = show_name;
+    }
+
+    void set_show_symbol(const std::string& show_symbol) {
+        data_->show_symbol_ = show_symbol;
+    }
+
+    void set_sort(const int8 sort) {
+        data_->sort_ = sort;
+    }
+
+    void set_status(const int8 status) {
+        data_->status_ = status;
+    }
+
+    void set_interval(const int64 interval) {
+        data_->interval_ = interval;
+    }
+
+    void ValueSerialization(base_logic::DictionaryValue* dict);
+private:
+    class Data {
+    public:
+        Data()
+            : refcount_(1),
+              id_(0),
+              plaform_id_(0),
+              interval_(0),
+              amount_(0.0),
+              profit_(0.0),
+              deposit_(0.0),
+              close_(0.0),
+              open_(0.0),
+              min_(0),
+              max_(0),
+              deferred_(0.0),
+              sort_(0),
+              status_(0) {
+        }
+
+        ~Data() {
+        }
+
+    public:
+        int32 id_;
+        int32 plaform_id_;
+        int8 sort_;
+        int8 status_;
+        std::string name_;
+        std::string code_;
+        std::string symbol_;
+        std::string unit_;
+        double amount_;
+        double profit_;
+        double deposit_;
+        double close_;
+        double open_;
+        double deferred_;
+        int64 max_;
+        int64 min_;
+        int64 interval_;
+        std::string exchange_name_;
+        std::string platform_name_;
+        std::string show_symbol_;
+        std::string show_name_;
+
+        static bool before(const Data* t_data,
+                           const Data* r_data) {
+            return t_data->id_ < r_data->id_;
+        }
+
+        void AddRef() {
+            __sync_fetch_and_add(&refcount_, 1);
+        }
+        void Release() {
+            __sync_fetch_and_sub(&refcount_, 1);
+            if (!refcount_)
+                delete this;
+        }
+
+    private:
+        int refcount_;
+    };
+    Data* data_;
 };
 
 }  // namespace quotations_logic

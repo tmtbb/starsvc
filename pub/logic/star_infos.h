@@ -797,6 +797,7 @@ class TradesPosition {
     double limit_;
     double stop_;
     double deferred_;
+    int64  s_uid_;//来源//若为0，表明系统的
     std::string code_;
     std::string symbol_;
     std::string name_;
