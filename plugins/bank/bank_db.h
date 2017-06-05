@@ -8,7 +8,7 @@
 #include <list>
 #include "bank/bank_info.h"
 #include "storage/data_engine.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "config/config.h"
 #include "basic/basictypes.h"
 #include "logic/base_values.h"

@@ -36,6 +36,8 @@ void UserInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
   dict->GetReal(L"balance", &data_->balance_);
   dict->GetString(L"phone", &data_->phone_num_);
   dict->GetInteger(L"type", &data_->type_);
+  dict->GetString(L"nickname", &data_->nickname_);
+  dict->GetString(L"head_url", &data_->head_url_);
 }
 
 
@@ -338,4 +340,76 @@ void TOwnStar::ValueSerialization(base_logic::DictionaryValue* dict) {
   dict->GetString(L"faccid", &data_->faccid_);
 }
 
+Comments::Comments() {
+  data_ = new Data();
+}
+
+Comments::Comments(const Comments& comments)
+    : data_(comments.data_) {
+  if (data_ != NULL) {
+    data_->AddRef();
+  }
+}
+
+Comments& Comments::operator =(const Comments& comments) {
+  if (comments.data_ != NULL) {
+    comments.data_->AddRef();
+  }
+
+  if (data_ != NULL) {
+    data_->Release();
+  }
+
+  data_ = comments.data_;
+  return (*this);
+}
+
+void Comments::ValueDeserialize(std::string& str) {
+  int32 error_code;
+  std::string error_str;
+  base_logic::ValueSerializer* engine = base_logic::ValueSerializer::Create(
+      base_logic::IMPL_JSON);
+  if (engine == NULL) {
+    LOG_ERROR("engine create null");
+  }
+  base_logic::DictionaryValue* dict = (base_logic::DictionaryValue*) engine
+      ->Deserialize(&str, &error_code, &error_str);
+
+  dict->GetBigInteger(L"cms_time", &data_->current_unix_time_);
+  dict->GetString(L"star_code", &data_->star_code_);
+  dict->GetString(L"fans_id", &data_->fans_id_);
+  dict->GetString(L"nick_name", &data_->nick_name_);
+  dict->GetString(L"comments", &data_->comments_);
+  dict->GetString(L"head_url", &data_->head_url_);
+}
+
+std::string Comments::ValueSerialize() {
+  std::string json_content;
+  base_logic::DictionaryValue dict;
+  if (!data_)
+    return "";
+  dict.SetBigInteger(L"current_unix_time", data_->current_unix_time_);
+  dict.SetString(L"star_code", data_->star_code_);
+  dict.SetString(L"fans_id", data_->fans_id_);
+
+  dict.SetString(L"nick_name", data_->nick_name_);
+  dict.SetString(L"comments", data_->comments_);
+  if (!data_->head_url_.empty())
+    dict.SetString(L"head_url", data_->head_url_);
+  /*
+  if (!data_->platform_name_.empty())
+    dict.SetString(L"platform_name", data_->platform_name_);
+  if (!data_->symbol_.empty())
+    dict.SetString(L"symbol", data_->symbol_);
+  if (!data_->exchange_name_.empty())
+    dict.SetString(L"exchange_name", data_->exchange_name_);
+*/
+  base_logic::ValueSerializer* engine = base_logic::ValueSerializer::Create(
+      base_logic::IMPL_JSON);
+  if (engine == NULL) {
+    LOG_ERROR("engine create null");
+  }
+  bool r = engine->Serialize(dict, &json_content);
+  return json_content;
+}
 }  // namespace quotations_logic

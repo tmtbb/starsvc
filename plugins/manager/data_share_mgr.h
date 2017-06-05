@@ -4,27 +4,27 @@
 #ifndef MANAGER_DATA_SHARE_MGR_H__
 #define MANAGER_DATA_SHARE_MGR_H__
 
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "thread/base_thread_handler.h"
 #include "thread/base_thread_lock.h"
 
 namespace manager_schduler {
 
-typedef std::map<int64, swp_logic::UserInfo> USER_MAP;
-typedef std::map<int, swp_logic::UserInfo> SOCKET_MAP;
+typedef std::map<int64, star_logic::UserInfo> USER_MAP;
+typedef std::map<int, star_logic::UserInfo> SOCKET_MAP;
 
 class SchdulerEngine {
  public:
   virtual bool SetUserInfoSchduler(const int64 id,
-                                   swp_logic::UserInfo* user) = 0;
+                                   star_logic::UserInfo* user) = 0;
 
   virtual bool GetUserInfoSchduler(const int64 id,
-                                   swp_logic::UserInfo* user) = 0;
+                                   star_logic::UserInfo* user) = 0;
 
   virtual bool DelUserInfoSchduler(const int64 id) = 0;
 
   virtual bool FindUserInfoSchduler(const int socket,
-                                    swp_logic::UserInfo* schduler) = 0;
+                                    star_logic::UserInfo* schduler) = 0;
 
   virtual bool CloseUserInfoSchduler(const int socket) = 0;
 
@@ -42,14 +42,14 @@ class SchdulerEngine {
 
 class SchdulerEngineImpl : public SchdulerEngine {
  public:
-  bool SetUserInfoSchduler(const int64 id, swp_logic::UserInfo* user);
+  bool SetUserInfoSchduler(const int64 id, star_logic::UserInfo* user);
 
   bool GetUserInfoSchduler(const int64 id,
-                           swp_logic::UserInfo* user);
+                           star_logic::UserInfo* user);
 
   bool DelUserInfoSchduler(const int64 id);
 
-  bool FindUserInfoSchduler(const int socket, swp_logic::UserInfo* schduler);
+  bool FindUserInfoSchduler(const int socket, star_logic::UserInfo* schduler);
 
   bool CloseUserInfoSchduler(const int socket);
 
@@ -77,14 +77,14 @@ __attribute__((visibility("default")))
   ManagerSchdulerEngine();
   virtual ~ManagerSchdulerEngine();
  public:
-  bool SetUserInfoSchduler(const int64 id, swp_logic::UserInfo* user);
+  bool SetUserInfoSchduler(const int64 id, star_logic::UserInfo* user);
 
   bool GetUserInfoSchduler(const int64 id,
-                           swp_logic::UserInfo* user);
+                           star_logic::UserInfo* user);
 
   bool DelUserInfoSchduler(const int64 id);
 
-  bool FindUserInfoSchduler(const int socket, swp_logic::UserInfo* schduler);
+  bool FindUserInfoSchduler(const int socket, star_logic::UserInfo* schduler);
 
   bool CloseUserInfoSchduler(const int socket);
 

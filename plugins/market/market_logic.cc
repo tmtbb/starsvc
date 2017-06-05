@@ -569,14 +569,14 @@ bool Marketlogic::OnTimeout(struct server *srv, char *id, int opcode,
 }
 void Marketlogic::InitStarInfo() {
   base_logic::WLockGd lk(lock_);
-  std::list<swp_logic::StarInfo> list;
+  std::list<star_logic::StarInfo> list;
   
   sqldb->OnStarsInfo(&list);
   while (list.size() > 0) {
-    swp_logic::StarInfo item = list.front();
+    star_logic::StarInfo item = list.front();
     list.pop_front();
 
-    stars_map_[item.code()] = item;
+    //stars_map_[item.code()] = item;
   }
   
 }

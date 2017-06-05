@@ -23,7 +23,7 @@ bool HistoryDB::OnHandleWithdraw(const int64 uid, const int64 wid,
                                  const int64 bank_id, const double price,
                                  const double charge,
                                  const std::string& comment, int32& result,
-                                 swp_logic::Withdrawals& withdrawals) {
+                                 star_logic::Withdrawals& withdrawals) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
@@ -86,7 +86,7 @@ bool HistoryDB::OnHandleHistroyTrades(const int64 tid, const int64 uid,
   return true;
 }
 
-bool HistoryDB::OnHistroyWithDraw(std::list<swp_logic::Withdrawals>* list) {
+bool HistoryDB::OnHistroyWithDraw(std::list<star_logic::Withdrawals>* list) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
 
@@ -100,7 +100,7 @@ bool HistoryDB::OnHistroyWithDraw(std::list<swp_logic::Withdrawals>* list) {
     return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
-    swp_logic::Withdrawals with_drawals;
+    star_logic::Withdrawals with_drawals;
     base_logic::Value *result_value;
     listvalue->Remove(0, &result_value);
     base_logic::DictionaryValue *dict_result_value =
@@ -118,7 +118,7 @@ bool HistoryDB::OnHistroyWithDraw(std::list<swp_logic::Withdrawals>* list) {
   return true;
 }
 
-bool HistoryDB::OnHistroyRechargeRecord(std::list<swp_logic::Recharge>* list) {
+bool HistoryDB::OnHistroyRechargeRecord(std::list<star_logic::Recharge>* list) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
 
@@ -132,7 +132,7 @@ bool HistoryDB::OnHistroyRechargeRecord(std::list<swp_logic::Recharge>* list) {
     return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
-    swp_logic::Recharge recharge;
+    star_logic::Recharge recharge;
     base_logic::Value *result_value;
     listvalue->Remove(0, &result_value);
     base_logic::DictionaryValue *dict_result_value =
@@ -150,7 +150,7 @@ bool HistoryDB::OnHistroyRechargeRecord(std::list<swp_logic::Recharge>* list) {
   return true;
 }
 
-bool HistoryDB::OnOwnStarRecord(std::list<swp_logic::TOwnStar>* list) {
+bool HistoryDB::OnOwnStarRecord(std::list<star_logic::TOwnStar>* list) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
 
@@ -164,7 +164,7 @@ bool HistoryDB::OnOwnStarRecord(std::list<swp_logic::TOwnStar>* list) {
     return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
-    swp_logic::TOwnStar ownstar;
+    star_logic::TOwnStar ownstar;
     base_logic::Value *result_value;
     listvalue->Remove(0, &result_value);
     base_logic::DictionaryValue *dict_result_value =
@@ -183,7 +183,7 @@ bool HistoryDB::OnOwnStarRecord(std::list<swp_logic::TOwnStar>* list) {
 }
 
 bool HistoryDB::OnHistroyTradesRecord(
-    std::list<swp_logic::TradesPosition>* list) {
+    std::list<star_logic::TradesPosition>* list) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
 
@@ -197,7 +197,7 @@ bool HistoryDB::OnHistroyTradesRecord(
     return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
-    swp_logic::TradesPosition trades;
+    star_logic::TradesPosition trades;
     base_logic::Value *result_value;
     listvalue->Remove(0, &result_value);
     base_logic::DictionaryValue *dict_result_value =

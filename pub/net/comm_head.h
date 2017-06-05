@@ -22,7 +22,8 @@ enum PACKET_TYPE {
   BANK_TYPE = 8,
   IM_TYPE = 9,
   INFO_TYPE = 10,
-  MARKET_TYPE = 11
+  MARKET_TYPE = 11,
+  COMMENTS_TYPE = 12
 };
 
 

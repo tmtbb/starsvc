@@ -4,7 +4,7 @@
 #ifndef HISTORY_SCHDULER_ENGINE_H__
 #define HISTORY_SCHDULER_ENGINE_H__
 
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "history/history_info.h"
 #include "history/history_db.h"
 #include "thread/base_thread_handler.h"
@@ -13,16 +13,16 @@
 
 namespace history_logic {
 
-typedef std::map<int64, swp_logic::TradesPosition> TRADES_MAP;/*交易ID为key*/
+typedef std::map<int64, star_logic::TradesPosition> TRADES_MAP;/*交易ID为key*/
 typedef std::map<int64, TRADES_MAP> ALL_TRADES_MAP;/*用户ID 为key*/
 
-typedef std::map<int64, swp_logic::Recharge> RECHARGE_MAP;/*充值ID为key*/
+typedef std::map<int64, star_logic::Recharge> RECHARGE_MAP;/*充值ID为key*/
 typedef std::map<int64, RECHARGE_MAP> ALL_RECHAGE_MAP;/*用户ID 为KEY*/
 
-typedef std::map<int64, swp_logic::Withdrawals> WITHDRAWALS_MAP;/*提现ID*/
+typedef std::map<int64, star_logic::Withdrawals> WITHDRAWALS_MAP;/*提现ID*/
 typedef std::map<int64, WITHDRAWALS_MAP> ALLWITHDRAWALS_MAP;/*用户ID 为KEY*/
 
-typedef std::map<int64, swp_logic::TOwnStar> OWNSTAR_MAP;
+typedef std::map<int64, star_logic::TOwnStar> OWNSTAR_MAP;
 typedef std::map<int64, OWNSTAR_MAP> ALL_OWNSTAR_MAP;/*uid 为KEY*/
 
 class HistoryCache {
@@ -80,30 +80,30 @@ class HistoryManager {
 
  private:
   void Init();
-  void SetHistoryTradesNoLock(swp_logic::TradesPosition& trades);
+  void SetHistoryTradesNoLock(star_logic::TradesPosition& trades);
   void GetHistoryTradesNoLock(const int64 uid,
-                              std::list<swp_logic::TradesPosition>& list,
+                              std::list<star_logic::TradesPosition>& list,
                               const int64 pos = 0, const int64 count = 10);
 
   void ModifyHistoryTradesNoLock(const int64 uid, const int64 tid,
                            const int32 handle);
 
-  void SetHistoryRechargeNoLock(swp_logic::Recharge& recharge);
+  void SetHistoryRechargeNoLock(star_logic::Recharge& recharge);
   void GetHistoryRechargeNoLock(const int64 uid, const int32 status,
-                                std::list<swp_logic::Recharge>& list,
+                                std::list<star_logic::Recharge>& list,
                                 const int64 pos = 0, const int64 count = 10);
 
-  void SetHistoryWithDrawlsNoLock(swp_logic::Withdrawals& withdrawls);
+  void SetHistoryWithDrawlsNoLock(star_logic::Withdrawals& withdrawls);
 
   void GetHistoryDrawlNoLock(const int64 uid, const int32 status,
-                             std::list<swp_logic::Withdrawals>& list,
+                             std::list<star_logic::Withdrawals>& list,
                              const int64 pos = 0, const int64 count = 10);
 //________--
 
-  void SetOwnStarNoLock(swp_logic::TOwnStar& ownstar);
+  void SetOwnStarNoLock(star_logic::TOwnStar& ownstar);
 
   void GetHistoryOwnStarNoLock(const int64 uid, const int32 status,
-                                std::list<swp_logic::TOwnStar>& list,
+                                std::list<star_logic::TOwnStar>& list,
                                 const int64 pos = 0, const int64 count = 10);
  private:
   history_logic::HistoryDB* history_db_;
