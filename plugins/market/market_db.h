@@ -67,7 +67,10 @@ class Market_Mysql {
   					int64& startnum,int64& endnum,int64& all);
  //add bytw  
   bool OnStarsInfo(std::list<star_logic::StarInfo>* list);//更新缓存内容 
+  bool OnStarsbrief(std::list<star_logic::StarBrief>* list);//更新缓存内容 
+
   static void CallStarInfo(void* param, base_logic::Value* value);
+  static void CallStarbrief(void* param, base_logic::Value* value);
  //end add
   static void Callpublicback(void* param, base_logic::Value* value);
   

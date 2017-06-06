@@ -12,6 +12,7 @@
 namespace market_logic {
 
 typedef std::map<std::string, star_logic::StarInfo> STARTS_MAP;/*明星ID为key*/
+typedef std::map<std::string, star_logic::StarBrief> STARTSBRIEF_MAP;/*明星ID为key*/
 
 class Marketlogic {
  public:
@@ -74,6 +75,7 @@ class Marketlogic {
 
   struct threadrw_t* lock_;
   STARTS_MAP stars_map_;
+  STARTSBRIEF_MAP starsbrief_map_;
 };
 }  // namespace im_logic
 
