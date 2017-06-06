@@ -412,4 +412,50 @@ std::string Comments::ValueSerialize() {
   bool r = engine->Serialize(dict, &json_content);
   return json_content;
 }
+//_____starbrief
+
+StarBrief::StarBrief() {
+  data_ = new Data();
+}
+
+StarBrief::StarBrief(const StarBrief& starhead)
+    : data_(starhead.data_) {
+  if (data_ != NULL) {
+    data_->AddRef();
+  }
+}
+
+StarBrief& StarBrief::operator =(const StarBrief& starhead) {
+  if (starhead.data_ != NULL) {
+    starhead.data_->AddRef();
+  }
+
+  if (data_ != NULL) {
+    data_->Release();
+  }
+
+  data_ = starhead.data_;
+  return (*this);
+}
+
+void StarBrief::ValueSerialization(base_logic::DictionaryValue* dict) {
+
+  dict->GetString(L"symbol", &data_->symbol_);
+  dict->GetString(L"nationality", &data_->nationality_);
+  dict->GetString(L"name", &data_->name_);
+  dict->GetBigInteger(L"gender", &data_->gender_);
+
+  dict->GetString(L"head_url", &data_->head_url_);
+  dict->GetString(L"nation", &data_->nation_);
+  dict->GetString(L"work", &data_->work_);
+  dict->GetInteger(L"star_vip", &data_->vip_);
+  dict->GetString(L"introduction", &data_->introduction_);
+  dict->GetString(L"weibo_index_id", &data_->weibo_index_id_);
+  dict->GetString(L"constellaction", &data_->constellaction_);
+  dict->GetString(L"birth", &data_->birth_);
+  dict->GetString(L"colleage", &data_->colleage_);
+  dict->GetString(L"pic_url", &data_->pic_url_);
+  dict->GetBigInteger(L"owntimes", &data_->owntimes_);
+}
+
 }  // namespace quotations_logic

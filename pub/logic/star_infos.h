@@ -1388,6 +1388,171 @@ class Comments {
   };
   Data* data_;
 };
+
+
+class StarBrief {
+ public:
+  StarBrief();
+  StarBrief(const StarBrief& starhead);
+  StarBrief& operator =(const StarBrief& starhead);
+
+  ~StarBrief() {
+    if (data_ != NULL) {
+      data_->Release();
+    }
+  }
+
+  const int64 gender() const {
+    return data_->gender_;
+  }
+  const int64 owntimes() const {
+    return data_->owntimes_;
+  }
+  /*
+  const int32 type() const {
+    return data_->type_;
+  }
+  */
+  const int32 vip() const {
+    return data_->vip_;
+  }
+  const std::string& symbol() const {
+    return data_->symbol_;
+  }
+  const std::string& nationality() const {
+    return data_->nationality_;
+  }
+  const std::string& name() const {
+    return data_->name_;
+  }
+  const std::string& head_url() const {
+    return data_->head_url_;
+  }
+  const std::string& nation() const {
+    return data_->nation_;
+  }
+  const std::string& work() const {
+    return data_->work_;
+  }
+  const std::string& weibo_index_id() const {
+   return data_->weibo_index_id_;
+  }
+  const std::string& constellaction() const {
+   return data_->constellaction_;
+  }
+  const std::string& pic_url() const {
+   return data_->pic_url_;
+  }
+  const std::string& birth() const {
+   return data_->birth_;
+  }
+  const std::string& colleage() const {
+   return data_->colleage_;
+  }
+  const std::string& introduction() const {
+   return data_->introduction_;
+  }
+//----
+  void set_weibo_index_id(const std::string& weibo_index_id) {
+    data_->weibo_index_id_ = weibo_index_id;
+  }
+
+  void set_gender(const int64 gender) {
+    data_->gender_ = gender;
+  }
+  
+  void set_owntimes(const int64 owntimes) {
+    data_->owntimes_ = owntimes;
+  }
+  /*
+  void set_type(const int32 type) {
+    data_->type_ = type;
+  }
+  */
+  void set_vip(const int64 vip) {
+    data_->vip_ = vip;
+  }
+
+  void set_introduction(const std::string &introduction) {
+    data_->introduction_ = introduction;
+  }
+
+  void set_symbol(const std::string& symbol) {
+    data_->symbol_ = symbol;
+  }
+  void set_nationality(const std::string& nationality) {
+    data_->nationality_ = nationality;
+  }
+  void set_name(const std::string& value) {
+    data_->name_ = value;
+  }
+  void set_head_url(const std::string& value) {
+    data_->head_url_ = value;
+  }
+  void set_nation(const std::string& value) {
+    data_->nation_ = value;
+  }
+  void set_work(const std::string& value) {
+    data_->work_ = value;
+  }
+  void set_constellaction(const std::string& value) {
+    data_->constellaction_ = value;
+  }
+
+  void set_pic_url(const std::string& value) {
+    data_->pic_url_ = value;
+  }
+
+  void set_birth(const std::string& value) {
+    data_->birth_ = value;
+  }
+
+  void set_colleage(const std::string& value) {
+    data_->colleage_ = value;
+  }
+  void ValueSerialization(base_logic::DictionaryValue* dict);
+
+  class Data {
+   public:
+    Data()
+        : refcount_(1),
+          owntimes_(0),
+          gender_(0), 
+          //type_(0),
+          vip_(0) {
+    }
+
+   public:
+    int64 gender_;
+    int64 owntimes_;
+//   int32 type_;
+    int32 vip_; //加v明星
+    std::string symbol_; //明星代码
+    std::string nationality_; //国籍
+    std::string name_;
+    std::string head_url_; //头像
+    std::string nation_; //民族
+    std::string work_;//工作; 
+    std::string weibo_index_id_;//微博热指数ID
+    std::string constellaction_;//星座
+    std::string pic_url_; //图片url
+    std::string birth_; //生日
+    std::string colleage_; //
+    std::string introduction_; //简介
+
+    void AddRef() {
+      __sync_fetch_and_add(&refcount_, 1);
+    }
+    void Release() {
+      __sync_fetch_and_sub(&refcount_, 1);
+      if (!refcount_)
+        delete this;
+    }
+   private:
+    int refcount_;
+  };
+  Data* data_;
+};
 }  // namespace quotations_logic
 
 #endif /* QUOTATIONS_PUB_LOGIC_QUOTATIONS_INFOS_H_ */

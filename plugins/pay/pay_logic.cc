@@ -37,7 +37,7 @@ Paylogic::~Paylogic() {
     delete pay_db_;
     pay_db_ = NULL;
   }
-  delete kafka_;
+  //delete kafka_;
 }
 
 bool Paylogic::Init() {
@@ -117,7 +117,7 @@ try
     }
 
     case R_CERTIFICATION: {
-      OnCertification(srv, socket, packet);
+      //OnCertification(srv, socket, packet);
       break;
     }
     default:
