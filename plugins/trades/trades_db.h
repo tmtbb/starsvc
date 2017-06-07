@@ -17,16 +17,16 @@
 namespace trades_logic {
 
 class TradesDB {
- public:
-  TradesDB(config::FileConfig* config);
-  ~TradesDB();
+public:
+    TradesDB(config::FileConfig* config);
+    ~TradesDB();
 
- public:
-  bool OnFetchPlatformStar(std::map<std::string, trades_logic::TradesStar>& map);
- private:
-  static void CallGetTradsRule(void* param, base_logic::Value* value);
- private:
-  base_logic::DataEngine* mysql_engine_;
+public:
+    bool OnFetchPlatformStar(std::map<std::string, trades_logic::TradesStar>& map);
+private:
+    static void CallGetTradsRule(void* param, base_logic::Value* value);
+private:
+    base_logic::DataEngine* mysql_engine_;
 };
 
 }  // namespace trades_logic

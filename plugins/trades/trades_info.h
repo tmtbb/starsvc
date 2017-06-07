@@ -193,7 +193,7 @@ public:
         data_->interval_time_ = interval_time;
     }
 
-    void set_is_trading(const bool is_trading_); 
+    void set_is_trading(const bool is_trading_);
     /*{
         data_->is_trading_ = is_trading_;
     }*/

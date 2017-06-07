@@ -11,16 +11,25 @@ namespace search_logic {
 namespace net_request {
 
 class SearchStarInfo {
- public:
+public:
     SearchStarInfo()
         :id_(NULL),
-        token_(NULL),
-        message_(NULL) {}
+         token_(NULL),
+         message_(NULL) {}
 
     ~SearchStarInfo() {
-        if (id_){delete id_; id_ = NULL;}
-        if (token_) {delete token_; token_ = NULL;}
-        if (message_) {delete message_; message_ = NULL;}
+        if (id_) {
+            delete id_;
+            id_ = NULL;
+        }
+        if (token_) {
+            delete token_;
+            token_ = NULL;
+        }
+        if (message_) {
+            delete message_;
+            message_ = NULL;
+        }
     }
 
     bool set_http_packet(base_logic::DictionaryValue* value);
@@ -56,7 +65,7 @@ class SearchStarInfo {
     }
 
 
- public:
+public:
     base_logic::FundamentalValue* id_;
     base_logic::StringValue* token_;
     base_logic::StringValue* message_;
@@ -64,19 +73,22 @@ class SearchStarInfo {
 
 }
 
-namespace net_reply{
-    
+namespace net_reply {
+
 class StarUnit {
- public:
-   StarUnit()
+public:
+    StarUnit()
         :symbol_(NULL)
         ,gender_(NULL)
         ,name_(NULL)
         ,pic_(NULL)
-        ,wid_(NULL){}
-    
-    ~StarUnit(){
-        if (value_) {delete value_; value_ = NULL;}
+        ,wid_(NULL) {}
+
+    ~StarUnit() {
+        if (value_) {
+            delete value_;
+            value_ = NULL;
+        }
     }
 
     void set_symbol(const std::string& symbol) {
@@ -113,7 +125,7 @@ class StarUnit {
             value_->Set(L"wid", wid_);
         return value_;
     }
- private:
+private:
     base_logic::StringValue*         symbol_;
     base_logic::FundamentalValue*    gender_;
     base_logic::StringValue*         name_;
@@ -127,7 +139,7 @@ public:
     SearchAllStar()
         : stars_info_(NULL),
           value_(NULL) {
-              stars_info_ = new base_logic::ListValue;
+        stars_info_ = new base_logic::ListValue;
     }
 
     ~SearchAllStar() {

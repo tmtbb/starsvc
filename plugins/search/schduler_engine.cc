@@ -53,7 +53,7 @@ void SearchManager::SendSearchStarInfo(int socket, int64 session, int32 reserved
         MatchStarInfo(message, list);
     }
     if (list.size() <= 0) {
-        //send_error(socket, ERROR_TYPE, NO_HAVE_POSITIONS_DATA, session);
+        send_error(socket, ERROR_TYPE, NO_HAVE_SEARCH_DATA, session);
         return;
     }
 
@@ -81,6 +81,7 @@ void SearchManager::SendSearchStarInfo(int socket, int64 session, int32 reserved
     send_message(socket, &packet_control);
 }
 
+
 void SearchManager::MatchStarInfo(const std::string& message,
                                   std::list<star_logic::StarInfo>& list) {
     std::string regex_str;
@@ -103,6 +104,5 @@ void SearchManager::MatchStarInfo(const std::string& message,
     }
     regfree(&o_regex);
 }
-
 
 }

@@ -83,9 +83,9 @@ bool Searchlogic::OnSearchMessage(struct server *srv, const int socket,
     }
     switch (packet->operate_code) {
     case R_SEARCH_STAR: {
-            OnSearchStar(srv, socket, packet);
-            break;
-        }
+        OnSearchStar(srv, socket, packet);
+        break;
+    }
     default:
         break;
     }
