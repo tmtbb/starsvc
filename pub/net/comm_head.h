@@ -23,6 +23,7 @@ enum PACKET_TYPE {
   IM_TYPE = 9,
   INFO_TYPE = 10,
   MARKET_TYPE = 11,
+  COMMENTS_TYPE = 12,
   SEARCH_TYPE = 13
 };
 

@@ -1068,7 +1068,7 @@ void Market_Mysql::CallStarInfo(void* param, base_logic::Value* value) {
   dict->Set(L"resultvalue", (base_logic::Value *) (list));
 }
 
-bool Market_Mysql::OnStarsInfo(std::list<swp_logic::StarInfo>* list) {
+bool Market_Mysql::OnStarsInfo(std::list<star_logic::StarInfo>* list) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
 
@@ -1082,7 +1082,7 @@ bool Market_Mysql::OnStarsInfo(std::list<swp_logic::StarInfo>* list) {
     return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
-    swp_logic::StarInfo item;
+    star_logic::StarInfo item;
     base_logic::Value *result_value;
     listvalue->Remove(0, &result_value);
     base_logic::DictionaryValue *dict_result_value =
@@ -1099,7 +1099,102 @@ bool Market_Mysql::OnStarsInfo(std::list<swp_logic::StarInfo>* list) {
   }
   return true;
 }
+//！！！！！！
 
+void Market_Mysql::CallStarbrief(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_logic::ListValue *list = new base_logic::ListValue();
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      base_logic::DictionaryValue *info_value =
+          new base_logic::DictionaryValue();
+
+	  if (rows[0] != NULL){
+	    info_value->SetString(L"symbol", rows[0]);
+	  }
+	  if (rows[1] != NULL){
+	    info_value->SetString(L"nationality", rows[1]);
+	  }
+	  if (rows[2] != NULL){
+	    info_value->SetString(L"name", rows[2]);
+	  }
+	  if (rows[3] != NULL){
+	    info_value->SetBigInteger(L"gender", atoll(rows[3]));
+	  }
+	  if (rows[4] != NULL){
+	    info_value->SetString(L"head_url", rows[4]);
+	  }
+	  if (rows[5] != NULL){
+	    info_value->SetString(L"nation", rows[5]);
+	  }
+	  if (rows[6] != NULL){
+	    info_value->SetString(L"work", rows[6]);
+	  }
+	  if (rows[7] != NULL){
+	    info_value->SetInteger(L"star_vip", atoll(rows[7]));
+	  }
+	  if (rows[8] != NULL){
+	    info_value->SetString(L"introduction", rows[8]);
+	  }
+	  if (rows[9] != NULL){
+	    info_value->SetString(L"weibo_index_id", rows[9]);
+	  }
+	  if (rows[10] != NULL){
+	    info_value->SetString(L"constellation", rows[10]);
+	  }
+	  if (rows[11] != NULL){
+	    info_value->SetString(L"birth", rows[11]);
+	  }
+	  if (rows[12] != NULL){
+	    info_value->SetString(L"colleage", rows[12]);
+	  }
+	  if (rows[13] != NULL){
+	    info_value->SetString(L"pic_url", rows[13]);
+	  }
+	  if (rows[14] != NULL){
+	    info_value->SetBigInteger(L"owntimes", atoll(rows[14]));
+	  }
+
+      list->Append((base_logic::Value *) (info_value));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (list));
+}
+bool Market_Mysql::OnStarsbrief(std::list<star_logic::StarBrief>* list) {
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+
+  std::string sql;
+  sql = "call proc_GetStarbriefInfo()";
+  base_logic::ListValue *listvalue;
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallStarbrief);
+  if (!r)
+    return false;
+  dict->GetList(L"resultvalue", &listvalue);
+  while (listvalue->GetSize()) {
+    star_logic::StarBrief item;
+    base_logic::Value *result_value;
+    listvalue->Remove(0, &result_value);
+    base_logic::DictionaryValue *dict_result_value =
+        (base_logic::DictionaryValue *) (result_value);
+    item.ValueSerialization(dict_result_value);
+    list->push_back(item);
+    delete dict_result_value;
+    dict_result_value = NULL;
+  }
+
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return true;
+}
 
 }
 

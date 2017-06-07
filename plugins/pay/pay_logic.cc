@@ -6,7 +6,7 @@
 #include "pay/operator_code.h"
 #include "pay/errno.h"
 #include "pay/schduler_engine.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "comm/comm_head.h"
 #include "config/config.h"
 #include "core/common.h"
@@ -37,7 +37,7 @@ Paylogic::~Paylogic() {
     delete pay_db_;
     pay_db_ = NULL;
   }
-  delete kafka_;
+  //delete kafka_;
 }
 
 bool Paylogic::Init() {
@@ -117,7 +117,7 @@ try
     }
 
     case R_CERTIFICATION: {
-      OnCertification(srv, socket, packet);
+      //OnCertification(srv, socket, packet);
       break;
     }
     default:

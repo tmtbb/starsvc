@@ -227,7 +227,7 @@ bool UsersDB::RegisterAccount(const std::string& phone_num,
 }
 
 bool UsersDB::GetUserInfo(const int64 uid, const std::string& ip,
-                          swp_logic::UserInfo& userinfo) {
+                          star_logic::UserInfo& userinfo) {
 
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
@@ -257,7 +257,7 @@ bool UsersDB::GetUserInfo(const int64 uid, const std::string& ip,
 
 bool UsersDB::LoginAccount(const std::string& phone_num,
                            const std::string& passwd, const std::string& ip,
-                           swp_logic::UserInfo& user) {
+                           star_logic::UserInfo& user) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;

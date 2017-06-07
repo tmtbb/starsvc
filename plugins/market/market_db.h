@@ -4,7 +4,7 @@
 
 #include "config/config.h"
 #include "basic/basictypes.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "storage/data_engine.h"
 #include "net/typedef.h"
 
@@ -66,8 +66,11 @@ class Market_Mysql {
   bool getstarnews(const std::string& code,const std::string& name,DicValue &ret,
   					int64& startnum,int64& endnum,int64& all);
  //add bytw  
-  bool OnStarsInfo(std::list<swp_logic::StarInfo>* list);//更新缓存内容 
+  bool OnStarsInfo(std::list<star_logic::StarInfo>* list);//更新缓存内容 
+  bool OnStarsbrief(std::list<star_logic::StarBrief>* list);//更新缓存内容 
+
   static void CallStarInfo(void* param, base_logic::Value* value);
+  static void CallStarbrief(void* param, base_logic::Value* value);
  //end add
   static void Callpublicback(void* param, base_logic::Value* value);
   

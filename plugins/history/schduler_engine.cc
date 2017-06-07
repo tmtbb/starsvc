@@ -40,10 +40,10 @@ void HistoryManager::InitSchdulerEngine(
 
 void HistoryManager::InitHistoryWithDrawals() {
   base_logic::WLockGd lk(lock_);
-  std::list<swp_logic::Withdrawals> list;
+  std::list<star_logic::Withdrawals> list;
   history_db_->OnHistroyWithDraw(&list);
   while (list.size() > 0) {
-    swp_logic::Withdrawals withdrawals = list.front();
+    star_logic::Withdrawals withdrawals = list.front();
     list.pop_front();
     SetHistoryWithDrawlsNoLock(withdrawals);
   }
@@ -51,10 +51,10 @@ void HistoryManager::InitHistoryWithDrawals() {
 
 void HistoryManager::InitHistoryTradesData() {
   base_logic::WLockGd lk(lock_);
-  std::list<swp_logic::TradesPosition> list;
+  std::list<star_logic::TradesPosition> list;
   history_db_->OnHistroyTradesRecord(&list);
   while (list.size() > 0) {
-    swp_logic::TradesPosition trades = list.front();
+    star_logic::TradesPosition trades = list.front();
     list.pop_front();
     SetHistoryTradesNoLock(trades);
   }
@@ -62,10 +62,10 @@ void HistoryManager::InitHistoryTradesData() {
 
 void HistoryManager::InitHistoryRechargeData() {
   base_logic::WLockGd lk(lock_);
-  std::list<swp_logic::Recharge> list;
+  std::list<star_logic::Recharge> list;
   history_db_->OnHistroyRechargeRecord(&list);
   while (list.size() > 0) {
-    swp_logic::Recharge recharge = list.front();
+    star_logic::Recharge recharge = list.front();
     list.pop_front();
     SetHistoryRechargeNoLock(recharge);
 
@@ -74,11 +74,11 @@ void HistoryManager::InitHistoryRechargeData() {
 
 void HistoryManager::InitOwnStarData() {
   base_logic::WLockGd lk(lock_);
-  std::list<swp_logic::TOwnStar> list;
+  std::list<star_logic::TOwnStar> list;
   history_db_->OnOwnStarRecord(&list);
   while (list.size() > 0) {
   //LOG_DEBUG2("list.size[%d]____________________________________________",list.size() );
-    swp_logic::TOwnStar star = list.front();
+    star_logic::TOwnStar star = list.front();
     list.pop_front();
     SetOwnStarNoLock(star);
 
@@ -90,7 +90,7 @@ void HistoryManager::HandleHistoryTrade(const int socket, const int64 session,
                                         const int64 tid, const int32 handle) {
   //获取用户身份
   bool r = false;
-  swp_logic::UserInfo userinfo;
+  star_logic::UserInfo userinfo;
   r = schduler_engine_->GetUserInfoSchduler(uid, &userinfo);
   if (!r) {
     return;
@@ -122,7 +122,7 @@ void HistoryManager::SendHistoryWithDrawls(const int socket,
                                            const int32 revered, const int64 uid,
                                            const int32 status, const int64 pos,
                                            const int64 count) {
-  std::list<swp_logic::Withdrawals> withdrawals_list;
+  std::list<star_logic::Withdrawals> withdrawals_list;
   {
     base_logic::RLockGd lk(lock_);  //1:处理中,2:成功,3:失败
     GetHistoryDrawlNoLock(uid, status, withdrawals_list, 0, 0);
@@ -143,9 +143,9 @@ void HistoryManager::SendHistoryWithDrawls(const int socket,
   int32 t_count = 0;
 
   history_logic::net_reply::AllWithDraw net_allwithdraw;
-  withdrawals_list.sort(swp_logic::Withdrawals::close_after);
+  withdrawals_list.sort(star_logic::Withdrawals::close_after);
   while (withdrawals_list.size() > 0 && t_count < count) {
-    swp_logic::Withdrawals withdrawals = withdrawals_list.front();
+    star_logic::Withdrawals withdrawals = withdrawals_list.front();
     withdrawals_list.pop_front();
     t_start++;
     if (t_start < pos)
@@ -186,7 +186,7 @@ void HistoryManager::SendHistoryRecharge(const int socket, const int64 session,
                                          const int32 revered, const int64 uid,
                                          const int32 status, const int64 pos,
                                          const int64 count) {
-  std::list<swp_logic::Recharge> recharge_list;
+  std::list<star_logic::Recharge> recharge_list;
   {
     base_logic::RLockGd lk(lock_);  //1:处理中,2:成功,3:失败
     GetHistoryRechargeNoLock(uid, status, recharge_list, 0, 0);
@@ -207,9 +207,9 @@ void HistoryManager::SendHistoryRecharge(const int socket, const int64 session,
   int32 t_count = 0;
 
   history_logic::net_reply::AllRecharge all_net_rechagre;
-  recharge_list.sort(swp_logic::Recharge::close_after);
+  recharge_list.sort(star_logic::Recharge::close_after);
   while (recharge_list.size() > 0 && t_count < count) {
-    swp_logic::Recharge recharge = recharge_list.front();
+    star_logic::Recharge recharge = recharge_list.front();
     recharge_list.pop_front();
     t_start++;
     if (t_start < pos)
@@ -245,7 +245,7 @@ void HistoryManager::SendHistoryOwnStar(const int socket, const int64 session,
                                          const int32 revered, const int64 uid,
                                          const int32 status, const int64 pos,
                                          const int64 count) {
-  std::list<swp_logic::TOwnStar> ownstar_list;
+  std::list<star_logic::TOwnStar> ownstar_list;
   //LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
   {
     base_logic::RLockGd lk(lock_);  //
@@ -274,9 +274,9 @@ void HistoryManager::SendHistoryOwnStar(const int socket, const int64 session,
   int32 t_count = 0;
 
   history_logic::net_reply::AllOwnStar all_net_ownstar;
-  //ownstar_list.sort(swp_logic::Recharge::close_after);
+  //ownstar_list.sort(star_logic::Recharge::close_after);
   while (ownstar_list.size() > 0 && t_count < count) {
-    swp_logic::TOwnStar ownstar = ownstar_list.front();
+    star_logic::TOwnStar ownstar = ownstar_list.front();
     ownstar_list.pop_front();
     t_start++;
     if (t_start < pos)
@@ -315,7 +315,7 @@ void HistoryManager::SendHandlePosition(const int socket, const int64 session,
                                         const int32 reversed, const int64 uid,
                                         const int32 htype, const int64 pos,
                                         const int64 count) {
-  std::list<swp_logic::TradesPosition> trades_list;
+  std::list<star_logic::TradesPosition> trades_list;
   {
     base_logic::RLockGd lk(lock_);
     GetHistoryTradesNoLock(uid, trades_list, 0, 0);
@@ -336,9 +336,9 @@ void HistoryManager::SendHandlePosition(const int socket, const int64 session,
   int32 t_count = 0;
 
   history_logic::net_reply::AllTradesPosition net_trades_positions;
-  trades_list.sort(swp_logic::TradesPosition::close_after);
+  trades_list.sort(star_logic::TradesPosition::close_after);
   while (trades_list.size() > 0 && t_count < count) {
-    swp_logic::TradesPosition trades_position = trades_list.front();
+    star_logic::TradesPosition trades_position = trades_list.front();
     trades_list.pop_front();
     t_start++;
     //trades_position.symbol() != symbol && symbol != "all"
@@ -407,7 +407,7 @@ void HistoryManager::SendHandlePosition(const int socket, const int64 session,
 
 void HistoryManager::GetHistoryDrawlNoLock(
     const int64 uid, const int32 status,
-    std::list<swp_logic::Withdrawals>& list, const int64 pos,
+    std::list<star_logic::Withdrawals>& list, const int64 pos,
     const int64 count) {
   WITHDRAWALS_MAP withdrawals_map;
   base::MapGet<ALLWITHDRAWALS_MAP, ALLWITHDRAWALS_MAP::iterator, int64,
@@ -416,13 +416,13 @@ void HistoryManager::GetHistoryDrawlNoLock(
 
   for (WITHDRAWALS_MAP::iterator it = withdrawals_map.begin();
       it != withdrawals_map.end(); it++) {
-    swp_logic::Withdrawals withdrawals = it->second;
+    star_logic::Withdrawals withdrawals = it->second;
     list.push_back(withdrawals);
   }
 }
 
 void HistoryManager::GetHistoryTradesNoLock(
-    const int64 uid, std::list<swp_logic::TradesPosition>& list,
+    const int64 uid, std::list<star_logic::TradesPosition>& list,
     const int64 pos, const int64 count) {
   TRADES_MAP trades_map;
   base::MapGet<ALL_TRADES_MAP, ALL_TRADES_MAP::iterator, int64, TRADES_MAP>(
@@ -430,13 +430,13 @@ void HistoryManager::GetHistoryTradesNoLock(
 
   for (TRADES_MAP::iterator it = trades_map.begin(); it != trades_map.end();
       it++) {
-    swp_logic::TradesPosition trades = it->second;
+    star_logic::TradesPosition trades = it->second;
     list.push_back(trades);
   }
 }
 
 void HistoryManager::GetHistoryRechargeNoLock(
-    const int64 uid, const int32 status, std::list<swp_logic::Recharge>& list,
+    const int64 uid, const int32 status, std::list<star_logic::Recharge>& list,
     const int64 pos, const int64 count) {
   RECHARGE_MAP recharge_map;
   base::MapGet<ALL_RECHAGE_MAP, ALL_RECHAGE_MAP::iterator, int64, RECHARGE_MAP>(
@@ -444,13 +444,13 @@ void HistoryManager::GetHistoryRechargeNoLock(
 
   for (RECHARGE_MAP::iterator it = recharge_map.begin();
       it != recharge_map.end(); it++) {
-    swp_logic::Recharge recharge = it->second;
+    star_logic::Recharge recharge = it->second;
     list.push_back(recharge);
   }
 }
 
 void HistoryManager::GetHistoryOwnStarNoLock(
-    const int64 uid, const int32 status, std::list<swp_logic::TOwnStar>& list,
+    const int64 uid, const int32 status, std::list<star_logic::TOwnStar>& list,
     const int64 pos, const int64 count) {
   //LOG_DEBUG2("GetHistoryOwnStarNoLock________________ [%d] _ [%d]",uid,  history_cache_->all_ownstar_map_.size() );
   OWNSTAR_MAP ownstar_map;
@@ -459,12 +459,12 @@ void HistoryManager::GetHistoryOwnStarNoLock(
 
   for (OWNSTAR_MAP::iterator it = ownstar_map.begin();
       it != ownstar_map.end(); it++) {
-    swp_logic::TOwnStar ownstar = it->second;
+    star_logic::TOwnStar ownstar = it->second;
     list.push_back(ownstar);
   }
 }
 
-void HistoryManager::SetHistoryTradesNoLock(swp_logic::TradesPosition& trades) {
+void HistoryManager::SetHistoryTradesNoLock(star_logic::TradesPosition& trades) {
   TRADES_MAP trades_map;
   base::MapGet<ALL_TRADES_MAP, ALL_TRADES_MAP::iterator, int64, TRADES_MAP>(
       history_cache_->all_trades_map_, trades.uid(), trades_map);
@@ -472,7 +472,7 @@ void HistoryManager::SetHistoryTradesNoLock(swp_logic::TradesPosition& trades) {
   history_cache_->all_trades_map_[trades.uid()] = trades_map;
 }
 
-void HistoryManager::SetHistoryRechargeNoLock(swp_logic::Recharge& recharge) {
+void HistoryManager::SetHistoryRechargeNoLock(star_logic::Recharge& recharge) {
   RECHARGE_MAP recharge_map;
   base::MapGet<ALL_RECHAGE_MAP, ALL_RECHAGE_MAP::iterator, int64, RECHARGE_MAP>(
       history_cache_->all_rechage_map_, recharge.uid(), recharge_map);
@@ -480,7 +480,7 @@ void HistoryManager::SetHistoryRechargeNoLock(swp_logic::Recharge& recharge) {
   history_cache_->all_rechage_map_[recharge.uid()] = recharge_map;
 }
 
-void HistoryManager::SetOwnStarNoLock(swp_logic::TOwnStar& ownstar) {
+void HistoryManager::SetOwnStarNoLock(star_logic::TOwnStar& ownstar) {
 
   //LOG_DEBUG("test ___ownstar.size[%]____________________________________________" );
   OWNSTAR_MAP ownstar_map;
@@ -500,7 +500,7 @@ void HistoryManager::SetOwnStarNoLock(swp_logic::TOwnStar& ownstar) {
 }
 
 void HistoryManager::SetHistoryWithDrawlsNoLock(
-    swp_logic::Withdrawals& withdrawls) {
+    star_logic::Withdrawals& withdrawls) {
   WITHDRAWALS_MAP withdrawals_map;
   base::MapGet<ALLWITHDRAWALS_MAP, ALLWITHDRAWALS_MAP::iterator, int64,
       WITHDRAWALS_MAP>(history_cache_->all_withdrawals_map_, withdrawls.uid(),
@@ -512,14 +512,14 @@ void HistoryManager::SetHistoryWithDrawlsNoLock(
 void HistoryManager::ModifyHistoryTradesNoLock(const int64 uid, const int64 tid,
                                                const int32 handle) {
   TRADES_MAP trades_map;
-  swp_logic::TradesPosition trades_position;
+  star_logic::TradesPosition trades_position;
   bool r = base::MapGet<ALL_TRADES_MAP, ALL_TRADES_MAP::iterator, int64,
       TRADES_MAP>(history_cache_->all_trades_map_, uid, trades_map);
   if (!r)
     return;
 
   r = base::MapGet<TRADES_MAP, TRADES_MAP::iterator, int64,
-      swp_logic::TradesPosition>(trades_map, tid, trades_position);
+      star_logic::TradesPosition>(trades_map, tid, trades_position);
   trades_position.set_handle(handle);
 
 }

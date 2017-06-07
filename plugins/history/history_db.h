@@ -8,7 +8,7 @@
 #include <list>
 #include "history/history_info.h"
 #include "storage/data_engine.h"
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "config/config.h"
 #include "basic/basictypes.h"
 #include "logic/base_values.h"
@@ -22,12 +22,12 @@ class HistoryDB {
   ~HistoryDB();
 
  public:
-  bool OnHistroyTradesRecord(std::list<swp_logic::TradesPosition>* list);
+  bool OnHistroyTradesRecord(std::list<star_logic::TradesPosition>* list);
 
-  bool OnHistroyRechargeRecord(std::list<swp_logic::Recharge>* list);
-  bool OnOwnStarRecord(std::list<swp_logic::TOwnStar>* list);
+  bool OnHistroyRechargeRecord(std::list<star_logic::Recharge>* list);
+  bool OnOwnStarRecord(std::list<star_logic::TOwnStar>* list);
 
-  bool OnHistroyWithDraw(std::list<swp_logic::Withdrawals>* list);
+  bool OnHistroyWithDraw(std::list<star_logic::Withdrawals>* list);
 
   bool OnHandleHistroyTrades(const int64 tid, const int64 uid, const int32 type,
                              const int32 handle, int32& r_handle);
@@ -35,7 +35,7 @@ class HistoryDB {
   bool OnHandleWithdraw(const int64 uid, const int64 wid, const int64 bank_id,
                         const double price, const double charge,
                         const std::string& comment, int32& result,
-                        swp_logic::Withdrawals& withdrawals);
+                        star_logic::Withdrawals& withdrawals);
 
  public:
   static void CallHistroyTradesRecord(void* param, base_logic::Value* value);

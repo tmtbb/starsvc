@@ -181,7 +181,7 @@ bool PayManager::OnWXServer(const int socket, const std::string& appid,
   send_full(socket, r_rt.c_str(), r_rt.length());
 
   if (r) {
-    swp_logic::UserInfo user;
+    star_logic::UserInfo user;
     schduler_engine_->GetUserInfoSchduler(uid, &user);
     user.set_balance(balance);
     pay_logic::net_reply::Balance net_balance;

@@ -23,7 +23,7 @@ LINK_PATHS = -L./ -L/usr/local/libmemcached-1.0.7/lib/  -L/usr/lib64/mysql
 # Flags passed to the preprocessor.
 CPPFLAGS += -isystem -shared -fPIC -D_DB_POOL_ -D_DEBUG -DUSR_LOG_MSG\
 	-D_DIC_POOL_ -D_REENTRANT -D_GNU_SOURCE -DUSR_LOG_ERROR -DUSR_LOG_MSG\
-	-DNET_WORK -DHEAD_SHORT -DFCGI_STD -Wall
+	-DNET_WORK -DHEAD_SHORT -Wall
 
 #CPPFLAGS += -isystem -shared -fPIC -D_DB_POOL_\
 	-D_DIC_POOL_ -D_REENTRANT -D_GNU_SOURCE -DUSR_LOG_ERROR -DUSR_LOG_MSG\
@@ -35,7 +35,7 @@ CXXFLAGS += -g  -Wextra -pthread -shared -fPIC
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-PLUGIN = $(SO_DIR)/users/users.so
+PLUGIN = $(SO_DIR)/comments/comments.so
 
 INCLUDE_PATHS = -I/usr/local/libmemcached-1.0.7/include \
 				-I$(LIB_DIR)/BasicCore \
@@ -87,24 +87,21 @@ clean :
 # function.
 
 
-users_init.o : ./users_init.cc ./users_init.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./users_init.cc $(INCLUDE_PATHS)
+comments_init.o : ./comments_init.cc ./comments_init.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./comments_init.cc $(INCLUDE_PATHS)
 
-users_logic.o : ./users_logic.cc ./users_logic.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./users_logic.cc $(INCLUDE_PATHS)
+comments_logic.o : ./comments_logic.cc ./comments_logic.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./comments_logic.cc $(INCLUDE_PATHS)
 
-users_db.o : ./users_db.cc ./users_db.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./users_db.cc $(INCLUDE_PATHS)
-
-history_info.o : ./history_info.cc ./history_info.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./history_info.cc $(INCLUDE_PATHS)
-		
 schduler_engine.o : ./schduler_engine.cc ./schduler_engine.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./schduler_engine.cc $(INCLUDE_PATHS)
 	
-users_proto_buf.o : ./users_proto_buf.cc ./users_proto_buf.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./users_proto_buf.cc $(INCLUDE_PATHS)
+comments_proto_buf.o : ./comments_proto_buf.cc ./comments_proto_buf.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./comments_proto_buf.cc $(INCLUDE_PATHS)
 	
+comments_redis.o : ./comments_redis.cc ./comments_redis.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./comments_redis.cc $(INCLUDE_PATHS)
+
 logic_unit.o :  $(USER_DIR)/logic/logic_unit.cc $(USER_DIR)/logic/logic_unit.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/logic_unit.cc $(INCLUDE_PATHS)
 	
@@ -114,9 +111,6 @@ star_infos.o :  $(USER_DIR)/logic/star_infos.cc $(USER_DIR)/logic/star_infos.h
 packet_processing.o :  $(USER_DIR)/net/packet_processing.cc $(USER_DIR)/net/packet_processing.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/net/packet_processing.cc $(INCLUDE_PATHS)
 
-fcgimodule.o :  $(USER_DIR)/fcgimodule/fcgimodule.cc $(USER_DIR)/fcgimodule/fcgimodule.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/fcgimodule/fcgimodule.cc $(INCLUDE_PATHS)
-	
 data_engine.o :  $(USER_DIR)/storage/data_engine.cc $(USER_DIR)/storage/data_engine.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/storage/data_engine.cc $(INCLUDE_PATHS)
 	
@@ -132,9 +126,12 @@ mysql_pool.o :  $(USER_DIR)/storage/mysql_pool.cc $(USER_DIR)/storage/mysql_pool
 redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/storage/redis_pool.cc $(INCLUDE_PATHS)
 	
+xml_parser.o :  $(USER_DIR)/logic/xml_parser.cc $(USER_DIR)/logic/xml_parser.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/xml_parser.cc $(INCLUDE_PATHS)
+	
 
-$(PLUGIN) : users_init.o  users_logic.o users_db.o users_proto_buf.o fcgimodule.o\
+$(PLUGIN) : comments_init.o  comments_logic.o schduler_engine.o comments_proto_buf.o comments_redis.o\
 	star_infos.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient \
 	$^ -o $@

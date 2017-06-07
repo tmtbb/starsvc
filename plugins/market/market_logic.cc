@@ -454,12 +454,45 @@ bool Marketlogic::getstarbrief(struct server* srv,int socket ,struct PacketHead*
 		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 		return false;
 	  }
-	  DicValue ret_list;
+    star_logic::StarBrief item;
+
+    {
+      base_logic::WLockGd lk(lock_);
+      STARTSBRIEF_MAP::iterator iter;
+      iter = starsbrief_map_.find (code);
+      if (iter == starsbrief_map_.end()) //Êý¾ÝÎª¿Õ
+      {
+		  send_error(socket, ERROR_TYPE, NO_HAVE_DATA, packet->session_id);
+          return false;
+      }
+      item = iter->second;
+
+    }
+	DicValue ret_list;
+    ret_list.SetString(L"symbol", item.symbol());
+    ret_list.SetString(L"nationality", item.nationality());
+    ret_list.SetString(L"name", item.name());
+    ret_list.SetBigInteger(L"gender", item.gender());
+
+    ret_list.SetString(L"head_url", item.head_url());
+    ret_list.SetString(L"nation", item.nation());
+    ret_list.SetString(L"work", item.work());
+    ret_list.SetInteger(L"star_vip", item.vip());
+    
+    ret_list.SetString(L"introduction", item.introduction());
+    ret_list.SetString(L"weibo_index_id", item.weibo_index_id());
+    ret_list.SetString(L"constellaction", item.constellaction());
+    ret_list.SetString(L"birth", item.birth());
+    ret_list.SetString(L"colleage", item.colleage());
+    ret_list.SetString(L"pic_url", item.pic_url());
+    ret_list.SetBigInteger(L"owntimes", item.owntimes());
+      /*
 	  if(!sqldb->getstarbrief(code,ret_list)){
 		//send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 		send_error(socket, ERROR_TYPE, NO_HAVE_DATA, packet->session_id);
 		return false;
 	  }
+      */
 	  
 	  struct PacketControl packet_reply;
 	  MAKE_HEAD(packet_reply, S_MARKETTYPES_GET, INFO_TYPE, 0,packet->session_id, 0);
@@ -548,7 +581,7 @@ bool Marketlogic::OnBroadcastClose(struct server *srv, const int socket) {
 bool Marketlogic::OnIniTimer(struct server *srv) {
   if (srv->add_time_task != NULL) {
     if (srv->add_time_task != NULL) {
-      srv->add_time_task(srv, "infamation", TIME_RELOADSTARINFO_TASK, 3, -1);
+      srv->add_time_task(srv, "infamation", TIME_RELOADSTARINFO_TASK, 60*30, -1);
     }
   }
   return true;
@@ -569,16 +602,25 @@ bool Marketlogic::OnTimeout(struct server *srv, char *id, int opcode,
 }
 void Marketlogic::InitStarInfo() {
   base_logic::WLockGd lk(lock_);
-  std::list<swp_logic::StarInfo> list;
+  /*
+  std::list<star_logic::StarInfo> list;
   
   sqldb->OnStarsInfo(&list);
   while (list.size() > 0) {
-    swp_logic::StarInfo item = list.front();
+    star_logic::StarInfo item = list.front();
     list.pop_front();
-
-    stars_map_[item.code()] = item;
+    //stars_map_[item.code()] = item;
   }
-  
+ */ 
+  LOG_ERROR("init star info begin ________________________");
+  std::list<star_logic::StarBrief> list;
+  sqldb->OnStarsbrief(&list);
+  while (list.size() > 0) {
+    star_logic::StarBrief item = list.front();
+    list.pop_front();
+    starsbrief_map_[item.symbol()] = item;
+  }
+  LOG_ERROR2("init star info brief end ___[%d]", starsbrief_map_.size());
 }
 
 

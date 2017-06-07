@@ -4,7 +4,7 @@
 #ifndef PAY_SCHDULER_ENGINE_H__
 #define PAY_SCHDULER_ENGINE_H__
 
-#include "logic/swp_infos.h"
+#include "logic/star_infos.h"
 #include "manager/data_share_mgr.h"
 #include "pay/pay_proto_buf.h"
 #include "pay/pay_db.h"
