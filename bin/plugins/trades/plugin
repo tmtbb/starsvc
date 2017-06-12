@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin id="trades"
+        name="trades"
+        version="1.0.0"
+        provider-name="kerry">
+</plugin>

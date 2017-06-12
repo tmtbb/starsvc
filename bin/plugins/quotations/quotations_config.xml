@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+  <database>
+     <mysql host ="139.224.34.22" 
+            port ="3306" 
+            user = "star" 
+            pass = "pEQrhRrG"  
+            name = "star"/>
+
+     <mssql host = "migdb"
+            user = "web_Test"
+            pass = "9158com"
+            name = "WeiShow_new"/>
+  </database>
+  
+  <cached>
+     <redis host ="122.144.169.213"
+  		port ="6378"/>
+
+     <memcached>
+       <config host = "127.0.0.1" port="11211"/>
+     </memcached>
+  </cached>
+  
+</config>
