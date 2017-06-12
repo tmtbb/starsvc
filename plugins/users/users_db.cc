@@ -335,7 +335,7 @@ bool UsersDB::AccountRealNameInfo(const int64 uid, std::string &realname,std::st
   base_logic::DictionaryValue *info_value = NULL;
   std::string sql;
 
-//call actuals.proc_AccountBalance(68)
+//
   sql = "call proc_AccountRealInfo("
       + base::BasicUtil::StringUtil::Int64ToString(uid) + ");";
 
@@ -525,7 +525,7 @@ bool UsersDB::Certification(const int64 &uid, const std::string &idcard, const s
   std::string sql;
 try
 { 
-  //sql = "call proc_ModifyPwd('" + phone + "','" + newpwd + "');";
+  //
   sql = "call proc_Certification('" + base::BasicUtil::StringUtil::Int64ToString(uid) 
   + "','" + idcard + "','" + realname + "');";
   

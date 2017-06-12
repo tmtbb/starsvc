@@ -775,6 +775,33 @@ class ModifyPwd {
   base_logic::FundamentalValue* type_;   //0：登录密码 1：交易密码，提现密码
   base_logic::FundamentalValue* timestamp_;   //时间戳
 };
+class CheckAccountExistReq {
+ public:
+  CheckAccountExistReq()
+      : phone_(NULL) {
+  }
+
+  ~CheckAccountExistReq() {
+    if (phone_) {
+      delete phone_;
+    }
+  }
+
+  void set_phone(const std::string& phone) {
+    phone_ = new base_logic::StringValue(phone);
+  }
+
+  const std::string& phone() const {
+    std::string phone;
+    phone_->GetAsString(&phone);
+    return phone;
+  }
+
+  bool set_http_packet(base_logic::DictionaryValue* value);
+
+ private:
+  base_logic::StringValue* phone_;
+};
 typedef UserAccount CheckToken;
 typedef UserAccount UserRealInfo;
 
@@ -786,7 +813,7 @@ class Balance {
  public:
   Balance()
       : balance_(NULL),market_cap_(NULL), total_amt_(NULL),is_setpwd_(NULL),
-        value_(NULL) {
+        value_(NULL),nick_name_(NULL),head_url_(NULL) {
   }
 
   ~Balance() {
@@ -806,6 +833,10 @@ class Balance {
       value_->Set("total_amt", total_amt_);
     if (is_setpwd_ != NULL)
       value_->Set(L"is_setpwd", is_setpwd_);
+    if (nick_name_ != NULL)
+      value_->Set(L"nick_name", nick_name_);
+    if (head_url_ != NULL)
+      value_->Set(L"head_url", head_url_);
     return value_;
   }
 
@@ -821,12 +852,20 @@ class Balance {
   void set_is_setpwd(int32 value) {
     is_setpwd_ = new base_logic::FundamentalValue(value);
   }
+  void set_nick_name(std::string nick_name) {
+    nick_name_ = new base_logic::StringValue(nick_name);
+  }
+  void set_head_url(std::string& head_url) {
+    head_url_ = new base_logic::StringValue(head_url);
+  }
  private:
   base_logic::FundamentalValue* balance_;
   base_logic::FundamentalValue* market_cap_;
   base_logic::FundamentalValue* total_amt_;
 
   base_logic::FundamentalValue* is_setpwd_;
+  base_logic::StringValue* nick_name_;
+  base_logic::StringValue* head_url_;
 
   base_logic::DictionaryValue* value_;
 

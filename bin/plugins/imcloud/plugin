@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>		
-<plugin id="imcloud"		
-        name="imcloud"		
-        version="1.0.0"		
-        provider-name="li">		
+<?xml version="1.0" encoding="utf-8"?>
+<plugin id="imcloud"
+        name="imcloud"
+        version="1.0.0"
+        provider-name="li">
 </plugin>
-

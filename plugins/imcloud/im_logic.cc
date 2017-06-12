@@ -150,6 +150,7 @@ bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead
   bool r1 = packet_recv->body_->GetString(L"phone",&phone);
   bool r2 = packet_recv->body_->GetString(L"starcode",&starcode);
   bool r = r1 && r2 ;
+  LOG_DEBUG2("--------OnStarSendMessage %s,  %s.",phone.c_str(),starcode.c_str());
   if(!r){
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	return false;
@@ -158,16 +159,22 @@ bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead
   int64 times;
   std::string accid;
   std::string faccid;
+  
   if(!sqlengine->gettalkingtimes(phone,starcode,times,accid,faccid)){
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	return false;
   }
+  LOG_DEBUG2("times:%ld,accid:%s,faccid:%s.",times,accid.c_str(),faccid.c_str());
   if(times > 1){
+  
+	LOG_DEBUG("true.");
+	
 	if(!sqlengine->ReduceTalkingtimes(phone,starcode)){
 		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 		return false;
 	 }
   }else{
+	LOG_DEBUG("false.");
 	if(!sqlengine->delorderrecord(phone,starcode)){
 		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 		return false;
@@ -176,7 +183,7 @@ bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead
 	im_process::ImProcess im_pro;
 	im_pro.delfriend(accid,faccid);
   }
-  
+  LOG_DEBUG("Seccuss.");
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_IMCLOUD_SENDMESSAGE, IM_TYPE, 0,packet->session_id, 0);
   base_logic::DictionaryValue ret;

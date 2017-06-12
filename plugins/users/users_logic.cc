@@ -174,6 +174,11 @@ try
       OnUserRealInfo(srv, socket, packet);
       break;
     }
+    case R_CHECK_ACCOUNT_EXIST :
+    {
+      OnCheckAccountExist(srv, socket, packet);
+      break;
+    }
     default:
       break;
   }
@@ -445,6 +450,9 @@ bool Userslogic::OnUserAccount(struct server* srv, int socket,
   r = user_db_->AccountBalance(user_account.uid(), balance, pwd);
   userinfo.set_balance(balance);
 
+  net_balance.set_nick_name(userinfo.nickname());
+  std::string t_sUserHeadUrl = userinfo.head_url();
+  net_balance.set_head_url(t_sUserHeadUrl);
   net_balance.set_balance(userinfo.balance());
   net_balance.set_total_amt(0.0);
   net_balance.set_market_cap(0.0);
@@ -658,16 +666,18 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
   }
   
   std::string phone = register_vercode.phone().c_str();
-
-  /*
+  
+/*  
   ////检测号码是否已经注册
-  r =user_db_->CheckAccountExist(phone);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, NO_USER_EXIST_REGISTER, packet->session_id);
-    return false;
+  if(check_account_flag == CHECK_ACCOUNT_Y){
+	  r =user_db_->CheckAccountExist(phone);
+	  if (!r) {
+	    LOG_DEBUG2("packet_length %d",packet->packet_length);
+	    send_error(socket, ERROR_TYPE, NO_USER_EXIST_REGISTER, packet->session_id);
+	    return true;
+	  }
   }
-  */
+*/
   
   int64 rand_code = 100000 + rand() % (999999 - 100000 + 1);
   std::string shell_sms = SHELL_SMS;
@@ -807,7 +817,8 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
   base_logic::DictionaryValue dic;
   dic.SetString(L"cardNo", idcard);
   dic.SetString(L"realName", name);
-  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+//  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, 1);
   LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
 
   users_logic::net_reply::TResult r_ret;;
@@ -860,6 +871,43 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
   send_message(socket, &packet_control);
 /*
 */
+  return true;
+}
+
+bool Userslogic::OnCheckAccountExist(struct server* srv, int socket,
+                                      struct PacketHead *packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  users_logic::net_request::CheckAccountExistReq check_acount_exist_req;
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  bool r = check_acount_exist_req.set_http_packet(packet_control->body_);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  
+  std::string phone = check_acount_exist_req.phone().c_str();
+
+  ////检测号码是否已经注册
+  r =user_db_->CheckAccountExist(phone);
+  
+  //发送信息
+  struct PacketControl packet_control_ack; 
+  MAKE_HEAD(packet_control_ack,S_CHECK_ACCOUNT_EXIST, 1, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic; 
+  if (!r) {
+    dic.SetInteger(L"result", 0);
+  }
+  else{
+    dic.SetInteger(L"result", 1); 
+  }
+  
+  packet_control_ack.body_ = &dic; 
+  send_message(socket, &packet_control_ack); 
+
   return true;
 }
 
