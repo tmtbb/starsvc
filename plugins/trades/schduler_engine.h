@@ -87,6 +87,9 @@ public:
     
     void TradesSymbolInfo(const int socket, const int64 session, const int32 reserved,
                         const std::string& symbol);
+
+    void CancelOrder(const int socket, const int64 session, const int32 reserved,
+                        const int64 uid, const int64 order_id);
 private:
     void Init();
     //创建时间任务

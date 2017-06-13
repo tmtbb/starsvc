@@ -111,6 +111,11 @@ bool Tradeslogic::OnTradesMessage(struct server *srv, const int socket,
         OnConfirmOrder(srv, socket, packet);
         break;
     }
+
+    case R_CANCEL_ORDER:{
+        OnCancelOrder(srv,socket, packet);
+        break;
+    }
     default:
         break;
     }
@@ -173,6 +178,23 @@ bool Tradeslogic::OnTimeout(struct server *srv, char *id, int opcode,
         break;
     }
     return true;
+}
+
+bool Tradeslogic::OnCancelOrder(struct server* srv, int socket, struct PacketHead* packet) {
+    trades_logic::net_request::CancelOrder cancel_order;
+
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = cancel_order.set_http_packet(packet_control->body_);
+    if (!r){
+        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        return false;
+    }
+    trades_logic::TradesEngine::GetSchdulerManager()->CancelOrder(socket,packet->session_id,
+        packet->reserved,cancel_order.id(),cancel_order.order_id());
 }
 
 bool Tradeslogic::OnTradesSymbolInfo(struct server* srv, int socket, struct PacketHead* packet) {

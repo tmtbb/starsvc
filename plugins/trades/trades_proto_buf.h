@@ -65,6 +65,54 @@ public:
     base_logic::StringValue*      symbol_;
 };
 
+class CancelOrder {
+public:
+    CancelOrder()
+        : id_(NULL)
+        , token_(token_)
+        , order_id_(NULL) {}
+    ~CancelOrder() {
+        if (id_) {delete id_; id_ = NULL;}
+        if (token_) {delete token_; token_ = NULL;}
+        if (order_id_) {delete order_id_; order_id_ = NULL;}
+    }
+
+    bool set_http_packet(base_logic::DictionaryValue* value);
+
+    void set_id(const int64 id){
+        id_ = new base_logic::FundamentalValue(id);
+    }
+
+    void set_token(const std::string& token){
+        token_ = new base_logic::StringValue(token);
+    }
+
+    void set_order_id(const int64 order_id){
+        order_id_ = new base_logic::FundamentalValue(order_id);    
+    }
+
+    const int64 id() const {
+        int64 id = 0;
+        id_->GetAsBigInteger(&id);
+    }
+
+    const std::string token() const {
+        std::string token;
+        token_->GetAsString(&token);
+        return token;
+    }
+
+    const int64 order_id() const {
+        int64 order_id = 0;
+        order_id_->GetAsBigInteger(&order_id);
+        return order_id;
+    }
+
+public:
+    base_logic::FundamentalValue* id_;
+    base_logic::StringValue* token_;
+    base_logic::FundamentalValue* order_id_;
+};
 class CurrentPosition {
 public:
     CurrentPosition()

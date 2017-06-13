@@ -70,6 +70,33 @@ void TradesManager::TimeStarEvent() {
 
 }
 
+//取消订单
+void TradesManager::CancelOrder(const int socket, const int64 session, const int32 reserved,
+                                const int64 uid, const int64 order_id) {
+
+    
+    star_logic::TradesOrder  trades_order;
+    bool r = false;
+    {
+        base_logic::WLockGd lk(lock_);
+        r = base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
+                (trades_cache_->all_trades_order_,order_id,trades_order);
+        if (!r||trades_order.handle_type() != MATCHES_ORDER)//不存在，且已经不为匹配状态
+            return;
+        //验证是否双方发起
+        if(trades_order.buy_uid() != uid && trades_order.sell_uid() != uid 
+            && trades_order.order_id() != order_id)
+            return;
+        trades_order.set_handle_type(CANCEL_ORDER);
+    }
+    
+    trades_db_->OnUpdateOrderState(order_id, uid, CANCEL_ORDER,0);
+
+    //通知双方
+    SendOrderResult(socket,session,reserved,trades_order.buy_uid(),
+            trades_order.sell_uid(),CANCEL_ORDER,order_id);
+}
+
 //发送明星的交易状态
 void TradesManager::TradesSymbolInfo(const int socket, const int64 session, const int32 reserved,
     const std::string& symbol) {

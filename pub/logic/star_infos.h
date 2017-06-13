@@ -48,7 +48,8 @@ enum HANDLETYPE {
 
 //订单类型
 enum ORDERTYPE {
-    NO_ORDER = -1,
+    NO_ORDER = -2,
+    CANCEL_ORDER = -1,
     MATCHES_ORDER = 0,//匹配中
     CONFIRM_ORDER = 1,//确认
     COMPLETE_ORDER = 2//完成

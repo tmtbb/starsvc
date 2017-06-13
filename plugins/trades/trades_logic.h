@@ -52,6 +52,8 @@ private:
     bool OnConfirmOrder(struct server* srv, int socket, struct PacketHead* packet);
 
     bool OnTradesSymbolInfo(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnCancelOrder(struct server* srv, int socket, struct PacketHead* packet);
 private:
     bool Init();
 
