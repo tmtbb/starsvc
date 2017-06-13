@@ -1,8 +1,8 @@
 //  Copyright (c) 2015-2015 The KID Authors. All rights reserved.
 //  Created on: 2015年9月17日 Author: kerry
 
-#ifndef SWP_TRADES_DB_H_
-#define SWP_TRADES_DB_H_
+#ifndef STAR_TRADES_DB_H_
+#define STAR_TRADES_DB_H_
 
 #include <string>
 #include <list>
@@ -23,8 +23,16 @@ public:
 
 public:
     bool OnFetchPlatformStar(std::map<std::string, trades_logic::TradesStar>& map);
+    bool OnCreateTradesOrder(star_logic::TradesOrder& trades_order);
+    bool OnUpdateOrderState(const int64 order_id,const int64 uid, const int32 state,
+                            const int32 uid_type);
+
+    int32 OnConfirmOrder(const int64 order_id,const int64 buy_uid, const int64 sell_uid);
 private:
     static void CallGetTradsRule(void* param, base_logic::Value* value);
+    static void CallCreateOrder(void* param, base_logic::Value* value);
+    static void CallUpdateOrderState(void* param, base_logic::Value* value);
+    static void CallConfirmOrder(void* param, base_logic::Value* value);
 private:
     base_logic::DataEngine* mysql_engine_;
 };

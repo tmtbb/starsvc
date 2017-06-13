@@ -38,13 +38,20 @@ enum TIMETYPE {
     ONE_HOUR = 3600
 };
 
+//挂单类型
 enum HANDLETYPE {
     NO_HANDLE = -1,
-    WAIT_HANDLE = 0,
-    COMPLETE = 1
-               //DOUBLE_PROFIT = 1,
-// FACT_HANDLE = 2,
-// REFUND_HANDLE = 3
+    POSITION_HANDLE = 0, //挂单
+    MATCHES_HANDLE = 1, //匹配中
+    COMPLETE_HANDLE = 2 //订单完成
+};
+
+//订单类型
+enum ORDERTYPE {
+    NO_ORDER = -1,
+    MATCHES_ORDER = 0,//匹配中
+    CONFIRM_ORDER = 1,//确认
+    COMPLETE_ORDER = 2//完成
 };
 
 namespace star_logic {
@@ -740,7 +747,7 @@ private:
               is_deferred_(false),
               result_(false),
               amount_(0),
-              handle_(WAIT_HANDLE),
+              handle_(NO_HANDLE),
               open_position_time_(0),
               close_position_time_(0),
               gross_profit_(0.0),
@@ -796,6 +803,209 @@ private:
         int refcount_;
     };
     Data* data_;
+};
+
+class TradesOrder {
+ public: 
+    TradesOrder();
+    TradesOrder(const TradesOrder& trades_);
+
+    TradesOrder& operator =(const TradesOrder& trades_order);
+
+    ~TradesOrder() {
+        if (data_ != NULL) {
+            data_->Release();
+        }
+    }
+
+    void create_order_id() {
+        data_->order_id_ = base::SysRadom::GetInstance()->GetRandomID();
+    }
+
+    const int64 order_id() const {
+        return data_->order_id_;
+    }
+
+    const int64 buy_position_id() const {
+        return data_->buy_position_id_;
+    }
+
+    const int64 sell_position_id() const {
+        return data_->sell_position_id_;
+    }
+
+    const int64 buy_uid() const {
+        return data_->buy_uid_;
+    }
+
+    const int64 sell_uid() const {
+        return data_->sell_uid_;
+    }
+
+    const int64 amount() const {
+        return data_->amount_;
+    }
+
+    const int64 open_position_time() const {
+        return data_->open_position_time_;
+    }
+
+    const int64 close_position_time() const {
+        return data_->close_position_time_;
+    }
+
+    const double gross_profit() const {
+        return data_->gross_profit_;
+    }
+
+    const double open_price() const {
+        return data_->open_price_;
+    }
+
+    const double open_charge() const {
+        return data_->open_charge_;
+    }
+
+    const int32 handle_type() const {
+        return data_->handle_type_;
+    }
+
+    const int32 sell_handle_type() const {
+        return data_->sell_handle_type_;
+    }
+
+    const int32 buy_handle_type() const {
+        return data_->buy_handle_type_;
+    }
+
+    const std::string& symbol() const {
+        return data_->symbol_;
+    }
+
+    void set_symbol(const std::string& symbol) {
+        data_->symbol_ = symbol;
+    }
+
+    void set_order_id(const int64 order_id) {
+        data_->order_id_ = order_id;
+    }
+
+    void set_buy_position_id(const int64 buy_position_id) {
+        data_->buy_position_id_ = buy_position_id;
+    }
+
+    void set_sell_position_id(const int64 sell_position_id) {
+        data_->sell_position_id_ = sell_position_id;
+    }
+
+    void set_buy_uid(const int64 buy_uid) {
+        data_->buy_uid_ = buy_uid;
+    }
+
+    void set_sell_uid(const int64 sell_uid) {
+        data_->sell_uid_ = sell_uid;
+    }
+
+    void set_amount(const int64 amount) {
+        data_->amount_ = amount;
+    }
+
+    void set_open_position_time(const int64 open_position_time) {
+        data_->open_position_time_ = open_position_time;
+    }
+
+    void set_close_position_time(const int64 close_position_time) {
+        data_->close_position_time_ = close_position_time;
+    }
+
+    void set_gross_profit(const double gross_profit) {
+        data_->gross_profit_ = gross_profit;
+    }
+
+    void set_open_price(const double open_price) {
+        data_->open_price_ = open_price;
+    }
+
+    void set_open_charge(const double open_charge) {
+        data_->open_charge_ = open_charge;
+    }
+
+    void set_handle_type(const int32 handle_type) {
+        data_->handle_type_ = handle_type;
+    }
+
+    void set_sell_handle_type(const int32 handle_type) {
+        data_->sell_handle_type_ = handle_type;
+    }
+
+    void set_buy_handle_type(const int32 handle_type) {
+        data_->buy_handle_type_ = handle_type;
+    }
+
+    void set_match_type(){
+        data_->buy_handle_type_ = MATCHES_ORDER;
+        data_->sell_handle_type_ = MATCHES_ORDER;
+        data_->handle_type_ = MATCHES_ORDER;
+    }
+
+    bool is_complete() {
+        if (data_->buy_handle_type_==CONFIRM_ORDER && data_->sell_handle_type_==CONFIRM_ORDER){
+            data_->handle_type_ = COMPLETE_ORDER;
+            return true;
+        }else
+            return false;
+    }
+
+ private:
+    class Data {
+       public:
+        Data()
+            :refcount_(1)
+            ,order_id_(0)
+            ,buy_position_id_(0)
+            ,sell_position_id_(0)
+            ,buy_uid_(0)
+            ,sell_uid_(0)
+            ,amount_(0)
+            ,open_position_time_(0)
+            ,close_position_time_(0)
+            ,gross_profit_(0)
+            ,open_price_(0)
+            ,open_charge_(0)
+            ,handle_type_(NO_ORDER)
+            ,sell_handle_type_(NO_ORDER)
+            ,buy_handle_type_(NO_ORDER){}
+
+        public:
+            int64         order_id_;
+            int64         buy_position_id_;
+            int64         sell_position_id_;
+            int64         buy_uid_;
+            int64         sell_uid_;
+            int64         amount_;
+            int64         open_position_time_;
+            int64         close_position_time_;
+            int32         handle_type_;
+            int32         sell_handle_type_;
+            int32         buy_handle_type_;
+            double        gross_profit_;
+            double        open_price_;
+            double        open_charge_;
+            std::string   symbol_;
+        
+        void AddRef() {
+            __sync_fetch_and_add(&refcount_, 1);
+        }
+        void Release() {
+            __sync_fetch_and_sub(&refcount_, 1);
+            if (!refcount_)
+                delete this;
+        }
+
+        private:
+            int refcount_;
+    };
+    Data*  data_;
 };
 
 class Quotations {

@@ -132,6 +132,32 @@ void Recharge::ValueSerialization(base_logic::DictionaryValue* dict) {
         data_->deposit_name_ = "未知";
 }
 
+TradesOrder::TradesOrder() {
+    data_ = new Data();
+}
+
+TradesOrder::TradesOrder(const TradesOrder& trades_order)
+    : data_(trades_order.data_) {
+    if (data_ != NULL) {
+        data_->AddRef();
+    }
+}
+
+TradesOrder& TradesOrder::operator =(
+    const TradesOrder& trades_order) {
+    if (trades_order.data_ != NULL) {
+        trades_order.data_->AddRef();
+    }
+
+    if (data_ != NULL) {
+        data_->Release();
+    }
+
+    data_ = trades_order.data_;
+    return (*this);
+}
+
+
 TradesPosition::TradesPosition() {
     data_ = new Data();
 }

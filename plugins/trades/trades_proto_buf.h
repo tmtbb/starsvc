@@ -13,6 +13,58 @@ namespace trades_logic {
 
 namespace net_request {
 
+class TradesSymbol {
+public:
+    TradesSymbol()
+        : id_(NULL)
+        , token_(NULL)
+        , symbol_(NULL){}
+
+    ~TradesSymbol() {
+        if (id_) {delete id_; id_ = NULL;}
+        if (token_) {delete token_; token_ = NULL;}
+        if (symbol_) {delete symbol_; symbol_ = NULL;}
+    }
+
+    
+    bool set_http_packet(base_logic::DictionaryValue* value);
+    
+    void set_id(const int64 id) {
+        id_ = new base_logic::FundamentalValue(id);
+    }
+
+    void set_token(const std::string& token) {
+        token_ = new base_logic::StringValue(token);
+    }
+
+    void set_symbol(const std::string& symbol) {
+        symbol_ = new base_logic::StringValue(symbol);
+    }
+
+    const int64 id() const {
+        int64 id = 0;
+        id_->GetAsBigInteger(&id);
+        return id;
+    }
+
+    const std::string token() const {
+        std::string token;
+        token_->GetAsString(&token);
+        return token;
+    }
+
+    const std::string symbol() const {
+        std::string symbol;
+        symbol_->GetAsString(&symbol);
+        return symbol;
+    }
+
+public:
+    base_logic::FundamentalValue* id_;
+    base_logic::StringValue*      token_;
+    base_logic::StringValue*      symbol_;
+};
+
 class CurrentPosition {
 public:
     CurrentPosition()
@@ -76,24 +128,28 @@ public:
 
     const int64 id() const {
         int64 id = 0;
-        id_->GetAsBigInteger(&id);
+        if (id_ != NULL)
+            id_->GetAsBigInteger(&id);
         return id;
     }
 
     const std::string token() const {
         std::string token;
-        token_->GetAsString(&token);
+        if (token_ != NULL)
+            token_->GetAsString(&token);
         return token;
     }
 
     const std::string symbol() const {
         std::string symbol;
-        symbol_->GetAsString(&symbol);
+        if (symbol_ != NULL)
+            symbol_->GetAsString(&symbol);
         return symbol;
     }
     const int32 atype() const {
         int32 atype = 0;
-        atype_->GetAsInteger(&atype);
+        if (atype_ != NULL)
+            atype_->GetAsInteger(&atype);
         return atype;
     }
 
@@ -118,6 +174,85 @@ public:
     base_logic::FundamentalValue* count_;
 };
 
+class ConfirmOrder {
+public:
+    ConfirmOrder()
+        :id_(NULL)
+        ,token_(NULL)
+        ,order_id_(NULL)
+        ,position_id_(NULL) {}
+
+    ~ConfirmOrder() {
+        if (id_) {
+            delete id_;
+            id_ = NULL;
+        }
+        if (token_) {
+            delete token_;
+            token_ = NULL;
+        }
+        if (order_id_) {
+            delete order_id_;
+            order_id_ = NULL;
+        }
+        if (position_id_) {
+            delete position_id_;
+            position_id_ = NULL;
+        }
+    }
+
+    bool set_http_packet(base_logic::DictionaryValue* value);
+
+    void  set_id(const int64 id) {
+        id_ = new base_logic::FundamentalValue(id);
+    }
+
+    void set_token(const std::string& token) {
+        token_ = new base_logic::StringValue(token);
+    }
+
+    void set_order_id(const int64 order_id) {
+        order_id_ = new base_logic::FundamentalValue(order_id);
+    }
+
+    void set_position_id(const int64 position_id) {
+        position_id_ = new base_logic::FundamentalValue(position_id);
+    }
+
+    const int64 id() const {
+        int64 id = 0;
+        if (id_ != NULL)
+            id_->GetAsBigInteger(&id);
+        return id;
+    }
+
+    const std::string token() const {
+        std::string token;
+        if (token_ != NULL)
+            token_->GetAsString(&token);
+        return token;
+    }
+
+    const int64 order_id() const {
+        int64 order_id = 0;
+        if (order_id_ != NULL)
+            order_id_->GetAsBigInteger(&order_id);
+        return order_id;
+    }
+
+    const int64 position_id() const {
+        int64 position_id = 0;
+        if (position_id_ != NULL)
+            position_id_->GetAsBigInteger(&position_id);
+        return position_id;
+    }
+
+public:
+    base_logic::FundamentalValue*  id_;
+    base_logic::StringValue*       token_;
+    base_logic::FundamentalValue*  order_id_;
+    base_logic::FundamentalValue*  position_id_;
+};
 
 class OpenPosition {
 public:
@@ -431,59 +566,124 @@ private:
     base_logic::DictionaryValue* value_;
 };
 
-class MatchingNotice {
-public:
-  MatchingNotice()
-    :u_position_id_(NULL)
-    ,t_posution_id_(NULL)
-    ,uid_(NULL)
-    ,tid_(NULL)
-    ,symbol_(NULL){}
 
-    void set_u_position_id(const int64 u_position_id){
-        u_position_id_ = new base_logic::FundamentalValue(u_position_id);
-    }
+class TradesSymbol {
+ public:
+    TradesSymbol()
+        : symbol_(NULL)
+        , remaining_time_(NULL)
+        , status_(NULL)
+        , value_(NULL){}
 
-    void set_t_position_id(const int64 t_posution_id) {
-        t_posution_id_ = new base_logic::FundamentalValue(t_posution_id);
-    }
-
-    void set_uid(const int64 uid) {
-        uid_ = new base_logic::FundamentalValue(uid);
-    }
-
-    void set_tid(const int64 tid) {
-        tid_ = new base_logic::FundamentalValue(tid);
+    ~TradesSymbol() {
+        if (value_) {delete value_; value_ = NULL;}
     }
 
     void set_symbol(const std::string& symbol) {
         symbol_ = new base_logic::StringValue(symbol);
     }
 
+    void set_remaining_time(const int64 remaining_time) {
+        remaining_time_ = new base_logic::FundamentalValue(remaining_time);
+    }
+
+    void set_status(const bool status) {
+        status_ = new base_logic::FundamentalValue(status);
+    }
+
+
     base_logic::DictionaryValue* get() {
         value_ = new base_logic::DictionaryValue();
-        if (u_position_id_ != NULL)
-            value_->Set(L"uPositionId", u_position_id_);
-        if (t_posution_id_ != NULL)
-            value_->Set(L"tPositionId", t_posution_id_);
-        if (tid_ != NULL)
-            value_->Set(L"uid", uid_);
-        if (uid_ != NULL)
-            value_->Set(L"tid", tid_);
+        if (symbol_ != NULL)
+            value_->Set(L"symbol", symbol_);
+        if (remaining_time_ != NULL)
+            value_->Set(L"remainingTime", remaining_time_);
+        if (status_ != NULL)
+            value_->Set(L"status", status_);
+        return value_;
+    }
+
+ private:
+    base_logic::StringValue*        symbol_;
+    base_logic::FundamentalValue*   remaining_time_;
+    base_logic::FundamentalValue*   status_;
+    base_logic::DictionaryValue*    value_;
+};
+
+class MatchingNotice {
+public:
+    MatchingNotice()
+        :order_id_(NULL)
+        ,buy_uid_(NULL)
+        ,sell_uid_(NULL)
+        ,open_position_time_(NULL)
+        ,open_price_(NULL)
+        ,symbol_(NULL)
+        ,amount_(NULL)
+        ,value_(NULL) {}
+
+    ~MatchingNotice() {
+        if (value_) {delete value_; value_ = NULL;}
+    }
+
+    void set_order_id(const int64 order_id) {
+        order_id_ = new base_logic::FundamentalValue(order_id);
+    }
+
+    void set_buy_uid(const int64 buy_uid) {
+        buy_uid_ = new base_logic::FundamentalValue(buy_uid);
+    }
+
+    void set_sell_uid(const int64 sell_uid) {
+        sell_uid_ = new base_logic::FundamentalValue(sell_uid);
+    }
+
+    void set_open_position_time(const int64 open_position_time) {
+        open_position_time_ = new base_logic::FundamentalValue(open_position_time);
+    }
+
+    void set_open_price(const double open_price) {
+        open_price_ = new base_logic::FundamentalValue(open_price);
+    }
+
+    void set_symbol(const std::string& symbol) {
+        symbol_ = new base_logic::StringValue(symbol);
+    }
+
+    void set_amount(const int64 amount) {
+        amount_ = new base_logic::FundamentalValue(amount);
+    }
+
+
+    base_logic::DictionaryValue* get() {
+        value_ = new base_logic::DictionaryValue();
+        if (order_id_ != NULL)
+            value_->Set(L"orderId", order_id_);
+        if (buy_uid_ != NULL)
+            value_->Set(L"buyUid", buy_uid_);
+        if (sell_uid_ != NULL)
+            value_->Set(L"sellUid", sell_uid_);
+        if (amount_ != NULL)
+            value_->Set("amount", amount_);
+        if (open_position_time_ != NULL)
+            value_->Set(L"openPositionTime", open_position_time_);
+        if (open_price_ != NULL)
+            value_->Set(L"openPrice", open_price_);
         if (symbol_ != NULL)
             value_->Set(L"symbol", symbol_);
         return value_;
     }
 
 private:
-  base_logic::FundamentalValue* u_position_id_;
-  base_logic::FundamentalValue* t_posution_id_;
-  base_logic::FundamentalValue* uid_;
-  base_logic::FundamentalValue* tid_;
-  base_logic::StringValue*      symbol_;
-  base_logic::DictionaryValue*  value_;
+    base_logic::FundamentalValue* order_id_;
+    base_logic::FundamentalValue* buy_uid_;
+    base_logic::FundamentalValue* sell_uid_;
+    base_logic::FundamentalValue* open_position_time_;
+    base_logic::FundamentalValue* open_price_;
+    base_logic::FundamentalValue* amount_;
+    base_logic::StringValue* symbol_;
+    base_logic::DictionaryValue* value_;
 };
-
 class TradingUnit {
 public:
     TradingUnit()
@@ -604,6 +804,79 @@ public:
     }
 private:
     base_logic::ListValue* positions_info_;
+    base_logic::DictionaryValue* value_;
+};
+
+class OrderConfirm {
+public:
+    OrderConfirm()
+        : order_id_(NULL)
+        , uid_(NULL)
+        , status_(NULL)
+        , value_(NULL){}
+    ~OrderConfirm() {
+        if (value_) {delete value_; value_ = NULL;}
+    }
+
+    void set_order_id(const int64 order_id) {
+        order_id_ = new base_logic::FundamentalValue(order_id);
+    }
+
+    void set_uid(const int64 uid){
+        uid_ = new base_logic::FundamentalValue(uid);
+    }
+
+    void set_status(const int32 status) {
+        status_ = new base_logic::FundamentalValue(status);
+    }
+
+    base_logic::DictionaryValue* get() {
+        value_ = new base_logic::DictionaryValue();
+        if (order_id_ != NULL)
+            value_->Set(L"orderId",order_id_);
+        if (uid_ != NULL)
+            value_->Set(L"uid", uid_);
+        if (status_ != NULL)
+            value_->Set(L"status", status_);
+        return value_;
+    }
+private:
+    base_logic::FundamentalValue* order_id_;
+    base_logic::FundamentalValue* uid_;
+    base_logic::FundamentalValue* status_;
+    base_logic::DictionaryValue* value_;
+};
+class OrderResult {
+public:
+    OrderResult()
+        : order_id_(NULL)
+        , result_(NULL)
+        , value_(NULL) {}
+
+    ~OrderResult() {
+        if (value_){delete value_; value_ = NULL;}
+    }
+
+    void set_order_id(const int64 order_id) {
+        order_id_ = new base_logic::FundamentalValue(order_id);
+    }
+
+    void set_result(const int32 result) {
+        result_ = new base_logic::FundamentalValue(result);
+    }
+
+    base_logic::DictionaryValue* get() {
+        value_ = new base_logic::DictionaryValue();
+        if (order_id_ != NULL)
+            value_->Set(L"orderId",order_id_);
+        if (result_ != NULL)
+            value_->Set(L"result", result_);
+        return value_;
+    }
+
+private:
+    base_logic::FundamentalValue*  order_id_;
+    base_logic::FundamentalValue*  result_;
     base_logic::DictionaryValue* value_;
 };
 

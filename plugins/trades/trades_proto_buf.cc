@@ -8,6 +8,67 @@ namespace trades_logic {
 
 namespace net_request {
 
+bool TradesSymbol::set_http_packet(base_logic::DictionaryValue* value) {
+    bool r = false;
+    int64 id = 0;
+    std::string token;
+    std::string symbol;
+    r = value->GetBigInteger(L"id", &id);
+    if (r)
+        set_id(id);
+    else
+        return false;
+
+    r = value->GetString(L"token", &token);
+    if (r)
+        set_token(token);
+    else
+        return false;
+
+    r = value->GetString(L"symbol", &symbol);
+    if (r)
+        set_symbol(symbol);
+    else
+        return false;
+    
+    return true;
+}
+
+bool ConfirmOrder::set_http_packet(base_logic::DictionaryValue* value) {
+    bool r = false;
+    int64 id = 0;
+    std::string token;
+    int64 order_id = 0;
+    int64 position_id = 0;
+    if (value == NULL)
+        return false;
+    r = value->GetBigInteger(L"id", &id);
+    if (r)
+        set_id(id);
+    else
+        return false;
+
+    r = value->GetString(L"token", &token);
+    if (r)
+        set_token(token);
+    else
+        return false;
+
+    r = value->GetBigInteger(L"orderId", &order_id);
+    if (r)
+        set_order_id(order_id);
+    else
+        return false;
+
+    r = value->GetBigInteger(L"positionId", &position_id);
+    if (r)
+        set_position_id(position_id);
+    else
+        return false;
+
+    return true;
+}
+
 bool CurrentPosition::set_http_packet(base_logic::DictionaryValue* value) {
     bool r = false;
     int64 id = 0;
@@ -99,14 +160,19 @@ bool OpenPosition::set_http_packet(base_logic::DictionaryValue* value) {
     r = value->GetReal(L"price", &price);
     if (r)
         set_price(price);
+    else
+        return false;
 
     r = value->GetString(L"symbol", &symbol);
     if (r)
         set_symbol(symbol);
-
+    else
+        return false;
     r = value->GetString(L"wid", &wid);
     if (r)
         set_wid(wid);
+    else
+        set_wid("");
     return true;
 }
 

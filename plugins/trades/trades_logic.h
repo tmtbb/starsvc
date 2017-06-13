@@ -48,6 +48,10 @@ private:
     bool OnOpenPosition(struct server* srv, int socket, struct PacketHead* packet);
 
     bool OnGetStarTrading(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnConfirmOrder(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnTradesSymbolInfo(struct server* srv, int socket, struct PacketHead* packet);
 private:
     bool Init();
 

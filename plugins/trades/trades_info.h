@@ -14,10 +14,11 @@
 
 namespace trades_logic {
 
+/*
 enum BSTYPE {
     BUY_TYPE = 1,
     SELL_TYPE = 2
-};
+};*/
 
 enum TIMETYPE {
     ONE_MINUTE = 60,
