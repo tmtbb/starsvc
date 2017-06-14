@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<plugin id="pay"
-        name="pay"
-        version="1.0.0"
-        provider-name="li">
-</plugin>
+<?xml version="1.0" encoding="utf-8"?>		
+<plugin id="pay"		
+        name="pay"		
+        version="1.0.0"		
+        provider-name="li">		
+</plugin>		
 
