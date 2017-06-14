@@ -130,6 +130,7 @@ void Recharge::ValueSerialization(base_logic::DictionaryValue* dict) {
         data_->deposit_name_ = "银联";
     else
         data_->deposit_name_ = "未知";
+    dict->GetInteger(L"recharge_type", &data_->recharge_type_);
 }
 
 TradesPosition::TradesPosition() {

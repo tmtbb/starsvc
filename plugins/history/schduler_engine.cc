@@ -220,10 +220,10 @@ void HistoryManager::SendHistoryRecharge(const int socket, const int64 session,
     net_recharge->set_rid(recharge.rid());
     net_recharge->set_amount(recharge.amount());
     net_recharge->set_deposit_name(recharge.deposit_name());
-    LOG_DEBUG2("recharge.deposit_time[%s]",recharge.deposit_time().c_str());
     net_recharge->set_deposit_time(recharge.deposit_time());
     net_recharge->set_deposit_type(recharge.deposit_type());
     net_recharge->set_status(recharge.status());
+    net_recharge->set_recharge_type(recharge.recharge_type());
     all_net_rechagre.set_unit(net_recharge->get());
     t_count++;
     if (all_net_rechagre.Size() % base_num == 0

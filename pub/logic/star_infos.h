@@ -256,6 +256,10 @@ public:
     void set_deposit_unix_time(const int64 unix_time) {
         data_->deposit_unix_time_ = unix_time;
     }
+    
+    void set_recharge_type(const int32 recharge_type) {
+        data_->recharge_type_ = recharge_type;
+    }
 
     const int64 rid() const {
         return data_->rid_;
@@ -288,6 +292,10 @@ public:
     const std::string& deposit_name() const {
         return data_->deposit_name_;
     }
+    
+    const int32 recharge_type() const {
+        return data_->recharge_type_;
+    }
 
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
@@ -300,7 +308,8 @@ public:
               amount_(0.0),
               deposit_type_(0),
               deposit_unix_time_(0),
-              uid_(0) {
+              uid_(0),
+              recharge_type_(0) {
         }
 
         static bool close_after(const Data* t_data, const Data* r_data) {
@@ -316,6 +325,7 @@ public:
         int64 deposit_unix_time_;
         std::string deposit_time_;
         std::string deposit_name_;
+        int32 recharge_type_;
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);
         }

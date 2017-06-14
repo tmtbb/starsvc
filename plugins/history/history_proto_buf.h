@@ -681,7 +681,8 @@ class Recharge {
         deposit_type_(NULL),
         deposit_name_(NULL),
         status_(NULL),
-        value_(NULL) {
+        value_(NULL),
+        recharge_type_(NULL) {
   }
 
   ~Recharge() {
@@ -714,6 +715,10 @@ class Recharge {
   void set_status(const int32 status) {
     status_ = new base_logic::FundamentalValue(status);
   }
+  
+  void set_recharge_type(const int32 recharge_type) {
+  	recharge_type_ = new base_logic::FundamentalValue(recharge_type);
+  }
 
   base_logic::DictionaryValue* get() {
     value_ = new base_logic::DictionaryValue();
@@ -729,6 +734,8 @@ class Recharge {
       value_->Set(L"depositName", deposit_name_);
     if (status_ != NULL)
       value_->Set(L"status", status_);
+    if (recharge_type_ != NULL)
+      value_->Set(L"recharge_type", recharge_type_);
     return value_;
   }
 
@@ -739,6 +746,7 @@ class Recharge {
   base_logic::FundamentalValue* deposit_type_;
   base_logic::StringValue* deposit_name_;
   base_logic::FundamentalValue* status_;
+  base_logic::FundamentalValue* recharge_type_;
   base_logic::DictionaryValue* value_;
 };
 

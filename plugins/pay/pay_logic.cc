@@ -351,6 +351,13 @@ bool Paylogic::OnCheckPayPwd(struct server* srv, int socket, struct PacketHead* 
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
+  //check token
+  r1 = logic::SomeUtils::VerifyToken(uid, token);
+  if (!r1) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+    return false;
+  }
 
   //校验密码
   r1 =pay_db_->OnCheckPayPwd(uid, pwd);
