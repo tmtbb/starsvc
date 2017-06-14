@@ -12,6 +12,12 @@
 #include "logic/base_values.h"
 #include "basic/radom_in.h"
 
+enum INFOTYPE {
+    NO_TYPE = 100,
+    TRADES_POSITION_TYPE,
+    TRADES_ORDER_TYPE
+};
+
 enum PAYTYPE {
     WX_APP = 1,
     UNIPNPAY = 2,
@@ -535,7 +541,7 @@ public:
 
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
-
+    base_logic::DictionaryValue* GetValue();
     void c_gross_profit() {
         if (data_->close_type_)
             data_->gross_profit_ = data_->open_cost_;
@@ -735,6 +741,10 @@ public:
         return data_->goods_key_;
     }
 
+    const int32 type() const {
+        return data_->type_;
+    }
+
 private:
     class Data {
     public:
@@ -759,6 +769,7 @@ private:
               close_price_(0.0),
               limit_(0.0),
               stop_(0.0),
+              type_(TRADES_POSITION_TYPE),
               deferred_(0.0) {
         }
 
@@ -772,6 +783,7 @@ private:
         int32 buy_sell_;  // 1,买 2,卖
         int32 close_type_;
         int32 handle_;
+        int32 type_;
         bool is_deferred_;
         bool result_;
         int64 amount_; //明星用于表示时间精确到秒
@@ -818,6 +830,10 @@ class TradesOrder {
             data_->Release();
         }
     }
+
+    base_logic::DictionaryValue* GetValue();
+
+    void ValueSerialization(base_logic::DictionaryValue* dict);
 
     void create_order_id() {
         data_->order_id_ = base::SysRadom::GetInstance()->GetRandomID();
@@ -943,6 +959,10 @@ class TradesOrder {
         data_->buy_handle_type_ = handle_type;
     }
 
+    const int32 type() const {
+        return data_->type_;
+    }
+    
     void set_match_type(){
         data_->buy_handle_type_ = MATCHES_ORDER;
         data_->sell_handle_type_ = MATCHES_ORDER;
@@ -970,9 +990,10 @@ class TradesOrder {
             ,amount_(0)
             ,open_position_time_(0)
             ,close_position_time_(0)
-            ,gross_profit_(0)
-            ,open_price_(0)
-            ,open_charge_(0)
+            ,gross_profit_(0.0)
+            ,open_price_(0.0)
+            ,open_charge_(0.0)
+            ,type_(TRADES_ORDER_TYPE)
             ,handle_type_(NO_ORDER)
             ,sell_handle_type_(NO_ORDER)
             ,buy_handle_type_(NO_ORDER){}
@@ -989,6 +1010,7 @@ class TradesOrder {
             int32         handle_type_;
             int32         sell_handle_type_;
             int32         buy_handle_type_;
+            int32         type_;
             double        gross_profit_;
             double        open_price_;
             double        open_charge_;

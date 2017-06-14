@@ -7,6 +7,7 @@
 #include "basic/basictypes.h"
 #include "core/common.h"
 #include "trades/trades_db.h"
+#include "trades/trades_kafka.h"
 #include "net/comm_head.h"
 #include "net/packet_processing.h"
 
@@ -60,6 +61,7 @@ private:
     void Test();
 private:
     trades_logic::TradesDB*  trades_db_;
+    trades_logic::TradesKafka*  trades_kafka_;
 };
 } // namespace trades_logic
 

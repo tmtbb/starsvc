@@ -36,6 +36,12 @@ Tradeslogic::~Tradeslogic()
     {
         delete trades_db_;
         trades_db_ = NULL;
+    
+    }
+
+    if (trades_kafka_){
+        delete trades_kafka_;
+        trades_kafka_ = NULL;
     }
     trades_logic::TradesEngine::FreeSchdulerManager();
     trades_logic::TradesEngine::FreeTradesEngine();
@@ -53,7 +59,9 @@ bool Tradeslogic::Init()
     LOG_MSG2("path : %s", path.c_str());
     trades_logic::TradesEngine::GetSchdulerManager();
     trades_db_ = new trades_logic::TradesDB(config);
+    trades_kafka_ = new trades_logic::TradesKafka(config);
     trades_logic::TradesEngine::GetSchdulerManager()->InitDB(trades_db_);
+    trades_logic::TradesEngine::GetSchdulerManager()->InitKafka(trades_kafka_);
     trades_logic::TradesEngine::GetSchdulerManager()->InitData();
     base::SysRadom::GetInstance();
     return true;

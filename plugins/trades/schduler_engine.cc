@@ -33,6 +33,10 @@ void TradesManager::InitDB(trades_logic::TradesDB* trades_db) {
     trades_db_ = trades_db;
 }
 
+void TradesManager::InitKafka(trades_logic::TradesKafka* trades_kafka) {
+    trades_kafka_ = trades_kafka;
+}
+
 void TradesManager::Init() {
     InitThreadrw(&lock_);
 }
@@ -91,7 +95,7 @@ void TradesManager::CancelOrder(const int socket, const int64 session, const int
     }
     
     trades_db_->OnUpdateOrderState(order_id, uid, CANCEL_ORDER,0);
-
+    trades_kafka_->SetTradesOrder(trades_order);
     //通知双方
     SendOrderResult(socket,session,reserved,trades_order.buy_uid(),
             trades_order.sell_uid(),CANCEL_ORDER,order_id);
@@ -201,6 +205,7 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
      return;
     }
 
+    trades_kafka_->SetTradesOrder(trades_order);
     //通知确认
     SendConfirmOrder(socket,session,reserved,uid,trades_order.order_id(),
                     trades_order.handle_type());
@@ -213,6 +218,7 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
                                             trades_order.sell_uid());
         SendOrderResult(socket, session, reserved, trades_order.buy_uid(),
                 trades_order.sell_uid(), result, trades_order.order_id());
+        trades_kafka_->SetTradesOrder(trades_order);
     }
 }
 
@@ -304,6 +310,7 @@ void TradesManager::SetTradesPosition(TRADES_POSITION_MAP& trades_position,
     r_trades_position_list.push_back(trades);
     price_position_map[trades.open_price()] = r_trades_position_list;
     trading_position[trades.symbol()] = price_position_map;
+    trades_kafka_->SetTradesPosition(trades);
 }
 
 void TradesManager::AlterTradesStarState(const std::string& symbol, const bool state) {
@@ -463,6 +470,10 @@ void TradesManager::SetTradesOrder(star_logic::TradesPosition& buy_position,
         (trades_cache_->user_trades_order_,sell_position.uid(),sell_trades_order_list);
     sell_trades_order_list.push_back(trades_order);
     trades_cache_->user_trades_order_[sell_position.uid()] = sell_trades_order_list;
+
+    trades_kafka_->SetTradesPosition(buy_position);
+    trades_kafka_->SetTradesPosition(sell_position);
+    trades_kafka_->SetTradesOrder(trades_order);
 }
 
 }

@@ -8,6 +8,7 @@
 #include "logic/star_infos.h"
 #include "trades/trades_db.h"
 #include "trades/trades_info.h"
+#include "trades/trades_kafka.h"
 #include "thread/base_thread_handler.h"
 #include "thread/base_thread_lock.h"
 
@@ -75,6 +76,7 @@ public:
 public:
     void TimeEvent(int opcode, int time);
     void InitDB(trades_logic::TradesDB* trades_db);
+    void InitKafka(trades_logic::TradesKafka* trades_kafka);
     void InitData();
     void TimeStarEvent();
 
@@ -121,6 +123,7 @@ private:
 private:
     TradesCache *trades_cache_;
     trades_logic::TradesDB* trades_db_;
+    trades_logic::TradesKafka*  trades_kafka_;
     struct threadrw_t *lock_;
 };
 

@@ -45,6 +45,7 @@ INCLUDE_PATHS = -I/usr/local/libmemcached-1.0.7/include \
 				-I$(USER_DIR)\
 				-I$(CUSTOM_THIRD_PATH)/hiredis\
 				-I$(CUSTOM_THIRD_PATH)\
+				-I$(CUSTOM_THIRD_PATH)/librdkafka/src\
 				-I$(LIB_DIR)/mylib/base\
 				-I../\
 				
@@ -99,6 +100,9 @@ trades_db.o : ./trades_db.cc ./trades_db.h
 trades_info.o : ./trades_info.cc ./trades_info.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./trades_info.cc $(INCLUDE_PATHS)
 
+trades_kafka.o : ./trades_kafka.cc ./trades_kafka.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./trades_kafka.cc $(INCLUDE_PATHS)
+
 schduler_engine.o : ./schduler_engine.cc ./schduler_engine.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./schduler_engine.cc $(INCLUDE_PATHS)
 
@@ -132,8 +136,8 @@ redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool
 time.o :  $(USER_DIR)/logic/time.cc $(USER_DIR)/logic/time.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/time.cc $(INCLUDE_PATHS)
 
-$(PLUGIN) : trades_init.o  trades_logic.o trades_db.o trades_info.o schduler_engine.o trades_proto_buf.o\
+$(PLUGIN) : trades_init.o  trades_logic.o trades_db.o trades_info.o trades_kafka.o schduler_engine.o trades_proto_buf.o\
 	star_infos.o time.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
-	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a
+	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient \
 	$^ -o $@
