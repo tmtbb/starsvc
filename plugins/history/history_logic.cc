@@ -244,7 +244,7 @@ bool Historylogic::OnHistoryRecharge(struct server* srv, int socket,
   history_logic::HistoryEngine::GetSchdulerManager()->SendHistoryRecharge(
       socket, packet->session_id, packet->reserved, history_recharge.id(),
       history_recharge.status(), history_recharge.start(),
-      history_recharge.count());
+      history_recharge.query_time(),history_recharge.count());
   return true;
 }
 

@@ -179,6 +179,11 @@ try
       OnCheckAccountExist(srv, socket, packet);
       break;
     }
+    case R_USRES_RESET_NICK_NAME :
+    {
+      OnResetNickName(srv, socket, packet);
+      break;
+    }
     default:
       break;
   }
@@ -444,8 +449,11 @@ bool Userslogic::OnUserAccount(struct server* srv, int socket,
   star_logic::UserInfo userinfo;
   users_logic::net_reply::Balance net_balance;
   r = schduler_engine_->GetUserInfoSchduler(user_account.uid(), &userinfo);
-  if (!r)
+  if (!r){
+    LOG_DEBUG2("uid[%ld]",user_account.uid());
     return r;
+  }
+  LOG_DEBUG2("uid[%ld],nickname[%s],head_url[%s]",user_account.uid(),userinfo.nickname().c_str(),userinfo.head_url().c_str());
   std::string pwd;
   r = user_db_->AccountBalance(user_account.uid(), balance, pwd);
   userinfo.set_balance(balance);
@@ -584,6 +592,12 @@ bool Userslogic::OnUserCheckToken(struct server* srv, int socket,
 
   //获取用户信息
   r = user_db_->GetUserInfo(check_token.uid(), ip, userinfo);
+  if(!r){
+    LOG_DEBUG2("uid[%ld],ip[%s]",check_token.uid(), ip.c_str());
+    send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+    return false;
+  }
+  
   //发送用信息
   SendUserInfo(socket, packet->session_id, S_ACCOUNT_CHECK, userinfo);
   return true;
@@ -905,6 +919,56 @@ bool Userslogic::OnCheckAccountExist(struct server* srv, int socket,
     dic.SetInteger(L"result", 1); 
   }
   
+  packet_control_ack.body_ = &dic; 
+  send_message(socket, &packet_control_ack); 
+
+  return true;
+}
+
+bool Userslogic::OnResetNickName(struct server* srv, int socket,
+                                      struct PacketHead *packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  bool r1,r2,r3;
+  int64 uid;
+  std::string token;
+  std::string nickname;
+  r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
+  r2 = packet_control->body_->GetString(L"token", &token);
+  r3 = packet_control->body_->GetString(L"nickname", &nickname);
+LOG_DEBUG2("uid[%ld],token[%s],nickname[%s]",uid,token.c_str(),nickname.c_str());
+  bool r = (r1 && r2 && r3);
+  if (!r1 || !r2 || !r3) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  r = user_db_->ModifyNickName(uid,nickname);                
+
+  //发送信息
+  struct PacketControl packet_control_ack; 
+  MAKE_HEAD(packet_control_ack,S_USRES_RESET_NICK_NAME, 1, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic; 
+  dic.SetInteger(L"result", 0);
+  if (r) {
+    //获取用户信息
+	  star_logic::UserInfo userinfo;
+	  r = user_db_->GetUserInfo(uid, "", userinfo);
+	  if(!r){
+	    LOG_DEBUG2("GetUserInfo error, uid[%ld]",uid);
+	  }
+	  else{
+	    userinfo.set_socket_fd(socket);
+      userinfo.set_is_effective(true);
+      schduler_engine_->SetUserInfoSchduler(userinfo.uid(), &userinfo);
+      dic.SetInteger(L"result", 1);
+	  }
+  }
   packet_control_ack.body_ = &dic; 
   send_message(socket, &packet_control_ack); 
 

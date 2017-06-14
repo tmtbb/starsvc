@@ -82,6 +82,7 @@ class Userslogic {
   //验证用户是否存在
   bool OnCheckAccountExist(struct server* srv, int socket,
                             struct PacketHead *packet);
+  bool OnResetNickName(struct server* srv, int socket,struct PacketHead *packet);
  private:
   bool Init();
  private:

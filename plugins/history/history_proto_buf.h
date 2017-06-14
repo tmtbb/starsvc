@@ -327,7 +327,8 @@ class HistoryRecharge {
         token_(NULL),
         status_(NULL),
         start_(NULL),
-        count_(NULL) {
+        count_(NULL),
+        query_time_(NULL) {
   }
 
   ~HistoryRecharge() {
@@ -348,6 +349,11 @@ class HistoryRecharge {
     if (count_) {
       delete count_;
       count_ = NULL;
+    }
+    
+    if(query_time_){
+      delete query_time_;
+      query_time_ = NULL;
     }
   }
 
@@ -371,6 +377,10 @@ class HistoryRecharge {
 
   void set_status(const int32 status) {
     status_ = new base_logic::FundamentalValue(status);
+  }
+  
+  void set_query_time(const std::string& queryTime) {
+    query_time_ = new base_logic::StringValue(queryTime);
   }
 
   const int64 id() const {
@@ -402,6 +412,12 @@ class HistoryRecharge {
     status_->GetAsInteger(&status);
     return status;
   }
+  
+  const std::string query_time() const {
+    std::string queryTime;
+    query_time_->GetAsString(&queryTime);
+    return queryTime;
+  }
 
  public:
   base_logic::FundamentalValue* id_;
@@ -409,6 +425,7 @@ class HistoryRecharge {
   base_logic::FundamentalValue* status_;
   base_logic::FundamentalValue* start_;
   base_logic::FundamentalValue* count_;
+  base_logic::StringValue* query_time_;
 };
 
 typedef HistoryRecharge HistoryWithDrawals;

@@ -40,6 +40,13 @@ class Infomation_Mysql {
   bool getstarnews(const std::string& code,const std::string& name,DicValue &ret,
   					int64& startnum,int64& endnum,int64& all);
   
+  //获取明星服务列表
+  bool getstarservicelist(const std::string& code, DicValue &ret);
+  //用户订购明星服务
+  bool userorderstarservice(const int64 uid, const std::string& starcode,const int64 mid,
+  	        const std::string& cityname,const std::string& appointtime,const int meettype,
+  	        const std::string& comment);
+  					
   static void Callpublicback(void* param, base_logic::Value* value);
   
   static void Callgetinfo(void* param, base_logic::Value* value);
@@ -49,6 +56,9 @@ class Infomation_Mysql {
   static void Callgetorderstarinfo(void* param, base_logic::Value* value);
 
   static void Callgetstarnewsinfo(void* param, base_logic::Value* value);
+  	
+  static void Callgetstarservicelist(void* param, base_logic::Value* value);
+  static void Calluserorderstarservice(void* param, base_logic::Value* value);
   private:
   base_logic::DataEngine* mysql_engine_;
 };

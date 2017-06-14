@@ -279,7 +279,7 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
 
   int64 uid;
   int32 type;
-  std::string phone;
+  std::string phone,nickname,head_url;
   if(info_value->GetBigInteger(L"uid", &uid)){
     if(uid <= 0)
       return false;
@@ -293,6 +293,10 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
   		user.set_type(type);
   if(info_value->GetString(L"phone",&phone))
   		user.set_phone_num(phone);
+  if(info_value->GetString(L"nickname",&nickname))
+  		user.set_nickname(nickname);
+  if(info_value->GetString(L"head_url",&head_url))
+  		user.set_head_url(head_url);
   
   if (dict) {
     delete dict;
@@ -555,5 +559,50 @@ catch (...)
   }
   return r;
 }
+
+bool UsersDB::ModifyNickName(const int64 &uid, const std::string &newNickName)
+{
+	bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+
+  sql = "call proc_ResetNickName('" + base::BasicUtil::StringUtil::Int64ToString(uid) + "','" + newNickName + "');";
+  
+  base_logic::ListValue *listvalue;
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallChangeNickName);
+  if (!r)
+    return false;
+  
+  dict->GetDictionary(L"resultvalue", &info_value);
+  int result = 0;
+  r = info_value->GetInteger(L"result", &result);
+  r = (r && result==1) ? true : false;
+     
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
+
+void UsersDB::CallChangeNickName(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetInteger(L"result", atoi(rows[0]));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+}
+
 }  // namespace history_logic
 

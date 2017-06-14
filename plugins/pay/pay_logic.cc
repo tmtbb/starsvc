@@ -120,6 +120,10 @@ try
       //OnCertification(srv, socket, packet);
       break;
     }
+     case R_CHECK_PAY_PWD: {
+      OnCheckPayPwd(srv, socket, packet);
+      break;
+    }
     default:
       break;
   }
@@ -275,7 +279,7 @@ bool Paylogic::OnCertification(struct server* srv, int socket,
   dic.SetString(L"cardNo", idcard);
   dic.SetString(L"realName", name);
   //base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
-  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, 1);
   LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
 
   //pay_logic::net_reply::TResult r_ret;;
@@ -323,6 +327,47 @@ bool Paylogic::OnCertification(struct server* srv, int socket,
   send_message(socket, &packet_control);
 /*
 */
+  return true;
+}
+
+//校验支付密码
+bool Paylogic::OnCheckPayPwd(struct server* srv, int socket, struct PacketHead* packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  
+  bool r1,r2,r3;
+  int64 uid;
+  std::string pwd;
+  std::string token;
+  r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
+  r2 = packet_control->body_->GetString(L"paypwd", &pwd);
+  r3 = packet_control->body_->GetString(L"token", &token);
+  
+  if (!r1 || !r2 || !r3) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  //校验密码
+  r1 =pay_db_->OnCheckPayPwd(uid, pwd);
+  
+  //发送信息
+  struct PacketControl packet_control_ack; 
+  MAKE_HEAD(packet_control_ack,S_CHECK_PAY_PWD, 1, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic; 
+  if (!r1) {
+    dic.SetInteger(L"result", 0);
+  }
+  else{
+    dic.SetInteger(L"result", 1); 
+  }
+  packet_control_ack.body_ = &dic; 
+  send_message(socket, &packet_control_ack); 
+
   return true;
 }
 

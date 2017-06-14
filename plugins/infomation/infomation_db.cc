@@ -428,6 +428,119 @@ void Infomation_Mysql::Callpublicback(void* param, base_logic::Value* value){
 	dict->Remove(L"sql", &value);
 }
 
+bool Infomation_Mysql::getstarservicelist(const std::string& code,DicValue &ret_result){
+	bool r = false;
+  DicValue* dic = new DicValue();
+	std::string sql;
+	sql = "call proc_GetStarServiceInfo('"
+	  + code + "');";
+
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetstarservicelist);
+	if (!r) {
+	  return false;
+	}
+	int64 result;
+	base_logic::ListValue *listvalue;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	if(r && listvalue->GetSize()>0){
+	    ret_result.Set("list",(base_logic::Value*)listvalue);
+		return true;
+	}
+	return false;
+}
+
+void Infomation_Mysql::Callgetstarservicelist(void* param, base_logic::Value* value){
+	base_storage::DBStorageEngine* engine =
+	  (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	if (num > 0) {
+		while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+		  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+		  if (rows[0] != NULL){
+				ret->SetBigInteger(L"mid", atoi(rows[0]));
+			}
+		  if (rows[1] != NULL){
+				ret->SetString(L"url1", rows[1]);
+			}
+		  if (rows[2] != NULL){
+				ret->SetString(L"url2", rows[2]);
+			}
+		  if (rows[3] != NULL){
+				ret->SetString(L"name", rows[3]);
+			}
+		  if (rows[4] != NULL){
+				ret->SetString(L"price", rows[4]);
+			}
+			list->Append((base_logic::Value *) (ret));
+		}
+		dict->Set(L"resultvalue", (base_logic::Value *) (list));
+	}
+	else {
+		LOG_ERROR ("Callgetstarservicelist count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+
+bool Infomation_Mysql::userorderstarservice(const int64 uid, const std::string& starcode,
+  	        const int64 mid,const std::string& cityname,const std::string& appointtime,
+  	        const int meettype,const std::string& comment){
+	bool r = false;
+  DicValue* dic = new DicValue();
+  base_logic::DictionaryValue *info_value = NULL;
+	std::string sql;
+	sql = "call proc_UserOrderStarService('"
+	  + base::BasicUtil::StringUtil::Int64ToString(uid) + "','"
+	  + starcode + "','"
+	  + base::BasicUtil::StringUtil::Int64ToString(mid) + "','"
+	  + cityname + "','"
+	  + appointtime + "','"
+	  + base::BasicUtil::StringUtil::Int64ToString(meettype) + "','"
+	  + comment + "');";
+
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Calluserorderstarservice);
+	if (!r) {
+	  return false;
+	}
+	
+	r = dic->GetDictionary(L"resultvalue", &info_value);
+	if (!r) {
+	  return false;
+	}
+	int result;
+  r = info_value->GetInteger(L"result", &result);
+  r = (r && result == 1) ? true : false;
+	
+	return r;
+}
+
+void Infomation_Mysql::Calluserorderstarservice(void* param, base_logic::Value* value){	
+	base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetInteger(L"result", atoi(rows[0]));
+    }
+    dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+  }
+  else {
+		LOG_ERROR ("Calluserorderstarservice count < 0");
+	}
+  
+  dict->Remove(L"sql", &value);
+}
 
 }
 
