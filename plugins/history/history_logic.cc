@@ -209,10 +209,12 @@ bool Historylogic::OnHistoryTrades(struct server* srv, int socket,
 bool Historylogic::OnHistoryOwnStar(struct server* srv, int socket,
                                      struct PacketHead *packet) {
   history_logic::net_request::HistoryOwnStar history_ownstar;
+  
   if (packet->packet_length <= PACKET_HEAD_LENGTH) {
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
+  
   struct PacketControl* packet_control = (struct PacketControl*) (packet);
   bool r = history_ownstar.set_http_packet(packet_control->body_);
   if (!r) {

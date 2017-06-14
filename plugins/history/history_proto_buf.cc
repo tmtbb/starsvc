@@ -197,7 +197,7 @@ bool HistoryRecharge::set_http_packet(base_logic::DictionaryValue* value) {
   if (r)
     set_query_time(t_query_time);
   else
-    return false;
+    set_query_time("");
 
   return true;
 }
