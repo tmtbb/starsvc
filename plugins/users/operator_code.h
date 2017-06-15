@@ -46,5 +46,11 @@ namespace users_logic {
  
 #define R_ACCOUNT_REALINFO   USERS_TYPE * 1000 + 27
 #define S_ACCOUNT_REALINFO   USERS_TYPE * 1000 + 28
+
+#define R_CHECK_ACCOUNT_EXIST   USERS_TYPE * 1000 + 29
+#define S_CHECK_ACCOUNT_EXIST   USERS_TYPE * 1000 + 30
+//add 修改nickname
+#define R_USRES_RESET_NICK_NAME USERS_TYPE * 1000 + 31
+#define S_USRES_RESET_NICK_NAME USERS_TYPE * 1000 + 32
 }
 #endif

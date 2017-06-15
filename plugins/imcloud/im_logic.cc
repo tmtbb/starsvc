@@ -146,42 +146,41 @@ bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead
 
   std::string phone;
   std::string starcode;
+  int64 deductamount;
 
   bool r1 = packet_recv->body_->GetString(L"phone",&phone);
   bool r2 = packet_recv->body_->GetString(L"starcode",&starcode);
-  bool r = r1 && r2 ;
+  bool r3 = packet_recv->body_->GetBigInteger(L"deduct_amount",&deductamount);
+  bool r = r1 && r2 && r3;
+  LOG_DEBUG2("--------OnStarSendMessage %s,  %s,%ld.",phone.c_str(),starcode.c_str(),deductamount);
   if(!r){
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	return false;
   }
-  //获取持有该明星时间，如果为1，则删除该记录；如果大于1，则做减1操作
-  int64 times;
+  //扣减明星时间
+  int64 times = 0;
   std::string accid;
   std::string faccid;
-  if(!sqlengine->gettalkingtimes(phone,starcode,times,accid,faccid)){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-	return false;
-  }
-  if(times > 1){
-	if(!sqlengine->ReduceTalkingtimes(phone,starcode)){
+	LOG_DEBUG("true.");
+	
+	if(!sqlengine->ReduceTalkingtimes(phone,starcode,deductamount,times,accid,faccid)){
 		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 		return false;
-	 }
-  }else{
-	if(!sqlengine->delorderrecord(phone,starcode)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-		return false;
-	}
-	//删除云信关联关系
-	im_process::ImProcess im_pro;
-	im_pro.delfriend(accid,faccid);
   }
   
+	if(times <= 0){
+		//删除云信关联关系
+		im_process::ImProcess im_pro;
+		im_pro.delfriend(accid,faccid);
+  }
+  LOG_DEBUG2("own seconds:%ld.",times);
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_IMCLOUD_SENDMESSAGE, IM_TYPE, 0,packet->session_id, 0);
   base_logic::DictionaryValue ret;
   base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
+  base_logic::FundamentalValue* ownseconds = new base_logic::FundamentalValue(times);
   ret.Set(L"result",result);
+  ret.Set(L"ownseconds",ownseconds);
   packet_reply.body_ = &ret;
   send_message(socket,&packet_reply);
  

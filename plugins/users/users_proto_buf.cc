@@ -374,5 +374,21 @@ bool Certification::set_http_packet(base_logic::DictionaryValue* value) {
   return true;
 }
 
+bool CheckAccountExistReq::set_http_packet(base_logic::DictionaryValue* value) {
+  std::string phone;
+  bool r = false;
+
+  if (value == NULL)
+    return false;
+
+  r = value->GetString(L"phone", &phone);
+  if (r)
+    set_phone (phone);
+  else
+    return false;
+
+  return true;
+}
+
 }
 }

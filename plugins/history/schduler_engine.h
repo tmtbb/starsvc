@@ -60,7 +60,7 @@ class HistoryManager {
   void SendHistoryRecharge(const int socket, const int64 session,
                            const int32 revered, const int64 uid,
                            const int32 status, const int64 pos,
-                           const int64 count = 10);
+                           const std::string queryTime, const int64 count = 10);
 
   void SendHistoryWithDrawls(const int socket, const int64 session,
                              const int32 revered, const int64 uid,
@@ -90,6 +90,7 @@ class HistoryManager {
 
   void SetHistoryRechargeNoLock(star_logic::Recharge& recharge);
   void GetHistoryRechargeNoLock(const int64 uid, const int32 status,
+                                const std::string queryTime,
                                 std::list<star_logic::Recharge>& list,
                                 const int64 pos = 0, const int64 count = 10);
 

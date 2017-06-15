@@ -18,7 +18,7 @@ bool DataRedisEngine::WriteData(const int32 type, base_logic::Value* value) {
   bool r = false;
   switch (type) {
     case HASH_VALUE: {
-      WriteHashValue(value);
+      r = WriteHashValue(value);
       break;
     }
   }
