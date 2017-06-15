@@ -250,7 +250,7 @@ void HistoryDB::CallHistroyRechargeRecord(void* param,
         info_value->SetInteger(L"status", atoi(rows[6]));
         
       if (rows[7] != NULL)
-        info_value->SetInteger(L"recharge_type", atoi(rows[6]));
+        info_value->SetInteger(L"recharge_type", atoi(rows[7]));
 
       list->Append((base_logic::Value *) (info_value));
     }
