@@ -33,18 +33,12 @@ void TradesManager::InitDB(trades_logic::TradesDB* trades_db) {
     trades_db_ = trades_db;
 }
 
+void TradesManager::InitKafka(trades_logic::TradesKafka* trades_kafka) {
+    trades_kafka_ = trades_kafka;
+}
+
 void TradesManager::Init() {
     InitThreadrw(&lock_);
-
-
-    //
-    /*
-    trades_logic::TimeTask task;
-    task.set_earliest_time("9:45");
-    task.set_latest_time("15:55");
-    time_t current = time(NULL);
-    ProcessTimeTask(current, task);
-    */
 }
 
 void TradesManager::InitData() {
@@ -56,7 +50,7 @@ void TradesManager::InitData() {
 void TradesManager::TimeStarEvent() {
     base_logic::RLockGd lk(lock_);
     time_t current_time = time(NULL);
-    //LOG_MSG2("trades_task_list_ size %d", trades_cache_->trades_task_list_.size());
+    LOG_MSG2("trades_task_list_ size %d", trades_cache_->trades_task_list_.size());
     if (trades_cache_->trades_task_list_.size() <= 0)
         return;
 
@@ -64,7 +58,7 @@ void TradesManager::TimeStarEvent() {
     while (trades_cache_->trades_task_list_.size() > 0) {
         //达到任务时间，则执行任务
         trades_logic::TimeTask time_task = trades_cache_->trades_task_list_.front();
-        // LOG_MSG2("current_time %d, time_task %d", current_time, time_task.task_start_time());
+        LOG_MSG2("current_time %d, time_task %d", current_time, time_task.task_start_time());
         if (current_time < time_task.task_start_time())
             break;
         trades_cache_->trades_task_list_.pop_front();
@@ -80,35 +74,62 @@ void TradesManager::TimeStarEvent() {
 
 }
 
-void TradesManager::GetStarTradingInfo(const int socket, const int64 session,
-                                       const int32 reserved, const std::string& symbol,
-                                       const int32 atype,const int32 start, const int32 count) {
-    base_logic::RLockGd lk(lock_);
+//取消订单
+void TradesManager::CancelOrder(const int socket, const int64 session, const int32 reserved,
+                                const int64 uid, const int64 order_id) {
+
+    
+    star_logic::TradesOrder  trades_order;
     bool r = false;
-    int32 base_num = 20;
-    int32 t_start = 0;
-    int32 t_count = 0;
-    TRADES_POSITION_LIST trades_position_list;
-    if (atype == BUY_TYPE)
-        r = base::MapGet<TRADES_POSITION_MAP,TRADES_POSITION_MAP::iterator,std::string,TRADES_POSITION_LIST>
-            (trades_cache_->buy_trades_position_,symbol,trades_position_list);
-    else if (atype == SELL_TYPE)
-        r = base::MapGet<TRADES_POSITION_MAP,TRADES_POSITION_MAP::iterator,std::string,TRADES_POSITION_LIST>
-            (trades_cache_->sell_trades_position_,symbol,trades_position_list);
-    if(!r||trades_position_list.size()) {
-        //无挂单记录
-        send_error(socket, ERROR_TYPE, NO_HAVE_POSITIONS_DATA,session);
-        return;
+    {
+        base_logic::WLockGd lk(lock_);
+        r = base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
+                (trades_cache_->all_trades_order_,order_id,trades_order);
+        if (!r||trades_order.handle_type() != MATCHES_ORDER)//不存在，且已经不为匹配状态
+            return;
+        //验证是否双方发起
+        if(trades_order.buy_uid() != uid && trades_order.sell_uid() != uid 
+            && trades_order.order_id() != order_id)
+            return;
+        trades_order.set_handle_type(CANCEL_ORDER);
+    }
+    
+    trades_db_->OnUpdateOrderState(order_id, uid, CANCEL_ORDER,0);
+    trades_kafka_->SetTradesOrder(trades_order);
+    //通知双方
+    SendOrderResult(socket,session,reserved,trades_order.buy_uid(),
+            trades_order.sell_uid(),CANCEL_ORDER,order_id);
+}
+
+//发送明星的交易状态
+void TradesManager::TradesSymbolInfo(const int socket, const int64 session, const int32 reserved,
+    const std::string& symbol) {
+    bool r = false;
+    trades_logic::TradesStar trades_star;
+    trades_logic::TimeTask time_task;
+    {
+        base_logic::RLockGd lk(lock_);
+        r = base::MapGet<TRADES_STAR_MAP, TRADES_STAR_MAP::iterator, std::string, trades_logic::TradesStar>
+            (trades_cache_->trades_star_map_, symbol, trades_star);
+        r = base::MapGet<TIME_TASK_MAP,TIME_TASK_MAP::iterator, std::string, trades_logic::TimeTask>
+           (trades_cache_->trades_task_map_,symbol, time_task);
     }
 
-    trades_position_list.sort(star_logic::TradesPosition::close_after);
+    trades_logic::net_reply::TradesSymbol trades_symbol;
+    trades_symbol.set_symbol(symbol);
+    trades_symbol.set_remaining_time(time_task.task_start_time() - time(NULL));
+    trades_symbol.set_status(trades_star.is_trading());
 
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_TRADES_SYMBOL_STATUS, 1, 0, session, 0);
+    packet_control.body_ = trades_symbol.get();
+    send_message(socket, &packet_control);
 }
 
 
 void TradesManager::CreateTradesPosition(const int socket, const int64 session, const int32 reserved,
-                                        const int64 uid, const std::string& symbol, const std::string& wid,
-                                        const int64 buy_sell,const int64 amount, const double price) {
+        const int64 uid, const std::string& symbol, const std::string& wid,
+        const int64 buy_sell,const int64 amount, const double price) {
     //判读该标的是否可以交易
     base_logic::WLockGd lk(lock_);
     int64 u = GetTradesStarStatus(symbol);
@@ -127,11 +148,11 @@ void TradesManager::CreateTradesPosition(const int socket, const int64 session, 
 
     //匹配价格
     if (position.buy_sell() == BUY_TYPE) {
-        MatchTrades(socket, session, reserved, trades_cache_->sell_trading_position_,position);
         SetTradesPosition(trades_cache_->buy_trades_position_,trades_cache_->buy_trading_position_,position);
-    } else if (position.buy_sell() ==SELL_TYPE) {
-        MatchTrades(socket, session, reserved, trades_cache_->buy_trading_position_, position);
+        MatchTrades(socket, session, reserved, trades_cache_->sell_trading_position_,position);
+    } else if (position.buy_sell() == SELL_TYPE) {
         SetTradesPosition(trades_cache_->sell_trades_position_,trades_cache_->sell_trading_position_,position);
+        MatchTrades(socket, session, reserved, trades_cache_->buy_trading_position_, position);
     }
     //创建成功
     trades_logic::net_reply::TradesPosition net_trades_position;
@@ -148,8 +169,92 @@ void TradesManager::CreateTradesPosition(const int socket, const int64 session, 
     send_message(socket, &packet_control);
 }
 
+void TradesManager::ConfirmOrder(const int socket, const int64 session, const int32 reserved,const int64 uid,const int64 order_id, const int64 position_id) {
+    //查找订单是否存在，切状态是否正确
+    bool r = false;
+    int32 uid_type = 0;
+    base_logic::WLockGd lk(lock_);
+    star_logic::TradesOrder  trades_order;
+    r = base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
+                (trades_cache_->all_trades_order_,order_id,trades_order);
+
+    if (!r||trades_order.handle_type() == NO_ORDER || 
+        trades_order.handle_type() == COMPLETE_HANDLE ||
+        trades_order.handle_type() == CANCEL_ORDER)//不存在，且已经不为匹配状态
+        return;
+    
+    //更新数据库
+    if (trades_order.buy_uid() == uid)
+        uid_type = BUY_TYPE;
+    else if (trades_order.sell_uid() == uid)
+        uid_type = SELL_TYPE;
+    r = trades_db_->OnUpdateOrderState(trades_order.order_id(),uid,
+                                       CONFIRM_ORDER,uid_type);
+    if (!r)
+        return;
+
+    if (trades_order.buy_position_id() == position_id && trades_order.buy_uid()){
+        trades_order.set_buy_handle_type(CONFIRM_ORDER);
+        trades_order.set_handle_type(CONFIRM_ORDER);
+        uid_type = BUY_TYPE;
+    }else if (trades_order.sell_position_id() == position_id 
+            && trades_order.sell_uid()){
+        trades_order.set_handle_type(CONFIRM_ORDER);
+        trades_order.set_sell_handle_type(CONFIRM_ORDER);
+        uid_type = SELL_TYPE;
+    }else{
+     //异常数据
+     return;
+    }
+
+    trades_kafka_->SetTradesOrder(trades_order);
+    //通知确认
+    SendConfirmOrder(socket,session,reserved,uid,trades_order.order_id(),
+                    trades_order.handle_type());
+    //检测是否双方确认
+    if(trades_order.is_complete()){
+        //双方确认，开始扣费
+        int32 result = 0;
+        result = trades_db_->OnConfirmOrder(trades_order.order_id(),
+                                            trades_order.buy_uid(),
+                                            trades_order.sell_uid());
+        SendOrderResult(socket, session, reserved, trades_order.buy_uid(),
+                trades_order.sell_uid(), result, trades_order.order_id());
+        if (result = 0)
+            trades_order.set_handle_type(COMPLETE_ORDER);
+        trades_kafka_->SetTradesOrder(trades_order);
+    }
+}
+
+void TradesManager::SendConfirmOrder(const int socket, const int64 session,
+                                const int32 reserved, const int64 uid,
+                                const int64 order_id, const int32 status) {
+    trades_logic::net_reply::OrderConfirm order_confirm;
+    order_confirm.set_order_id(order_id);
+    order_confirm.set_uid(uid);
+    order_confirm.set_status(status);
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_CONFIRM_ORDER, 1, 0, session, 0);
+    packet_control.body_ = order_confirm.get();
+    send_message(socket, &packet_control);
+    send_message(socket, &packet_control);
+}
+
+void TradesManager::SendOrderResult(const int socket, const int64 session, const int32 reserved,
+        const int64 buy_uid, const int64 sell_uid, const int32 result, const int64 order_id) {
+    int t_socket = 0;
+    trades_logic::net_reply::OrderResult order_result;
+    order_result.set_order_id(order_id);
+    order_result.set_result(result);
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_ORDER_RESULT, 1, 0, session, 0);
+    packet_control.body_ = order_result.get();
+    send_message(socket, &packet_control);
+    send_message(t_socket, &packet_control);
+}
+
 int32 TradesManager::MatchTrades(const int socket, const int64 session, const int32 reserved,
-                                TRADEING_POSITION_MAP& trading_position,star_logic::TradesPosition& trades) {
+                                 TRADEING_POSITION_MAP& trading_position,star_logic::TradesPosition& trades) {
     bool r = false;
     PRICE_POSITION_MAP price_postion_map;
     TRADES_POSITION_LIST price_postion_list;
@@ -167,11 +272,19 @@ int32 TradesManager::MatchTrades(const int socket, const int64 session, const in
     TRADES_POSITION_LIST::iterator it = price_postion_list.begin();
     for(; it != price_postion_list.end(); it++) {
         star_logic::TradesPosition op_trades = (*it);
-        if(op_trades.handle() == WAIT_HANDLE ) {
-            //通知对方
-            MatchNotice(trades.symbol(), socket, session,trades.uid(),
-                trades.position_id(),op_trades.uid(),
-                op_trades.position_id());
+        if(op_trades.handle() == POSITION_HANDLE ) {
+            //创建订单
+            op_trades.set_handle(MATCHES_HANDLE);
+            trades.set_handle(MATCHES_HANDLE);
+            star_logic::TradesOrder  trades_order;
+            if (op_trades.buy_sell() == BUY_TYPE)
+                SetTradesOrder(op_trades,trades, trades_order);
+            else
+                SetTradesOrder(trades,op_trades,trades_order);
+            //通知双对方
+            MatchNotice(socket, session,reserved,trades_order);
+            //数据库创建订单
+            trades_db_->OnCreateTradesOrder(trades_order);
             break;
         }
     }
@@ -187,6 +300,7 @@ void TradesManager::SetTradesPosition(TRADES_POSITION_MAP& trades_position,
     r = base::MapGet<TRADES_POSITION_MAP,TRADES_POSITION_MAP::iterator,std::string,TRADES_POSITION_LIST>
         (trades_position,trades.symbol(),trades_position_list);
 
+    trades.set_handle(POSITION_HANDLE);
     trades_position_list.push_back(trades);
     trades_position[trades.symbol()] = trades_position_list;
     //存储价格匹配表
@@ -200,6 +314,7 @@ void TradesManager::SetTradesPosition(TRADES_POSITION_MAP& trades_position,
     r_trades_position_list.push_back(trades);
     price_position_map[trades.open_price()] = r_trades_position_list;
     trading_position[trades.symbol()] = price_position_map;
+    trades_kafka_->SetTradesPosition(trades);
 }
 
 void TradesManager::AlterTradesStarState(const std::string& symbol, const bool state) {
@@ -305,30 +420,64 @@ int64 TradesManager::GetTradesStarStatus(const std::string& symbol) {
 }
 
 
-void TradesManager::MatchNotice(const std::string& symbol, const int socket, 
-                                const int64 session, const int64 uid, 
-                                const int64 u_position_id,
-                                const int64 t_position_id,
-                                const int64 tid) {
-   //通知当时人
-   SendMatch(socket,session,symbol,uid,u_position_id,tid,t_position_id);
-   //通知对方
-   int t_socket;
-   SendMatch(t_socket,0,symbol,tid,t_position_id,uid,u_position_id);
-}
-
-void TradesManager::SendMatch(const int socket, const int64 session, const std::string& symbol,
-                                const int64 uid, const int64 u_position_id,const int64 tid, 
-                                const int64 t_position_id) {
-    net_reply::MatchingNotice net_match_notice;
-    net_match_notice.set_u_position_id(u_position_id);
-    net_match_notice.set_t_position_id(t_position_id);
-    net_match_notice.set_uid(uid);
-    net_match_notice.set_tid(tid);
-    net_match_notice.set_symbol(symbol);
+void TradesManager::MatchNotice(const int socket, const int64 session, const int32 reserved, star_logic::TradesOrder& trades_order) {
+    int t_socket;
+    net_reply::MatchingNotice  match_notice;
+    match_notice.set_order_id(trades_order.order_id());
+    match_notice.set_buy_uid(trades_order.buy_uid());
+    match_notice.set_sell_uid(trades_order.sell_uid());
+    match_notice.set_open_position_time(trades_order.open_position_time());
+    match_notice.set_open_price(trades_order.open_price());
+    match_notice.set_symbol(trades_order.symbol());
+    match_notice.set_amount(trades_order.amount());
     struct PacketControl packet_control;
     MAKE_HEAD(packet_control, S_MATCH_NOTICE, 1, 0, session, 0);
-    packet_control.body_ = net_match_notice.get();
+    packet_control.body_ = match_notice.get();
     send_message(socket, &packet_control);
+    send_message(t_socket,&packet_control);
 }
+
+void TradesManager::SetTradesOrder(star_logic::TradesPosition& buy_position,
+                                   star_logic::TradesPosition& sell_position,
+                                   star_logic::TradesOrder& trades_order) {
+    bool r = false;
+    trades_order.create_order_id();
+    trades_order.set_buy_position_id(buy_position.position_id());
+    trades_order.set_sell_position_id(sell_position.position_id());
+    trades_order.set_buy_uid(buy_position.uid());
+    trades_order.set_sell_uid(sell_position.uid());
+    int64 amount = buy_position.amount() > sell_position.amount() ?
+                   sell_position.amount():buy_position.amount();
+    trades_order.set_amount(amount);
+    trades_order.set_symbol(buy_position.symbol());
+    trades_order.set_open_position_time(time(NULL));
+    trades_order.set_close_position_time(0);
+    trades_order.set_open_price(sell_position.open_price());
+    trades_order.set_match_type();
+
+    trades_cache_->all_trades_order_[trades_order.order_id()] = trades_order;
+
+    TRADES_ORDER_LIST trades_order_list;
+    r = base::MapGet<KEY_ORDER_MAP,KEY_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
+        (trades_cache_->symbol_trades_order_,sell_position.symbol(),trades_order_list);
+    trades_order_list.push_back(trades_order);
+    trades_cache_->symbol_trades_order_[sell_position.symbol()] = trades_order_list;
+
+    TRADES_ORDER_LIST buy_trades_order_list;
+    r = base::MapGet<USER_ORDER_MAP,USER_ORDER_MAP::iterator,int64,TRADES_ORDER_LIST>
+        (trades_cache_->user_trades_order_,buy_position.uid(),buy_trades_order_list);
+    buy_trades_order_list.push_back(trades_order);
+    trades_cache_->user_trades_order_[buy_position.uid()] = buy_trades_order_list;
+
+    TRADES_ORDER_LIST sell_trades_order_list;
+    r = base::MapGet<USER_ORDER_MAP,USER_ORDER_MAP::iterator,int64,TRADES_ORDER_LIST>
+        (trades_cache_->user_trades_order_,sell_position.uid(),sell_trades_order_list);
+    sell_trades_order_list.push_back(trades_order);
+    trades_cache_->user_trades_order_[sell_position.uid()] = sell_trades_order_list;
+
+    trades_kafka_->SetTradesPosition(buy_position);
+    trades_kafka_->SetTradesPosition(sell_position);
+    trades_kafka_->SetTradesOrder(trades_order);
+}
+
 }

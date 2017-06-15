@@ -7,6 +7,7 @@
 #include "basic/basictypes.h"
 #include "core/common.h"
 #include "trades/trades_db.h"
+#include "trades/trades_kafka.h"
 #include "net/comm_head.h"
 #include "net/packet_processing.h"
 
@@ -48,12 +49,19 @@ private:
     bool OnOpenPosition(struct server* srv, int socket, struct PacketHead* packet);
 
     bool OnGetStarTrading(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnConfirmOrder(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnTradesSymbolInfo(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnCancelOrder(struct server* srv, int socket, struct PacketHead* packet);
 private:
     bool Init();
 
     void Test();
 private:
     trades_logic::TradesDB*  trades_db_;
+    trades_logic::TradesKafka*  trades_kafka_;
 };
 } // namespace trades_logic
 

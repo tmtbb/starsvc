@@ -8,10 +8,14 @@
 #include "logic/star_infos.h"
 #include "trades/trades_db.h"
 #include "trades/trades_info.h"
+#include "trades/trades_kafka.h"
 #include "thread/base_thread_handler.h"
 #include "thread/base_thread_lock.h"
 
+
+namespace trades_logic {
 typedef std::map<std::string, trades_logic::TradesStar> TRADES_STAR_MAP;
+
 typedef std::list<trades_logic::TimeTask> TIME_TASK_LIST;
 typedef std::map<std::string, trades_logic::TimeTask> TIME_TASK_MAP;
 
@@ -24,6 +28,13 @@ typedef std::map<double, TRADES_POSITION_LIST> PRICE_POSITION_MAP; //价格表�
 typedef std::map<std::string, PRICE_POSITION_MAP> TRADEING_POSITION_MAP; //明星对应的价格
 
 
+typedef std::map<int64, star_logic::TradesOrder>  TRADES_ORDER_MAP;//订单号-订单记录
+
+typedef std::list<star_logic::TradesOrder> TRADES_ORDER_LIST;
+
+typedef std::map<std::string,TRADES_ORDER_LIST>  KEY_ORDER_MAP;
+
+typedef std::map<int64, TRADES_ORDER_LIST> USER_ORDER_MAP;
 enum STAR_TRADES_STATUS {
     NO_STAR_TRADES = -100,
     NO_TIME = -101
@@ -35,17 +46,24 @@ enum MATCH_STATUS {
     NO_MATCH_PRICE = -101
 };
 
-namespace trades_logic {
 
 class TradesCache {
 public:
     TRADES_STAR_MAP        trades_star_map_;
     TIME_TASK_LIST         trades_task_list_;
     TIME_TASK_MAP          trades_task_map_;
+
+    //挂单
     TRADES_POSITION_MAP    buy_trades_position_; //求购表 //用于排序
     TRADES_POSITION_MAP    sell_trades_position_; //转让表 //用于排序
     TRADEING_POSITION_MAP  buy_trading_position_; //用于价格匹配
     TRADEING_POSITION_MAP  sell_trading_position_; //用于价格匹配
+
+
+    //撮合订单
+    TRADES_ORDER_MAP      all_trades_order_;
+    KEY_ORDER_MAP         symbol_trades_order_;
+    USER_ORDER_MAP        user_trades_order_;
 };
 
 
@@ -58,16 +76,22 @@ public:
 public:
     void TimeEvent(int opcode, int time);
     void InitDB(trades_logic::TradesDB* trades_db);
+    void InitKafka(trades_logic::TradesKafka* trades_kafka);
     void InitData();
     void TimeStarEvent();
 
     void CreateTradesPosition(const int socket, const int64 session, const int32 reserved,
-                            const int64 uid, const std::string& symbol, const std::string& wid,
-                            const int64 buy_sell, const int64 amount, const double price);
+                              const int64 uid, const std::string& symbol, const std::string& wid,
+                              const int64 buy_sell, const int64 amount, const double price);
 
-    void GetStarTradingInfo(const int socket, const int64 session, const int32 reserved,
-                            const std::string& symbol,const int32 atype,
-                            const int32 start, const int32 count);
+    void ConfirmOrder(const int socket, const int64 session, const int32 reserved,
+                      const int64 uid, const int64 order_id, const int64 position_id);
+    
+    void TradesSymbolInfo(const int socket, const int64 session, const int32 reserved,
+                        const std::string& symbol);
+
+    void CancelOrder(const int socket, const int64 session, const int32 reserved,
+                        const int64 uid, const int64 order_id);
 private:
     void Init();
     //创建时间任务
@@ -78,20 +102,28 @@ private:
     int64 GetTradesStarStatus(const std::string& symbol); //若不能交易，返回交易的事件，以秒为单位，日可以交易返回0
 
     int32 MatchTrades(const int socket, const int64 session, const int32 reserved,
-                    TRADEING_POSITION_MAP& tradeing_postion, star_logic::TradesPosition& trades);
+                      TRADEING_POSITION_MAP& tradeing_postion, star_logic::TradesPosition& trades);
 
     void SetTradesPosition(TRADES_POSITION_MAP& trades_position,TRADEING_POSITION_MAP& trading_position,
                            star_logic::TradesPosition& trades);
 
-    void MatchNotice(const std::string& symbol, const int socket, const int64 session, const int64 uid, 
-                const int64 u_position_id, const int64 t_position_id,const int64 tid);
+    void MatchNotice(const int socket, const int64 session, const int32 reserved,
+                     star_logic::TradesOrder& trades_order);
 
-    void SendMatch(const int socket, const int64 session, const std::string& symbol,
-                    const int64 uid, const int64 u_position_id,const int64 tid,
-                    const int64 t_position_id);
+
+    void SetTradesOrder(star_logic::TradesPosition& buy_position,star_logic::TradesPosition& sell_position,
+                        star_logic::TradesOrder& order);
+
+    void SendOrderResult(const int socket,const int64 session, const int32 reserved,
+                        const int64 buy_uid,const int64 sell_uid,const int32 result,
+                        const int64 order_id);
+
+    void SendConfirmOrder(const int socket, const int64 session, const int32 reserved,
+                        const int64 uid, const int64 order_id, const int32 status);
 private:
     TradesCache *trades_cache_;
     trades_logic::TradesDB* trades_db_;
+    trades_logic::TradesKafka*  trades_kafka_;
     struct threadrw_t *lock_;
 };
 

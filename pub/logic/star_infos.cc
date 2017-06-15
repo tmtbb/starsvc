@@ -132,6 +132,103 @@ void Recharge::ValueSerialization(base_logic::DictionaryValue* dict) {
         data_->deposit_name_ = "未知";
 }
 
+TradesOrder::TradesOrder() {
+    data_ = new Data();
+}
+
+TradesOrder::TradesOrder(const TradesOrder& trades_order)
+    : data_(trades_order.data_) {
+    if (data_ != NULL) {
+        data_->AddRef();
+    }
+}
+
+TradesOrder& TradesOrder::operator =(
+    const TradesOrder& trades_order) {
+    if (trades_order.data_ != NULL) {
+        trades_order.data_->AddRef();
+    }
+
+    if (data_ != NULL) {
+        data_->Release();
+    }
+
+    data_ = trades_order.data_;
+    return (*this);
+}
+
+
+void TradesOrder::ValueSerialization(base_logic::DictionaryValue* dict) {
+    int64 big_handle_type = 0;
+    int64 big_sell_handle_type = 0;
+    int64 big_buy_handle_type = 0;
+    dict->GetBigInteger(L"order_id", &data_->order_id_);
+    dict->GetBigInteger(L"buy_position_id", &data_->buy_position_id_); 
+    dict->GetBigInteger(L"sell_position_id", &data_->sell_position_id_);
+    dict->GetBigInteger(L"buy_uid", &data_->buy_uid_);
+    dict->GetBigInteger(L"sell_uid", &data_->sell_uid_);
+    dict->GetBigInteger(L"amount", &data_->amount_);
+    dict->GetBigInteger(L"open_position_time", &data_->open_position_time_);
+    dict->GetBigInteger(L"close_position_time", &data_->close_position_time_);
+    dict->GetReal(L"gross_profit", &data_->gross_profit_);
+    dict->GetReal(L"open_price", &data_->open_price_);
+    dict->GetReal(L"open_charge", &data_->open_charge_);
+    dict->GetBigInteger(L"handle", &big_handle_type);
+    data_->handle_type_ = big_handle_type;
+    dict->GetBigInteger(L"sell_handle_type", &big_sell_handle_type);
+    data_->sell_handle_type_ = big_sell_handle_type;
+    dict->GetBigInteger(L"buy_handle_type", &big_buy_handle_type);
+    data_->buy_handle_type_ = big_buy_handle_type;
+    dict->GetString(L"symbol",&data_->symbol_);
+}
+
+
+base_logic::DictionaryValue* TradesOrder::GetValue() {
+    if (data_ == NULL)
+        return NULL;
+    base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+    if (data_->order_id_ != 0)
+        dict->SetBigInteger(L"order_id",data_->order_id_);
+    if (data_->buy_position_id_ != 0)
+        dict->SetBigInteger(L"buy_position_id",data_->buy_position_id_);
+    
+    if (data_->sell_position_id_ != 0)
+        dict->SetBigInteger(L"sell_position_id",data_->sell_position_id_);
+
+    if (data_->buy_uid_ != 0)
+        dict->SetBigInteger(L"buy_uid", data_->buy_uid_);
+
+    if (data_->sell_uid_ != 0)
+        dict->SetBigInteger(L"sell_uid", data_->sell_uid_);
+
+    if (data_->amount_ != 0)
+        dict->SetBigInteger(L"amount",data_->amount_);
+
+    if (data_->open_position_time_ != 0)
+        dict->SetBigInteger(L"open_position_time", data_->open_position_time_);
+
+    if (data_->close_position_time_ != 0)
+        dict->SetBigInteger(L"close_position_time", data_->close_position_time_);
+
+    if (data_->gross_profit_ != 0.0)
+        dict->SetReal(L"gross_profit", data_->gross_profit_);
+
+    if (data_->open_price_ != 0.0)
+        dict->SetReal(L"open_price", data_->open_price_);
+
+    if(data_->open_charge_ != 0.0)
+        dict->SetReal(L"open_charge", data_->open_charge_);
+
+    dict->SetInteger(L"type", data_->type_);
+    dict->SetInteger(L"handle",data_->handle_type_);
+    dict->SetInteger(L"sell_handle_type", data_->sell_handle_type_);
+    dict->SetInteger(L"buy_handle_type", data_->buy_handle_type_);
+    if (!data_->symbol_.empty())
+        dict->SetString(L"symbol", data_->symbol_);
+    return dict;
+}
+
+
 TradesPosition::TradesPosition() {
     data_ = new Data();
 }
@@ -158,10 +255,13 @@ TradesPosition& TradesPosition::operator =(
 }
 
 void TradesPosition::ValueSerialization(base_logic::DictionaryValue* dict) {
+    int64 big_buy_sell = 0;
+    int64 big_handle = 0;
     dict->GetBigInteger(L"tid", &data_->position_id_);
     dict->GetBigInteger(L"uid", &data_->uid_);
     dict->GetInteger(L"code_id", &data_->code_id_);
-    dict->GetInteger(L"buy_sell", &data_->buy_sell_);
+    dict->GetBigInteger(L"buy_sell", &big_buy_sell);
+    data_->buy_sell_ = big_buy_sell;
     dict->GetString(L"symbol", &data_->symbol_);
     dict->GetString(L"name", &data_->name_);
     dict->GetInteger(L"close_type", &data_->close_type_);
@@ -183,7 +283,63 @@ void TradesPosition::ValueSerialization(base_logic::DictionaryValue* dict) {
     else
         data_->result_ = false;
 
-    dict->GetInteger(L"handle", &data_->handle_);
+    dict->GetBigInteger(L"handle", &big_handle);
+    data_->handle_ = big_handle;
+}
+
+base_logic::DictionaryValue* TradesPosition::GetValue() {
+    if (data_ == NULL)
+        return NULL;
+    base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+    if (data_->uid_ != 0)
+        dict->SetBigInteger(L"uid",data_->uid_);
+    if (data_->position_id_ != 0)
+        dict->SetBigInteger(L"tid",data_->position_id_);
+    if (data_->code_id_ != 0)
+        dict->SetInteger(L"code_id", data_->code_id_);
+    if (data_->buy_sell_ != 0)
+        dict->SetInteger(L"buy_sell", data_->buy_sell_);
+    if (data_->close_type_ != 0)
+        dict->SetInteger(L"close_type", data_->close_type_);
+    dict->SetInteger(L"handle",data_->handle_);
+    dict->SetInteger(L"type", data_->type_);
+    if(data_->result_==false)
+        dict->SetInteger(L"result", 1);
+    else
+        dict->SetInteger(L"result", 0);
+    if(data_->amount_ != 0)
+        dict->SetBigInteger(L"amount",data_->amount_);
+    if (data_->open_position_time_ != 0.0)
+        dict->SetBigInteger(L"open_position_time",data_->open_position_time_);
+    if (data_->close_position_time_ != 0)
+        dict->SetBigInteger(L"close_position_time",data_->close_position_time_);
+    if(data_->gross_profit_ != 0.0)
+        dict->SetReal(L"gross_profit", data_->gross_profit_);
+    if(data_->open_price_ != 0.0)
+        dict->SetReal(L"open_price", data_->open_price_);
+    if(data_->open_cost_ != 0.0)
+        dict->SetReal(L"open_cost", data_->open_cost_);
+    if(data_->open_all_cost_ != 0.0)
+        dict->SetReal(L"open_all_cost", data_->open_all_cost_);
+    if(data_->open_charge_ != 0.0)
+        dict->SetReal(L"open_charge", data_->open_charge_);
+    if(data_->close_price_ != 0.0)
+        dict->SetReal(L"close_price", data_->close_price_);
+    if(data_->limit_ != 0.0)
+        dict->SetReal(L"limit", data_->limit_);
+    if(data_->stop_ != 0.0)
+        dict->SetReal(L"stop", data_->stop_);
+    if(data_->deferred_ != 0.0)
+        dict->SetReal(L"deferred", data_->deferred_);
+    if(!data_->code_.empty())
+        dict->SetString(L"code", data_->code_);
+    if(!data_->symbol_.empty())
+        dict->SetString(L"symbol", data_->symbol_);
+    if(!data_->name_.empty())
+        dict->SetString(L"name",data_->name_);
+
+    return dict;
+
 }
 
 Quotations::Quotations() {
