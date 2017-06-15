@@ -668,6 +668,7 @@ public:
         ,open_price_(NULL)
         ,symbol_(NULL)
         ,amount_(NULL)
+        ,position_id_(NULL)
         ,value_(NULL) {}
 
     ~MatchingNotice() {
@@ -702,6 +703,10 @@ public:
         amount_ = new base_logic::FundamentalValue(amount);
     }
 
+    void set_position_id(const int64 position_id) {
+        position_id_ = new base_logic::FundamentalValue(position_id);
+    }
+
 
     base_logic::DictionaryValue* get() {
         value_ = new base_logic::DictionaryValue();
@@ -719,6 +724,8 @@ public:
             value_->Set(L"openPrice", open_price_);
         if (symbol_ != NULL)
             value_->Set(L"symbol", symbol_);
+        //if (position_id_ != NULL)
+        //   value_->Set(L"positionId", position_id_);
         return value_;
     }
 
@@ -729,6 +736,7 @@ private:
     base_logic::FundamentalValue* open_position_time_;
     base_logic::FundamentalValue* open_price_;
     base_logic::FundamentalValue* amount_;
+    base_logic::FundamentalValue* position_id_;
     base_logic::StringValue* symbol_;
     base_logic::DictionaryValue* value_;
 };

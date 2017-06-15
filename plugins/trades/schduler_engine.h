@@ -13,6 +13,7 @@
 #include "thread/base_thread_lock.h"
 
 
+namespace trades_logic {
 typedef std::map<std::string, trades_logic::TradesStar> TRADES_STAR_MAP;
 
 typedef std::list<trades_logic::TimeTask> TIME_TASK_LIST;
@@ -45,7 +46,6 @@ enum MATCH_STATUS {
     NO_MATCH_PRICE = -101
 };
 
-namespace trades_logic {
 
 class TradesCache {
 public:

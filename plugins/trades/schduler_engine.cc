@@ -178,7 +178,9 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
     r = base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
                 (trades_cache_->all_trades_order_,order_id,trades_order);
 
-    if (!r||trades_order.handle_type() != MATCHES_ORDER)//不存在，且已经不为匹配状态
+    if (!r||trades_order.handle_type() == NO_ORDER || 
+        trades_order.handle_type() == COMPLETE_HANDLE ||
+        trades_order.handle_type() == CANCEL_ORDER)//不存在，且已经不为匹配状态
         return;
     
     //更新数据库
@@ -218,6 +220,8 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
                                             trades_order.sell_uid());
         SendOrderResult(socket, session, reserved, trades_order.buy_uid(),
                 trades_order.sell_uid(), result, trades_order.order_id());
+        if (result = 0)
+            trades_order.set_handle_type(COMPLETE_ORDER);
         trades_kafka_->SetTradesOrder(trades_order);
     }
 }

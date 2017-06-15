@@ -13,7 +13,7 @@ bool CancelOrder::set_http_packet(base_logic::DictionaryValue* value) {
     bool r = false;
     int64 id = 0;
     std::string token;
-    int64 order_id = 0l;
+    int64 order_id = 0;
     r = value->GetBigInteger(L"id", &id);
     if (r)
         set_id(id);

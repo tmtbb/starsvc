@@ -159,18 +159,27 @@ TradesOrder& TradesOrder::operator =(
 
 
 void TradesOrder::ValueSerialization(base_logic::DictionaryValue* dict) {
+    int64 big_handle_type = 0;
+    int64 big_sell_handle_type = 0;
+    int64 big_buy_handle_type = 0;
     dict->GetBigInteger(L"order_id", &data_->order_id_);
     dict->GetBigInteger(L"buy_position_id", &data_->buy_position_id_); 
     dict->GetBigInteger(L"sell_position_id", &data_->sell_position_id_);
+    dict->GetBigInteger(L"buy_uid", &data_->buy_uid_);
+    dict->GetBigInteger(L"sell_uid", &data_->sell_uid_);
     dict->GetBigInteger(L"amount", &data_->amount_);
     dict->GetBigInteger(L"open_position_time", &data_->open_position_time_);
     dict->GetBigInteger(L"close_position_time", &data_->close_position_time_);
     dict->GetReal(L"gross_profit", &data_->gross_profit_);
     dict->GetReal(L"open_price", &data_->open_price_);
     dict->GetReal(L"open_charge", &data_->open_charge_);
-    dict->GetInteger(L"handle", &data_->handle_type_);
-    dict->GetInteger(L"sell_handle_type", &data_->sell_handle_type_);
-    dict->GetInteger(L"buy_handle_type", &data_->buy_handle_type_);
+    dict->GetBigInteger(L"handle", &big_handle_type);
+    data_->handle_type_ = big_handle_type;
+    dict->GetBigInteger(L"sell_handle_type", &big_sell_handle_type);
+    data_->sell_handle_type_ = big_sell_handle_type;
+    dict->GetBigInteger(L"buy_handle_type", &big_buy_handle_type);
+    data_->buy_handle_type_ = big_buy_handle_type;
+    dict->GetString(L"symbol",&data_->symbol_);
 }
 
 
@@ -185,6 +194,12 @@ base_logic::DictionaryValue* TradesOrder::GetValue() {
     
     if (data_->sell_position_id_ != 0)
         dict->SetBigInteger(L"sell_position_id",data_->sell_position_id_);
+
+    if (data_->buy_uid_ != 0)
+        dict->SetBigInteger(L"buy_uid", data_->buy_uid_);
+
+    if (data_->sell_uid_ != 0)
+        dict->SetBigInteger(L"sell_uid", data_->sell_uid_);
 
     if (data_->amount_ != 0)
         dict->SetBigInteger(L"amount",data_->amount_);
@@ -240,10 +255,13 @@ TradesPosition& TradesPosition::operator =(
 }
 
 void TradesPosition::ValueSerialization(base_logic::DictionaryValue* dict) {
+    int64 big_buy_sell = 0;
+    int64 big_handle = 0;
     dict->GetBigInteger(L"tid", &data_->position_id_);
     dict->GetBigInteger(L"uid", &data_->uid_);
     dict->GetInteger(L"code_id", &data_->code_id_);
-    dict->GetInteger(L"buy_sell", &data_->buy_sell_);
+    dict->GetBigInteger(L"buy_sell", &big_buy_sell);
+    data_->buy_sell_ = big_buy_sell;
     dict->GetString(L"symbol", &data_->symbol_);
     dict->GetString(L"name", &data_->name_);
     dict->GetInteger(L"close_type", &data_->close_type_);
@@ -265,7 +283,8 @@ void TradesPosition::ValueSerialization(base_logic::DictionaryValue* dict) {
     else
         data_->result_ = false;
 
-    dict->GetInteger(L"handle", &data_->handle_);
+    dict->GetBigInteger(L"handle", &big_handle);
+    data_->handle_ = big_handle;
 }
 
 base_logic::DictionaryValue* TradesPosition::GetValue() {
