@@ -17,7 +17,7 @@ class RedisPool {
   RedisPool();
   virtual ~RedisPool(){};
  public:
-  void Init(std::list<base::ConnAddr>& addrlist, const int32 conn_num = 5);
+  void Init(std::list<base::ConnAddr>& addrlist, const int32 conn_num = 7);
   void Dest();
 
   base_storage::DictionaryStorageEngine* RedisConnectionPop(void);

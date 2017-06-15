@@ -105,12 +105,94 @@ bool Infomationlogic::OnInfomationMessage(struct server *srv, const int socket,
 	  Getfanscomment(srv,socket,packet);
 	  break;
 	}
-    default:
+	//获取明星服务列表
+	case R_GET_STAR_SERVICE:{
+	  GetStarService(srv,socket,packet);
+	  break;
+	}
+	//用户订购明星服务
+	case R_ORDER_STAR_SERVICE:{
+	  AddUserOrderStarService(srv,socket,packet);
+	  break;
+	}
+  default:
       break;
   }
 
   return true;
 }
+
+bool Infomationlogic::AddUserOrderStarService(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  int64 uid,mid;
+  std::string starcode,cityname,appointtime,comment;
+  int meettype;
+  bool r1 = packet_recv->body_->GetBigInteger(L"uid",&uid);
+  bool r2 = packet_recv->body_->GetString(L"starcode",&starcode);
+  bool r3 = packet_recv->body_->GetBigInteger(L"mid",&mid);
+  bool r4 = packet_recv->body_->GetString(L"city_name",&cityname);
+  bool r5 = packet_recv->body_->GetString(L"appoint_time",&appointtime);
+  bool r6 = packet_recv->body_->GetInteger(L"meet_type",&meettype);
+  bool r7 = packet_recv->body_->GetString(L"comment",&comment);
+  if(!r1 || !r2 || !r3 || !r4 || !r5 || !r6 || !r7){
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+
+  bool r = sqldb->userorderstarservice(uid,starcode,mid,cityname,appointtime,meettype,comment);
+  
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_ORDER_STAR_SERVICE, INFO_TYPE, 0,packet->session_id, 0);
+  base_logic::DictionaryValue ret;
+  if (!r) {
+    ret.SetInteger(L"result", 0);
+  }
+  else{
+    ret.SetInteger(L"result", 1); 
+  }
+  packet_reply.body_ = &ret;
+  send_message(socket,&packet_reply);
+
+  return true;
+}
+
+bool Infomationlogic::GetStarService(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string starcode;
+  bool r = packet_recv->body_->GetString(L"starcode",&starcode);
+  if(!r){
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+
+  DicValue ret_list;
+  if(!sqldb->getstarservicelist(starcode,ret_list)){
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+  
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_GET_STAR_SERVICE, INFO_TYPE, 0,packet->session_id, 0);
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
+  ret_list.Set(L"result",result);
+  packet_reply.body_ = &ret_list;
+  send_message(socket,&packet_reply);
+
+  return true;
+}
+
 bool Infomationlogic::Getfanscomment(struct server* srv,int socket ,struct PacketHead* packet){
   if (packet->packet_length <= PACKET_HEAD_LENGTH) {
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);

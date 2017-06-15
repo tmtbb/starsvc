@@ -238,13 +238,15 @@ bool Im_Mysql::delorderrecord(std::string& phone,std::string& starcode){
 	return false;
 }
 
-bool Im_Mysql::ReduceTalkingtimes(std::string& phone,std::string& starcode){
+bool Im_Mysql::ReduceTalkingtimes(std::string& phone,std::string& starcode,int64 amount, 
+	                                int64& ownseconds,std::string& accid,std::string& faccid){
 	bool r = false;
 	DicValue dic;
 	std::string sql;
 	sql = "call proc_reducetalkingtimes('"
 	  + phone 
 	  + "','" + starcode 
+	  + "','" + base::BasicUtil::StringUtil::Int64ToString(amount) 
 	  +  "');";
 	dic.SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
@@ -258,7 +260,10 @@ bool Im_Mysql::ReduceTalkingtimes(std::string& phone,std::string& starcode){
 	int64 result;
 	bool r1 = dic.GetDictionary(L"resultvalue", &ret);
 	bool r2 = ret->GetBigInteger(L"result", &result);
-	if(r1 && r2){
+	bool r3 = ret->GetBigInteger(L"ownseconds", &ownseconds);
+	bool r4 = ret->GetString(L"accid", &accid);
+	bool r5 = ret->GetString(L"faccid", &faccid);
+	if(r1 && r2 && r3 && r4 && r5){
 		if(result == 1)
 			return true;
 	}
@@ -276,12 +281,21 @@ void Im_Mysql::Callreducetalkingtimes(void* param, base_logic::Value* value){
 	while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
 	  if (rows[0] != NULL){
 	  		ret->SetBigInteger(L"result", atoi(rows[0]));
-	  		dict->Set(L"resultvalue", (base_logic::Value *) (ret));
-	  	}
+	  }
+	  if (rows[1] != NULL){
+	  		ret->SetBigInteger(L"ownseconds", atoi(rows[1]));
+	  }
+	  if (rows[2] != NULL){
+        ret->SetString(L"accid", rows[2]);
+    }
+	  if (rows[3] != NULL){
+        ret->SetString(L"faccid", rows[3]);
+    }
+	  dict->Set(L"resultvalue", (base_logic::Value *) (ret));
 	}
 	}
 	else {
-		LOG_ERROR ("CallUserLoginSelect count < 0");
+		LOG_ERROR ("Callreducetalkingtimes count < 0");
 	}
 	dict->Remove(L"sql", &value);
 }
