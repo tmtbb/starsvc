@@ -26,6 +26,8 @@ typedef std::list<star_logic::TradesOrder> TRADES_ORDER_LIST;
 typedef std::map<std::string,TRADES_ORDER_LIST> SYMBOL_TRADES_ORDER_MAP;
 typedef std::map<int64,TRADES_ORDER_LIST> USER_TRADES_ORDER_MAP;
 
+
+typedef std::map<int64, star_logic::UserInfo> USER_INFO_MAP;
 class RecordCache {
 public:
     SYMBOL_TRADES_POSITION_MAP  symbol_buy_trades_position_;
@@ -41,6 +43,8 @@ public:
     USER_TRADES_ORDER_MAP       user_trades_order_;
 
     TRADES_ORDER_MAP            trades_order_;
+
+    USER_INFO_MAP               user_info_map_;
 };
 
 class RecordManager {
@@ -49,6 +53,7 @@ public:
     virtual ~RecordManager();
     void InitDB(record_logic::RecordDB* record_db);
     void InitKafka(record_logic::RecordKafka* record_kafka);
+    void InitData();
     void DistributionRecord();
     void TodayPosition(const int socket, const int64 session, const int32 reserved,
                        const int64 uid,const int32 start, const int32 count);
@@ -60,7 +65,21 @@ public:
                      const int64 uid,const int32 start, const int32 count);
 
     void HisOrder(const int socket, const int64 session, const int32 reserved,
-                  const int64 uid,const int32 start, const int32 count);
+                  const int64 uid,const int32 status,const int32 start, const int32 count);
+
+
+    void FansPosition(const int socket, const int64 session, const int32 reserved,
+                      const std::string& symbol, const int32 buy_sell,
+                      const int32 start, const int32 count);
+
+
+    void FansOrder(const int socket, const int64 session, const int32 reserved,
+                   const std::string& symbol,const int32 start, const int32 count);
+
+private:
+    void InitDataHisOrder();
+    void InitDataHisPosition();
+    void InitUserInfo();
 private:
     void SetTradesPosition(base_logic::DictionaryValue* dict);
     void SetTradesOrder(base_logic::DictionaryValue* dict);
@@ -70,8 +89,23 @@ private:
                            USER_TRADES_POSITION_MAP& user_trades_position,
                            star_logic::TradesPosition& trades_position);
 
+    
+    void GetSymbolPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_position, const std::string& symbol,
+                           const int32 start, const int32 count, std::list<star_logic::TradesPosition>& trades_position_list);
 
-    void GetUserOrder(const int64 uid, const int64 start_pan, const int32 start, const int32 count,
+    void SendFansPosition(const int socket, const int64 session, const int32 reserved,
+                          const int32 start, const int32 count,
+                          std::list<star_logic::TradesPosition>& trades_positions_list);
+
+    void GetSymbolOrder(const std::string& symbol, const int32 start, const int32 count,
+                        std::list<star_logic::TradesOrder>& trades_order_list);
+
+    
+    void SendFansOrder(const int socket, const int64 session, const int32 reserved,
+                        const int32 start, const int32 count, std::list<star_logic::TradesOrder>& trades_order_list);
+
+
+    void GetUserOrder(const int64 uid, const int64 start_pan,const int32 status, const int32 start, const int32 count,
             std::list<star_logic::TradesOrder>& trades_order_list);
 
     void SendOrder(const int socket,const int64 session, const int32 reserved,

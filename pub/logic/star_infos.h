@@ -555,6 +555,11 @@ public:
         return Data::open_after(t_trades_position.data_, r_trades_position.data_);
     }
 
+    static bool price_after(const TradesPosition& t_trades_position,
+                        const TradesPosition& r_trades_position) {
+        return Data::price_after(t_trades_position.data_,r_trades_position.data_);
+    }
+
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
     base_logic::DictionaryValue* GetValue();
@@ -796,6 +801,10 @@ private:
         static bool open_after(const Data* t_data, const Data* r_data) {
             return t_data->open_position_time_ > r_data->open_position_time_;
         }
+
+        static bool price_after(const Data* t_data, const Data* r_data) {
+            return t_data->open_price_ > r_data->open_price_;
+        }
     public:
         int64 uid_;
         int64 position_id_;
@@ -860,6 +869,12 @@ class TradesOrder {
                             const TradesOrder& r_trades_order) {
         return Data::open_after(t_trades_order.data_, r_trades_order.data_);
     }
+
+    static bool price_after(const TradesOrder& t_trades_order,
+                        const TradesOrder& r_trades_order){
+        return Data::price_after(t_trades_order.data_, r_trades_order.data_);
+    }
+
     void create_order_id() {
         data_->order_id_ = base::SysRadom::GetInstance()->GetRandomID();
     }
@@ -1044,6 +1059,10 @@ class TradesOrder {
 
         static bool open_after(const Data* t_data, const Data* r_data) {
             return t_data->open_position_time_ > r_data->open_position_time_;
+        }
+
+        static bool price_after(const Data* t_data, const Data* r_data){
+            return t_data->open_price_ > r_data->open_price_;
         }
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);

@@ -17,12 +17,16 @@
 namespace record_logic {
 
 class RecordDB {
-public:
+ public:
     RecordDB(config::FileConfig* config);
     ~RecordDB();
 
+ public:
+    bool OnGetAllUserInfo(std::map<int64, star_logic::UserInfo>& user_map);
 
-private:
+ private:
+    static void CallGetAllUserInfo(void* param, base_logic::Value* value);
+ private:
     base_logic::DataEngine* mysql_engine_;
 };
 

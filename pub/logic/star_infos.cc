@@ -36,6 +36,7 @@ void UserInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
   dict->GetReal(L"balance", &data_->balance_);
   dict->GetString(L"phone", &data_->phone_num_);
   dict->GetInteger(L"type", &data_->type_);
+  dict->GetInteger(L"gender", &data_->gender_);
   dict->GetString(L"nickname", &data_->nickname_);
   dict->GetString(L"head_url", &data_->head_url_);
 }
