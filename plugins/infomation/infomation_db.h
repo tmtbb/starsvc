@@ -53,6 +53,9 @@ class Infomation_Mysql {
   //获取用户明星时间
   bool getuserstartime(const int64 uid, const std::string code, int64& time);
   
+  //获取明星时间
+  bool getstartime(const std::string code, int64& time);
+  
   static void Callpublicback(void* param, base_logic::Value* value);
   
   static void Callgetinfo(void* param, base_logic::Value* value);
@@ -67,6 +70,7 @@ class Infomation_Mysql {
   static void Calluserorderstarservice(void* param, base_logic::Value* value);
   static void Callgetuserstaramount(void* param, base_logic::Value* value);
   static void Callgetuserstartime(void* param, base_logic::Value* value);
+  static void Callgetstartime(void* param, base_logic::Value* value);
   private:
   base_logic::DataEngine* mysql_engine_;
 };

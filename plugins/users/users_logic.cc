@@ -820,6 +820,7 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
 
   std::string idcard = cerfic.id_card();//"411325199005217439";
   std::string name = cerfic.realname();//"唐伟";
+  
   //std::string idcard = "411325199005217439";
   //std::string name = "唐伟";
   //阿里云接口
@@ -878,6 +879,14 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
     LOG_DEBUG("josn Deserialize error[]___________________________________________________ err" );
   }
 //_____________________________________________________________________________________________
+
+//
+  if(!r){
+    //code 3 curl_easy_perform failed: HTTP response code said error
+    //网站报错, 特殊处理
+    r_ret.set_result(0);
+    r = user_db_->Certification(cerfic.uid(), cerfic.id_card(), cerfic.realname());
+  }
 
   struct PacketControl packet_control;
   MAKE_HEAD(packet_control, S_CERTIFICATION, USERS_TYPE, 0, packet->session_id, 0);

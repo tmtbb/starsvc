@@ -52,5 +52,8 @@ namespace infomation_logic {
 //获取用户明星时间
 #define R_ORDER_STAR_TIME    INFO_TYPE * 1000 + 25
 #define S_ORDER_STAR_TIME    INFO_TYPE * 1000 + 26
+//获取明星时间
+#define R_STAR_TIME    INFO_TYPE * 1000 + 27
+#define S_STAR_TIME    INFO_TYPE * 1000 + 28
 }
 #endif
