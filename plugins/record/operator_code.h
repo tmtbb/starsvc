@@ -27,7 +27,10 @@ namespace record_logic {
 #define R_FANS_POSITION      HISTORY_TYPE * 1000 + 11
 #define S_FANS_POSITION      HISTORY_TYPE * 1000 + 12
 
-#define R_FANS_ORDER         HISTORY_TYPE * 1000 + 13
-#define S_FANS_ORDER         HISTORY_TYPE * 1000 + 14
+#define R_FANS_ORDER         HISTORY_TYPE * 1000 + 15
+#define S_FANS_ORDER         HISTORY_TYPE * 1000 + 16
+
+#define R_POSITION_COUNT     HISTORY_TYPE * 1000 + 17
+#define S_POSITION_COUNT     HISTORY_TYPE * 1000 + 18
 }
 #endif

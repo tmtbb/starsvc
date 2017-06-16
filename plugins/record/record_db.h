@@ -23,9 +23,14 @@ class RecordDB {
 
  public:
     bool OnGetAllUserInfo(std::map<int64, star_logic::UserInfo>& user_map);
-
+    bool OnGetAllOrderInfo(std::map<int64, star_logic::TradesOrder>& order_map);
+    bool OnGetAllPositionInfo(std::map<int64, star_logic::TradesPosition>& position_map);
+    bool OnCreateTradesPosition(star_logic::TradesPosition& trades_position);
+    bool OnUpdateTradesPosition(star_logic::TradesPosition& trades_position);
  private:
     static void CallGetAllUserInfo(void* param, base_logic::Value* value);
+    static void CallGetAllOrderInfo(void* param, base_logic::Value* value);
+    static void CallGetAllPositionInfo(void* param, base_logic::Value* value);
  private:
     base_logic::DataEngine* mysql_engine_;
 };

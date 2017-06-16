@@ -600,6 +600,10 @@ public:
         data_->amount_ = amount;
     }
 
+    void set_r_amount(const int64 r_amount) {
+        data_->r_amount_= r_amount;
+    }
+
     void set_open_position_time(const int64 open_position_time) {
         data_->open_position_time_ = open_position_time;
     }
@@ -695,6 +699,10 @@ public:
         return data_->amount_;
     }
 
+    const int64 r_amount() const {
+        return data_->r_amount_;
+    }
+
     const int32 handle() const {
         return data_->handle_;
     }
@@ -779,6 +787,7 @@ private:
               is_deferred_(false),
               result_(false),
               amount_(0),
+              r_amount_(0),
               handle_(NO_HANDLE),
               open_position_time_(0),
               close_position_time_(0),
@@ -816,6 +825,7 @@ private:
         bool is_deferred_;
         bool result_;
         int64 amount_; //明星用于表示时间精确到秒
+        int64 r_amount_; //实际成交数
         int64 open_position_time_;
         int64 close_position_time_;
         double gross_profit_;

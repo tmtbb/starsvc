@@ -8,6 +8,34 @@ namespace record_logic {
 
 namespace net_request {
 
+
+
+
+bool PositionCount::set_http_packet(base_logic::DictionaryValue* value) {
+    bool r = false;
+    int64 id = 0;
+    std::string token;
+    std::string symbol;
+    r = value->GetBigInteger(L"id", &id);
+    if (r)
+        set_id(id);
+    else
+        return false;
+
+    r = value->GetString(L"token", &token);
+    if (r)
+        set_token(token);
+    else
+        return false;
+
+    r = value->GetString(L"symbol", &symbol);
+    if (r)
+        set_symbol(symbol);
+    else
+        return false;
+    return true;
+}
+
 bool TodayPosition::set_http_packet(base_logic::DictionaryValue* value) {
     bool r = false;
     int64 id = 0;

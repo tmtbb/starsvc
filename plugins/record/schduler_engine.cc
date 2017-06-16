@@ -45,9 +45,27 @@ void RecordManager::InitData() {
 }
 
 void RecordManager::InitDataHisOrder() {
+    std::map<int64,star_logic::TradesOrder> trades_order_map;
+    record_db_->OnGetAllOrderInfo(trades_order_map);
+
+    LOG_DEBUG2("trades_order %d",trades_order_map.size());
+    std::map<int64, star_logic::TradesOrder>::iterator it = trades_order_map.begin();
+    for(;it != trades_order_map.end(); it++) {
+        star_logic::TradesOrder order = it->second;
+        SetTradesOrder(order);
+    }
 }
 
 void RecordManager::InitDataHisPosition() {
+    std::map<int64, star_logic::TradesPosition> trades_position_map;
+    record_db_->OnGetAllPositionInfo(trades_position_map);
+    LOG_DEBUG2("trades_order %d",trades_position_map.size());
+
+    std::map<int64, star_logic::TradesPosition>::iterator it = trades_position_map.begin();
+    for(;it != trades_position_map.end(); it++) {
+        star_logic::TradesPosition position = it->second;
+        SetTradesPosition(position,true);
+    }
 }
 
 void RecordManager::InitUserInfo() {
@@ -74,6 +92,7 @@ void RecordManager::SendOrder(const int socket, const int64 session, const int32
         net_trades_unit->set_order_id(trades_order.order_id());
         net_trades_unit->set_symbol(trades_order.symbol());
         net_trades_unit->set_amount(trades_order.amount());
+        net_trades_unit->set_open_price(trades_order.open_price());
         net_trades_unit->set_open_time(trades_order.open_position_time());
         net_trades_unit->set_open_charge(trades_order.open_charge());
         net_trades_unit->set_handle(trades_order.handle_type());
@@ -81,6 +100,8 @@ void RecordManager::SendOrder(const int socket, const int64 session, const int32
         net_trades_unit->set_gross_profit(trades_order.gross_profit());
         net_trades_unit->set_buy_uid(trades_order.buy_uid());
         net_trades_unit->set_sell_uid(trades_order.sell_uid());
+        net_trades_unit->set_buy_handle(trades_order.buy_handle_type());
+        net_trades_unit->set_sell_handle(trades_order.sell_handle_type());
         if (trades_order.buy_uid()==uid)
             net_trades_unit->set_position_id(trades_order.buy_position_id());
         else 
@@ -132,6 +153,7 @@ void RecordManager::SendPosition(const int socket, const int64 session, const in
         net_position_unit->set_symbol(trades_position.symbol());
         net_position_unit->set_position_id(trades_position.position_id());
         //net_position_unit->set_result(trades_position.result());
+        net_position_unit->set_r_amount(trades_position.r_amount());
         net_position_unit->set_handle(trades_position.handle());
         net_allposition.set_unit(net_position_unit->get());
         t_count++;
@@ -153,6 +175,22 @@ void RecordManager::SendPosition(const int socket, const int64 session, const in
     }
 }
 
+void RecordManager::SendPositionCount(const int socket, const int64 session, const int32 reserved,
+                        const std::string& symbol) {
+    int32 buy_count = 0;
+    int32 sell_count = 0;
+
+    GetSymbolPositionCount(record_cache_->symbol_sell_trades_position_,symbol,sell_count);
+    GetSymbolPositionCount(record_cache_->symbol_buy_trades_position_, symbol, buy_count);
+    net_reply::PositionCount net_position_count;
+    net_position_count.set_buy_count(buy_count);
+    net_position_count.set_sell_count(sell_count);
+    net_position_count.set_symbol(symbol);
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_POSITION_COUNT, HISTORY_TYPE, 0, session, 0);
+    packet_control.body_ = net_position_count.get();
+    send_message(socket, &packet_control);
+}
 
 void RecordManager::SendFansOrder(const int socket, const int64 session, const int32 reserved,
         const int32 start, const int32 count,
@@ -185,10 +223,12 @@ void RecordManager::SendFansOrder(const int socket, const int64 session, const i
         net_trades_unit->set_symbol(trades_order.symbol());
         net_trades_unit->set_amount(trades_order.amount());
         net_trades_unit->set_open_time(trades_order.open_position_time());
+        net_trades_unit->set_close_time(trades_order.open_position_time());
         net_trades_unit->set_open_charge(trades_order.open_charge());
         net_trades_unit->set_handle(trades_order.handle_type());
         net_trades_unit->set_close_time(trades_order.close_position_time());
         net_trades_unit->set_gross_profit(trades_order.gross_profit());
+        net_trades_unit->set_open_price(trades_order.open_price());
         net_trades_unit->set_buy_uid(trades_order.buy_uid());
         net_trades_unit->set_sell_uid(trades_order.sell_uid());
         
@@ -272,7 +312,7 @@ void RecordManager::SendFansPosition(const int socket, const int64 session, cons
         net_position_unit->set_symbol(trades_position.symbol());
         net_position_unit->set_position_id(trades_position.position_id());
         net_position_unit->set_handle(trades_position.handle());
-
+        net_position_unit->set_r_amount(trades_position.r_amount());
         star_logic::UserInfo user_info;
         {
             base_logic::RLockGd lk(lock_);
@@ -393,7 +433,8 @@ void RecordManager::SetTradesOrder(base_logic::DictionaryValue* dict) {
 
 void RecordManager::SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_position,
                                       USER_TRADES_POSITION_MAP& user_trades_position,
-                                      star_logic::TradesPosition& trades_position) {
+                                      star_logic::TradesPosition& trades_position,
+                                        bool init) {
     bool r = false;
     star_logic::TradesPosition tmp_trades_position;
     TRADES_POSITION_LIST symbol_position_list;
@@ -403,6 +444,8 @@ void RecordManager::SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
         (record_cache_->trades_positions_,trades_position.position_id(),tmp_trades_position);
     if(r) { //存在，修改状态
         tmp_trades_position = trades_position;
+        if (!init)
+           record_db_->OnUpdateTradesPosition(trades_position);
         return;
     }
 
@@ -417,6 +460,8 @@ void RecordManager::SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
     user_position_list.push_back(trades_position);
     user_trades_position[trades_position.uid()] = user_position_list;
     record_cache_->trades_positions_[trades_position.position_id()] = trades_position;
+    if (!init)
+        record_db_->OnCreateTradesPosition(trades_position);
 }
 
 
@@ -455,14 +500,14 @@ void RecordManager::SetTradesOrder(star_logic::TradesOrder& trades_order) {
     record_cache_->trades_order_[trades_order.order_id()] = trades_order;
 }
 
-void RecordManager::SetTradesPosition(star_logic::TradesPosition& trades_position) {
+void RecordManager::SetTradesPosition(star_logic::TradesPosition& trades_position,bool init) {
     base_logic::WLockGd lk(lock_);
     if(trades_position.buy_sell() == BUY_TYPE) {
         SetTradesPosition(record_cache_->symbol_buy_trades_position_,record_cache_->user_buy_trades_position_,
-                          trades_position);
+                          trades_position,init);
     } else if(trades_position.buy_sell() == SELL_TYPE) {
         SetTradesPosition(record_cache_->symbol_sell_trades_position_,record_cache_->user_sell_trades_position_,
-                          trades_position);
+                          trades_position,init);
     }
 }
 
@@ -488,7 +533,11 @@ void RecordManager::GetUserOrder(const int64 uid, const int64 start_pan,
             if(order.open_position_time() > start_pan)
                 if (status == COMPLETE_ORDER && order.handle_type() == COMPLETE_ORDER)
                     trades_order_list.push_back(order);
-                else if (status != COMPLETE_ORDER)
+                else if (status == MATCHES_ORDER && 
+                         (order.handle_type() == MATCHES_ORDER ||
+                          order.handle_type() == CONFIRM_ORDER))
+                    trades_order_list.push_back(order);
+                else if (status == 3)
                     trades_order_list.push_back(order);
         }
 }
@@ -533,6 +582,22 @@ void RecordManager::GetSymbolPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
             t_start++;
             trades_position_list.push_back(position);
         }
+    }
+}
+
+
+void RecordManager::GetSymbolPositionCount(SYMBOL_TRADES_POSITION_MAP& symbol_trades_position, const std::string& symbol,
+                    int32& count){
+
+    bool r = false;
+    {
+        base_logic::RLockGd lk(lock_);
+        int32 t_start = 0;
+        int32 t_count = 0;
+        TRADES_POSITION_LIST position_list;
+        r = base::MapGet<SYMBOL_TRADES_POSITION_MAP,SYMBOL_TRADES_POSITION_MAP::iterator, std::string, TRADES_POSITION_LIST>
+            (symbol_trades_position, symbol, position_list);
+        count = position_list.size();
     }
 }
 

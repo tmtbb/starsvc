@@ -76,6 +76,8 @@ public:
     void FansOrder(const int socket, const int64 session, const int32 reserved,
                    const std::string& symbol,const int32 start, const int32 count);
 
+    void SendPositionCount(const int socket, const int64 session, const int32 reserved,
+                    const std::string& symbol);
 private:
     void InitDataHisOrder();
     void InitDataHisPosition();
@@ -83,15 +85,18 @@ private:
 private:
     void SetTradesPosition(base_logic::DictionaryValue* dict);
     void SetTradesOrder(base_logic::DictionaryValue* dict);
-    void SetTradesPosition(star_logic::TradesPosition& trades_position);
+    void SetTradesPosition(star_logic::TradesPosition& trades_position, bool init = false);
     void SetTradesOrder(star_logic::TradesOrder& trades_order);
     void SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_position,
                            USER_TRADES_POSITION_MAP& user_trades_position,
-                           star_logic::TradesPosition& trades_position);
+                           star_logic::TradesPosition& trades_position, bool init = false);
 
     
     void GetSymbolPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_position, const std::string& symbol,
                            const int32 start, const int32 count, std::list<star_logic::TradesPosition>& trades_position_list);
+
+    void GetSymbolPositionCount(SYMBOL_TRADES_POSITION_MAP& symbol_trades_position, const std::string& symbol,
+                               int32& count);
 
     void SendFansPosition(const int socket, const int64 session, const int32 reserved,
                           const int32 start, const int32 count,

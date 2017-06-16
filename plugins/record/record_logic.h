@@ -49,6 +49,7 @@ public:
 
 private:
     bool OnTodayPosition(struct server* srv, int socket, struct PacketHead* packet);
+    bool OnPositionCount(struct server* srv, int socket, struct PacketHead* packet);
     bool OnHisPosition(struct server* srv, int socket, struct PacketHead* packet);
     bool OnTodayOrder(struct server* srv, int socket, struct PacketHead* packet);
     bool OnHisOrder(struct server* srv, int socket, struct PacketHead* packet);
