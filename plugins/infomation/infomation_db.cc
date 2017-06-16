@@ -298,17 +298,18 @@ void Infomation_Mysql::Callgetbannerinfo(void* param, base_logic::Value* value){
 }
 
 bool Infomation_Mysql::getstarinfo(const std::string& code,const std::string& phone,DicValue &ret_result,int64 all){
-	bool r = false;
-    DicValue* dic = new DicValue();
-	std::string sql;
+  bool r = false;
+  DicValue* dic = new DicValue();
+  std::string sql;
     if(all==0){
 		sql = "call proc_getstarinfo('"
 	  + code + "','"
 	  + phone +  "');";
-	}else
-		sql = "call proc_getstarinfoall()";
-	
-    
+	}else{
+    sql = "call proc_getstarinfoall()";
+  }
+  
+  
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetinfo);
@@ -582,6 +583,52 @@ void Infomation_Mysql::Callgetuserstaramount(void* param, base_logic::Value* val
   }
   else {
 		LOG_ERROR ("Callgetuserstaramount count < 0");
+	}
+  
+  dict->Remove(L"sql", &value);
+}
+
+bool Infomation_Mysql::getuserstartime(const int64 uid, const std::string starcode, int64& time){
+	bool r = false;
+  DicValue* dic = new DicValue();
+	std::string sql;
+	sql = "call proc_GetOwnStarTime('"
+	  + base::BasicUtil::StringUtil::Int64ToString(uid) + "','"
+    + starcode + "');";
+
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetuserstartime);
+	if (!r) {
+	  return false;
+	}
+  
+  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	bool r1 = dic->GetDictionary(L"resultvalue",&ret);
+	bool r2 = ret->GetBigInteger(L"star_time", &time);
+	if(!r1 || !r2){
+	  return false;
+	}
+	
+	return r;
+}
+
+void Infomation_Mysql::Callgetuserstartime(void* param, base_logic::Value* value){	
+	base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetBigInteger(L"star_time", atoi(rows[0]));
+    }
+    dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+  }
+  else {
+		LOG_ERROR ("Callgetuserstartime count < 0");
 	}
   
   dict->Remove(L"sql", &value);
