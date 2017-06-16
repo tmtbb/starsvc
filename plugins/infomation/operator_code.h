@@ -37,5 +37,20 @@ namespace infomation_logic {
 //获取粉丝评论
 #define R_GET_FANSCOMMENT    INFO_TYPE * 1000 + 17
 #define S_GET_FANSCOMMENT    INFO_TYPE * 1000 + 18
+
+//获取明星服务列表
+#define R_GET_STAR_SERVICE    INFO_TYPE * 1000 + 19
+#define S_GET_STAR_SERVICE    INFO_TYPE * 1000 + 20
+//用户订购明星服务
+#define R_ORDER_STAR_SERVICE    INFO_TYPE * 1000 + 21
+#define S_ORDER_STAR_SERVICE    INFO_TYPE * 1000 + 22
+
+//获取用户订购明星数
+#define R_ORDER_STAR_NUM    INFO_TYPE * 1000 + 23
+#define S_ORDER_STAR_NUM    INFO_TYPE * 1000 + 24
+
+//获取用户明星时间
+#define R_ORDER_STAR_TIME    INFO_TYPE * 1000 + 25
+#define S_ORDER_STAR_TIME    INFO_TYPE * 1000 + 26
 }
 #endif

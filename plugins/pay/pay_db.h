@@ -31,9 +31,13 @@ class PayDB {
                                      const std::string& transaction_id,
                                      const int32 astatus,int64& uid,
                                      double& balance);
+ 
+  bool OnCheckPayPwd(const int64 uid, std::string& pwd); 
+ 
  public:
   static void CallCreateRechargeOrder(void* param, base_logic::Value* value);
   static void CallUpdateCallBackRechargeOrder(void* param, base_logic::Value* value);
+  static void CallCheckPayPwd(void* param, base_logic::Value* value);
  private:
   base_logic::DataEngine* mysql_engine_;
 };

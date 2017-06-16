@@ -7,6 +7,7 @@
 #include "basic/basictypes.h"
 #include "core/common.h"
 #include "trades/trades_db.h"
+#include "trades/trades_kafka.h"
 #include "net/comm_head.h"
 #include "net/packet_processing.h"
 
@@ -14,54 +15,53 @@ namespace trades_logic {
 
 class Tradeslogic {
 public:
-  Tradeslogic();
-  virtual ~Tradeslogic();
+    Tradeslogic();
+    virtual ~Tradeslogic();
 
 private:
-  static Tradeslogic *instance_;
+    static Tradeslogic *instance_;
 
 public:
-  static Tradeslogic *GetInstance();
-  static void FreeInstance();
+    static Tradeslogic *GetInstance();
+    static void FreeInstance();
 
-  bool OnTradesConnect(struct server *srv, const int socket);
+    bool OnTradesConnect(struct server *srv, const int socket);
 
-  bool OnTradesMessage(struct server *srv, const int socket, const void *msg,
-                       const int len);
+    bool OnTradesMessage(struct server *srv, const int socket, const void *msg,
+                         const int len);
 
-  bool OnTradesClose(struct server *srv, const int socket);
+    bool OnTradesClose(struct server *srv, const int socket);
 
-  bool OnBroadcastConnect(struct server *srv, const int socket,
-                          const void *data, const int len);
+    bool OnBroadcastConnect(struct server *srv, const int socket,
+                            const void *data, const int len);
 
-  bool OnBroadcastMessage(struct server *srv, const int socket, const void *msg,
-                          const int len);
+    bool OnBroadcastMessage(struct server *srv, const int socket, const void *msg,
+                            const int len);
 
-  bool OnBroadcastClose(struct server *srv, const int socket);
+    bool OnBroadcastClose(struct server *srv, const int socket);
 
-  bool OnIniTimer(struct server *srv);
+    bool OnIniTimer(struct server *srv);
 
-  bool OnTimeout(struct server *srv, char *id, int opcode, int time);
-
-private:
-  bool OnPlatformsGoods(struct server* srv, int socket, struct PacketHead *packet);
-
-  bool OnOpenPosition(struct server* srv, int socket, struct PacketHead* packet);
-
-  bool OnCurrentPosition(struct server* srv, int socket, struct PacketHead* packet);
-
-  bool OnQutations(struct server* srv, int socket,
-                                    struct PacketHead *packet);
-
-  bool OnFightInfo(struct server* srv, int socket,
-                   struct PacketHead *packet);
+    bool OnTimeout(struct server *srv, char *id, int opcode, int time);
 
 private:
-  bool Init();
 
-  void Test();
+    bool OnOpenPosition(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnGetStarTrading(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnConfirmOrder(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnTradesSymbolInfo(struct server* srv, int socket, struct PacketHead* packet);
+
+    bool OnCancelOrder(struct server* srv, int socket, struct PacketHead* packet);
 private:
-  trades_logic::TradesDB*  trades_db_;
+    bool Init();
+
+    void Test();
+private:
+    trades_logic::TradesDB*  trades_db_;
+    trades_logic::TradesKafka*  trades_kafka_;
 };
 } // namespace trades_logic
 

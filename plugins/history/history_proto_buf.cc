@@ -156,6 +156,7 @@ bool HistoryRecharge::set_http_packet(base_logic::DictionaryValue* value) {
   int64 big_status = 0;
   int32 status = 0;
   std::string token;
+  std::string t_query_time;
   if (value == NULL)
     return false;
 
@@ -191,6 +192,12 @@ bool HistoryRecharge::set_http_packet(base_logic::DictionaryValue* value) {
   else
     count = 10;
   set_count(count);
+  
+  r = value->GetString(L"time", &t_query_time);
+  if (r)
+    set_query_time(t_query_time);
+  else
+    set_query_time("");
 
   return true;
 }

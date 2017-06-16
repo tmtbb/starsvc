@@ -52,6 +52,11 @@ class Infomationlogic {
   bool Getbannerlist(struct server* srv,int socket ,struct PacketHead* packet);
 
   bool Getfanscomment(struct server* srv,int socket ,struct PacketHead* packet);
+  
+  bool GetStarService(struct server* srv,int socket ,struct PacketHead* packet);
+  bool AddUserOrderStarService(struct server* srv,int socket ,struct PacketHead* packet);
+  bool GetUserStarNum(struct server* srv,int socket ,struct PacketHead* packet);
+  bool GetUserStarTime(struct server* srv,int socket ,struct PacketHead* packet);
  private:
   bool Init();
   infomation_mysql::Infomation_Mysql* sqldb;

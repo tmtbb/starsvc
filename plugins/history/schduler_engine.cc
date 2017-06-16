@@ -9,6 +9,8 @@
 #include "net/packet_processing.h"
 #include "logic/logic_unit.h"
 #include "basic/template.h"
+#include <string>
+#include <stdlib.h>
 
 namespace history_logic {
 
@@ -185,11 +187,11 @@ void HistoryManager::SendHistoryWithDrawls(const int socket,
 void HistoryManager::SendHistoryRecharge(const int socket, const int64 session,
                                          const int32 revered, const int64 uid,
                                          const int32 status, const int64 pos,
-                                         const int64 count) {
+                                         const std::string queryTime, const int64 count) {
   std::list<star_logic::Recharge> recharge_list;
   {
     base_logic::RLockGd lk(lock_);  //1:处理中,2:成功,3:失败
-    GetHistoryRechargeNoLock(uid, status, recharge_list, 0, 0);
+    GetHistoryRechargeNoLock(uid, status, queryTime, recharge_list, 0, 0);
   }
 
   //没有对应的历史记录
@@ -221,6 +223,7 @@ void HistoryManager::SendHistoryRecharge(const int socket, const int64 session,
     net_recharge->set_deposit_time(recharge.deposit_time());
     net_recharge->set_deposit_type(recharge.deposit_type());
     net_recharge->set_status(recharge.status());
+    net_recharge->set_recharge_type(recharge.recharge_type());
     all_net_rechagre.set_unit(net_recharge->get());
     t_count++;
     if (all_net_rechagre.Size() % base_num == 0
@@ -436,16 +439,34 @@ void HistoryManager::GetHistoryTradesNoLock(
 }
 
 void HistoryManager::GetHistoryRechargeNoLock(
-    const int64 uid, const int32 status, std::list<star_logic::Recharge>& list,
+    const int64 uid, const int32 status,
+    const std::string queryTime, std::list<star_logic::Recharge>& list,
     const int64 pos, const int64 count) {
   RECHARGE_MAP recharge_map;
   base::MapGet<ALL_RECHAGE_MAP, ALL_RECHAGE_MAP::iterator, int64, RECHARGE_MAP>(
       history_cache_->all_rechage_map_, uid, recharge_map);
 
+  time_t tt = time(NULL);
+  struct tm t;
+  localtime_r(&tt, &t);
+  std::string tmpQt;//YYYY-MM
+  char cComMon[8];
+  if(queryTime != ""){
+  	if(queryTime.length()<2)tmpQt="0"+queryTime;//01-12
+  	sprintf(cComMon,"%d-%s",(1900+t.tm_year),tmpQt.c_str());
+    tmpQt = cComMon;
+  }
+  
+  LOG_DEBUG2("GetHistoryRechargeNoLock querytime %s",tmpQt.c_str());
   for (RECHARGE_MAP::iterator it = recharge_map.begin();
       it != recharge_map.end(); it++) {
     star_logic::Recharge recharge = it->second;
-    list.push_back(recharge);
+    std::string depositMon = recharge.deposit_time().substr(0,7); //YYYY-MM-DD HH:mm:ss
+    if(queryTime == ""){
+      list.push_back(recharge);
+    }else if(depositMon == tmpQt){
+      list.push_back(recharge);
+    }
   }
 }
 

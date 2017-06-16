@@ -60,6 +60,9 @@ class Paylogic {
                             struct PacketHead *packet); 
   bool OnCertification(struct server* srv, int socket,
                             struct PacketHead *packet); 
+  //校验支付密码
+  bool OnCheckPayPwd(struct server* srv, int socket,
+                    struct PacketHead* packet);
  private:
   bool Init();
  private:

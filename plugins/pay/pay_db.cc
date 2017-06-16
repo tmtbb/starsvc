@@ -127,6 +127,47 @@ void PayDB::CallUpdateCallBackRechargeOrder(void* param,
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
 }
 
+bool PayDB::OnCheckPayPwd(const int64 uid, std::string& pwd) {
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+  sql = "call proc_CheckPayPwd(" + base::BasicUtil::StringUtil::Int64ToString(uid) + 
+  	    ",'" + pwd + "');";
+
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallCheckPayPwd);
+  if (!r)
+    return false;
+
+  dict->GetDictionary(L"resultvalue", &info_value);
+  int32 result = 0;
+  r = info_value->GetInteger(L"result", &result);
+  r = (r && result == 1) ? true : false; /*0表示验证失败*/
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
+
+void PayDB::CallCheckPayPwd(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetInteger(L"result", atoi(rows[0]));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+}
+
 
 }  // namespace history_logic
 
