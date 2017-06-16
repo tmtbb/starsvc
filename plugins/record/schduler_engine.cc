@@ -443,7 +443,8 @@ void RecordManager::SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
     r = base::MapGet<TRADES_POSITION_MAP,TRADES_POSITION_MAP::iterator,int64,star_logic::TradesPosition>
         (record_cache_->trades_positions_,trades_position.position_id(),tmp_trades_position);
     if(r) { //存在，修改状态
-        tmp_trades_position = trades_position;
+        //tmp_trades_position = trades_position;
+        tmp_trades_position.set_handle(trades_position.handle());
         if (!init)
            record_db_->OnUpdateTradesPosition(trades_position);
         return;
@@ -474,7 +475,12 @@ void RecordManager::SetTradesOrder(star_logic::TradesOrder& trades_order) {
     bool r = base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
              (record_cache_->trades_order_,trades_order.order_id(),tmp_trades_order);
     if(r) { //存在，修改状态
-        tmp_trades_order = trades_order;
+        tmp_trades_order.set_handle_type(trades_order.handle_type());
+        tmp_trades_order.set_buy_handle_type(trades_order.buy_handle_type());
+        tmp_trades_order.set_sell_handle_type(trades_order.sell_handle_type());
+        //tmp_trades_order(trades_order);
+        //tmp_trades_order = trades_order;
+        //LOG_DEBUG("111111111111");
         return;
     }
 

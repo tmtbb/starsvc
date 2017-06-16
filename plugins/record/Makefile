@@ -12,7 +12,7 @@
 
 LIB_DIR = ./../../../library
 USER_DIR = ./../../pub
-SO_DIR = ./../../bin/plugins
+SO_DIR = ./../../record/plugins
 
 THIRD_PATH = $(LIB_DIR)/mylib/public
 
