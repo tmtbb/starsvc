@@ -27,7 +27,7 @@ class Infomation_Mysql {
   //获取粉丝评论
   bool getfanscomments(const std::string& starcode,DicValue &ret,int64& startnum,int64& endnum);
   static void Callgetfanscomments(void* param, base_logic::Value* value);
-  //获取明星信息
+  //获取全量明星信息
   bool getstarinfo(const std::string& code,const std::string& phone,DicValue &ret,int64 all);
 
   //获取banner信息
@@ -50,6 +50,9 @@ class Infomation_Mysql {
   //获取用户订购明星数
   bool getuserstaramount(const int64 uid, int64& num);
   
+  //获取用户明星时间
+  bool getuserstartime(const int64 uid, const std::string code, int64& time);
+  
   static void Callpublicback(void* param, base_logic::Value* value);
   
   static void Callgetinfo(void* param, base_logic::Value* value);
@@ -63,6 +66,7 @@ class Infomation_Mysql {
   static void Callgetstarservicelist(void* param, base_logic::Value* value);
   static void Calluserorderstarservice(void* param, base_logic::Value* value);
   static void Callgetuserstaramount(void* param, base_logic::Value* value);
+  static void Callgetuserstartime(void* param, base_logic::Value* value);
   private:
   base_logic::DataEngine* mysql_engine_;
 };
