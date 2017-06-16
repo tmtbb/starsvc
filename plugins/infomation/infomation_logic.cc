@@ -121,9 +121,50 @@ bool Infomationlogic::OnInfomationMessage(struct server *srv, const int socket,
 	  GetUserStarNum(srv,socket,packet);
 	  break;
 	}
+  //获取用户明星时间
+	case R_ORDER_STAR_TIME:{
+	  GetUserStarTime(srv,socket,packet);
+	  break;
+	}
   default:
       break;
   }
+
+  return true;
+}
+
+bool Infomationlogic::GetUserStarTime(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  int64 uid;
+  std::string starcode;
+  bool r1 = packet_recv->body_->GetBigInteger(L"uid",&uid);
+  bool r2 = packet_recv->body_->GetString(L"starcode",&starcode);
+  if(!r1 || !r2){
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+  
+  int64 ltime = 0;
+  if(!sqldb->getuserstartime(uid,starcode,ltime)){
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+  
+  //发送信息
+  struct PacketControl packet_control_ack; 
+  MAKE_HEAD(packet_control_ack,S_ORDER_STAR_TIME, 1, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic; 
+  dic.SetInteger(L"result", 1);
+  dic.SetBigInteger(L"star_time", ltime);
+  
+  packet_control_ack.body_ = &dic; 
+  send_message(socket, &packet_control_ack); 
 
   return true;
 }
@@ -393,20 +434,21 @@ bool Infomationlogic::GetStarinfoList(struct server* srv,int socket ,struct Pack
   bool r1 = packet_recv->body_->GetString(L"code",&code);
   bool r2 = packet_recv->body_->GetString(L"phone",&phone);
   bool r3 = packet_recv->body_->GetBigInteger(L"all",&all);
+  
   bool r = r1  && r2 && r3;
   if(!r){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-	return false;
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
   }
 
   DicValue ret_list;
   if(!sqldb->getstarinfo(code,phone,ret_list,all)){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-	return false;
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
   }
   
   struct PacketControl packet_reply;
-  MAKE_HEAD(packet_reply, S_STARINFOLIST_ADD, INFO_TYPE, 0,packet->session_id, 0);
+  MAKE_HEAD(packet_reply, S_STARINFOLIST_GET, INFO_TYPE, 0, packet->session_id, 0);
   base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
   ret_list.Set(L"result",result);
   packet_reply.body_ = &ret_list;
