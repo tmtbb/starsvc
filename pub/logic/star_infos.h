@@ -555,6 +555,11 @@ public:
         return Data::open_after(t_trades_position.data_, r_trades_position.data_);
     }
 
+    static bool price_after(const TradesPosition& t_trades_position,
+                        const TradesPosition& r_trades_position) {
+        return Data::price_after(t_trades_position.data_,r_trades_position.data_);
+    }
+
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
     base_logic::DictionaryValue* GetValue();
@@ -593,6 +598,10 @@ public:
 
     void set_amount(const int64 amount) {
         data_->amount_ = amount;
+    }
+
+    void set_r_amount(const int64 r_amount) {
+        data_->r_amount_= r_amount;
     }
 
     void set_open_position_time(const int64 open_position_time) {
@@ -690,6 +699,10 @@ public:
         return data_->amount_;
     }
 
+    const int64 r_amount() const {
+        return data_->r_amount_;
+    }
+
     const int32 handle() const {
         return data_->handle_;
     }
@@ -774,6 +787,7 @@ private:
               is_deferred_(false),
               result_(false),
               amount_(0),
+              r_amount_(0),
               handle_(NO_HANDLE),
               open_position_time_(0),
               close_position_time_(0),
@@ -796,6 +810,10 @@ private:
         static bool open_after(const Data* t_data, const Data* r_data) {
             return t_data->open_position_time_ > r_data->open_position_time_;
         }
+
+        static bool price_after(const Data* t_data, const Data* r_data) {
+            return t_data->open_price_ > r_data->open_price_;
+        }
     public:
         int64 uid_;
         int64 position_id_;
@@ -807,6 +825,7 @@ private:
         bool is_deferred_;
         bool result_;
         int64 amount_; //明星用于表示时间精确到秒
+        int64 r_amount_; //实际成交数
         int64 open_position_time_;
         int64 close_position_time_;
         double gross_profit_;
@@ -860,6 +879,12 @@ class TradesOrder {
                             const TradesOrder& r_trades_order) {
         return Data::open_after(t_trades_order.data_, r_trades_order.data_);
     }
+
+    static bool price_after(const TradesOrder& t_trades_order,
+                        const TradesOrder& r_trades_order){
+        return Data::price_after(t_trades_order.data_, r_trades_order.data_);
+    }
+
     void create_order_id() {
         data_->order_id_ = base::SysRadom::GetInstance()->GetRandomID();
     }
@@ -1044,6 +1069,10 @@ class TradesOrder {
 
         static bool open_after(const Data* t_data, const Data* r_data) {
             return t_data->open_position_time_ > r_data->open_position_time_;
+        }
+
+        static bool price_after(const Data* t_data, const Data* r_data){
+            return t_data->open_price_ > r_data->open_price_;
         }
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);

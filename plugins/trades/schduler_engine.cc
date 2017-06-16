@@ -422,6 +422,7 @@ int64 TradesManager::GetTradesStarStatus(const std::string& symbol) {
 
 void TradesManager::MatchNotice(const int socket, const int64 session, const int32 reserved, star_logic::TradesOrder& trades_order) {
     int t_socket;
+
     net_reply::MatchingNotice  match_notice;
     match_notice.set_order_id(trades_order.order_id());
     match_notice.set_buy_uid(trades_order.buy_uid());
@@ -448,6 +449,8 @@ void TradesManager::SetTradesOrder(star_logic::TradesPosition& buy_position,
     trades_order.set_sell_uid(sell_position.uid());
     int64 amount = buy_position.amount() > sell_position.amount() ?
                    sell_position.amount():buy_position.amount();
+    buy_position.set_r_amount(amount);
+    sell_position.set_r_amount(amount);
     trades_order.set_amount(amount);
     trades_order.set_symbol(buy_position.symbol());
     trades_order.set_open_position_time(time(NULL));

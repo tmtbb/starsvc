@@ -54,6 +54,7 @@ bool Recordlogic::Init() {
     record_kafka_ = new record_logic::RecordKafka(config);
     record_logic::RecordEngine::GetSchdulerManager()->InitDB(record_db_);
     record_logic::RecordEngine::GetSchdulerManager()->InitKafka(record_kafka_);
+    record_logic::RecordEngine::GetSchdulerManager()->InitData();
     return true;
 }
 
@@ -107,6 +108,17 @@ bool Recordlogic::OnRecordMessage(struct server *srv, const int socket,
     case R_ALL_ORDER_RECORD: {
         OnHisOrder(srv, socket, packet);
         break;
+    }
+
+    case R_FANS_POSITION: {
+        OnFansPosition(srv, socket, packet);
+        break;
+    }
+    case R_FANS_ORDER: {
+        OnFansOrder(srv, socket, packet);
+    }
+    case R_POSITION_COUNT: {
+        OnPositionCount(srv, socket, packet);
     }
     default:
         break;
@@ -224,10 +236,68 @@ bool Recordlogic::OnHisOrder(struct server* srv, int socket, struct PacketHead* 
         return false;
     }
 
-    record_logic::RecordEngine::GetSchdulerManager()->TodayOrder(socket,packet->session_id,
-                    packet->reserved, his_order.id(),his_order.start(),his_order.count());
+    record_logic::RecordEngine::GetSchdulerManager()->HisOrder(socket,packet->session_id,
+                    packet->reserved, his_order.id(),his_order.status(),
+                    his_order.start(),his_order.count());
     return true;
 }
 
 
+bool Recordlogic::OnFansPosition(struct server* srv, int socket, struct PacketHead* packet) {
+    record_logic::net_request::FansPosition fans_position;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = fans_position.set_http_packet(packet_control->body_);
+    if (!r) {
+        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        return false;
+    }
+
+    record_logic::RecordEngine::GetSchdulerManager()->FansPosition(socket,
+        packet->session_id, packet->reserved, fans_position.symbol(),
+        fans_position.buy_sell(), fans_position.start(), fans_position.count());
+    return true;
+}
+
+
+bool Recordlogic::OnFansOrder(struct server* srv, int socket, struct PacketHead* packet) {
+    record_logic::net_request::FansOrder fans_order;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = fans_order.set_http_packet(packet_control->body_);
+    if (!r) {
+        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        return false;
+    }
+
+    record_logic::RecordEngine::GetSchdulerManager()->FansOrder(socket,
+        packet->session_id, packet->reserved, fans_order.symbol(),
+        fans_order.start(), fans_order.count());
+    return true;
+}
+
+
+bool Recordlogic::OnPositionCount(struct server* srv, int socket, struct PacketHead* packet) {
+    record_logic::net_request::PositionCount position_count;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = position_count.set_http_packet(packet_control->body_);
+    if (!r) {
+        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        return false;
+    }
+
+    record_logic::RecordEngine::GetSchdulerManager()->SendPositionCount(socket,
+        packet->session_id, packet->reserved,position_count.symbol());
+    return true;
+}
 }  // namespace trades_logic

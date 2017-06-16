@@ -13,11 +13,65 @@ namespace record_logic {
 
 namespace net_request {
 
+
+class PositionCount{
+public:
+    PositionCount()
+            : id_(NULL)
+            , token_(NULL)
+            , symbol_(NULL){}
+
+    ~PositionCount(){
+        if (id_) {delete id_; id_ = NULL;}
+        if (token_) {delete token_; token_ = NULL;}
+        if (symbol_) {delete symbol_; symbol_ = NULL;}
+    }
+
+
+    bool set_http_packet(base_logic::DictionaryValue* value);
+    
+    void set_id(const int64 id) {
+        id_ = new base_logic::FundamentalValue(id);
+    }
+
+    void set_token(const std::string& token) {
+        token_ = new base_logic::StringValue(token);
+    }
+
+    void set_symbol(const std::string& symbol) {
+        symbol_ = new base_logic::StringValue(symbol);
+    }
+
+    int64 id() const {
+        int64 id = 0;
+        id_->GetAsBigInteger(&id);
+        return id;
+    }
+
+    std::string token() const {
+        std::string token;
+        token_->GetAsString(&token);
+        return token;
+    }
+
+    std::string symbol() const {
+        std::string symbol;
+        symbol_->GetAsString(&symbol);
+        return symbol;
+    }
+
+public:
+    base_logic::FundamentalValue*   id_;
+    base_logic::StringValue*        token_;
+    base_logic::StringValue*        symbol_;
+};
+
 class TodayPosition {
 public:
     TodayPosition()
         : id_(NULL)
         , token_(NULL)
+        , status_(NULL)
         , start_(NULL)
         , count_(NULL) {}
 
@@ -29,6 +83,10 @@ public:
         if (token_) {
             delete token_;
             token_ = NULL;
+        }
+        if (status_) {
+            delete status_;
+            status_ = NULL;
         }
         if (start_) {
             delete start_;
@@ -48,6 +106,10 @@ public:
 
     void set_token(const std::string& token) {
         token_ = new base_logic::StringValue(token);
+    }
+    
+    void set_status(const int32 status) {
+        status_ = new base_logic::FundamentalValue(status);
     }
 
     void set_start(const int32 start) {
@@ -70,6 +132,12 @@ public:
         return token;
     }
 
+    const int32 status() const {
+        int32 status;
+        status_->GetAsInteger(&status);
+        return status;
+    }
+
     const int32 start() const {
         int32  start;
         start_->GetAsInteger(&start);
@@ -85,6 +153,7 @@ public:
 public:
     base_logic::FundamentalValue*   id_;
     base_logic::StringValue*        token_;
+    base_logic::FundamentalValue*   status_;
     base_logic::FundamentalValue*   start_;
     base_logic::FundamentalValue*   count_;
 };
@@ -93,12 +162,163 @@ typedef TodayPosition  TodayOrder;
 typedef TodayPosition  HisPosition;
 typedef TodayPosition  HisOrder;
 
+
+class FansPosition {
+public:
+    FansPosition()
+        : id_(NULL)
+        , token_(NULL)
+        , buy_sell_(NULL)
+        , symbol_(NULL)
+        , start_(NULL)
+        , count_(NULL) {}
+
+    ~FansPosition() {
+        if (id_) {
+            delete id_;
+            id_ = NULL;
+        }
+        if (token_) {
+            delete token_;
+            token_ = NULL;
+        }
+        if (symbol_) {
+            delete symbol_;
+            symbol_ = NULL;
+        }
+        if (buy_sell_) {
+            delete buy_sell_;
+            buy_sell_ = NULL;
+        }
+        if (start_) {
+            delete start_;
+            start_ = NULL;
+        }
+        if (count_) {
+            delete count_;
+            count_ = NULL;
+        }
+    }
+
+    bool set_http_packet(base_logic::DictionaryValue* value);
+
+    void set_id(const int64 id) {
+        id_ = new base_logic::FundamentalValue(id);
+    }
+
+    void set_token(const std::string& token) {
+        token_ = new base_logic::StringValue(token);
+    }
+    
+    void set_symbol(const std::string& symbol) {
+        symbol_ = new base_logic::StringValue(symbol);
+    }
+
+    void set_buy_sell(const int32 buy_sell) {
+        buy_sell_ = new base_logic::FundamentalValue(buy_sell);
+    }
+
+    void set_start(const int32 start) {
+        start_ = new base_logic::FundamentalValue(start);
+    }
+
+    void set_count(const int32 count) {
+        count_ = new base_logic::FundamentalValue(count);
+    }
+
+    const int64 id() const {
+        int64 id = 0;
+        id_->GetAsBigInteger(&id);
+        return id;
+    }
+
+    const std::string token() const {
+        std::string token;
+        token_->GetAsString(&token);
+        return token;
+    }
+
+    const std::string symbol() const {
+        std::string symbol;
+        symbol_->GetAsString(&symbol);
+        return symbol;
+    }
+
+    const int32 buy_sell() const {
+        int32 buy_sell;
+        buy_sell_->GetAsInteger(&buy_sell);
+        return buy_sell;
+    }
+
+    const int32 start() const {
+        int32  start;
+        start_->GetAsInteger(&start);
+        return start;
+    }
+
+
+    const int32 count() const {
+        int32 count;
+        count_->GetAsInteger(&count);
+        return count;
+    }
+public:
+    base_logic::FundamentalValue*   id_;
+    base_logic::StringValue*        token_;
+    base_logic::StringValue*        symbol_;
+    base_logic::FundamentalValue*   buy_sell_;
+    base_logic::FundamentalValue*   start_;
+    base_logic::FundamentalValue*   count_;
+};
+
+typedef FansPosition  FansOrder;
 }
 
 namespace net_reply {
 
 
+class PositionCount {
+ public:
+    PositionCount()
+        : buy_count_(NULL)
+        , sell_count_(NULL)
+        , symbol_(NULL)
+        , value_(NULL){}
 
+    ~PositionCount(){
+        if (value_) {delete value_; value_ = NULL;}
+    }
+
+
+    void set_buy_count(const int32 buy_count){
+        buy_count_ = new base_logic::FundamentalValue(buy_count);
+    }
+
+    void set_sell_count(const int32 sell_count) {
+        sell_count_ = new base_logic::FundamentalValue(sell_count);
+    }
+
+    void set_symbol(const std::string& symbol) {
+        symbol_ = new base_logic::StringValue(symbol);
+    }
+
+    base_logic::DictionaryValue* get() {
+        value_ = new base_logic::DictionaryValue();
+        if (buy_count_!= NULL)
+            value_->Set(L"buyCount", buy_count_);
+        if (sell_count_ != NULL)
+            value_->Set(L"sellCount", sell_count_);
+        if (symbol_ != NULL)
+            value_->Set(L"symbol", symbol_);
+        return value_;
+    }
+
+ public:
+    base_logic::FundamentalValue* buy_count_;
+    base_logic::FundamentalValue* sell_count_;
+    base_logic::StringValue*      symbol_;
+    base_logic::DictionaryValue*  value_;
+};
 
 
 
@@ -119,6 +339,8 @@ public:
           close_price_(NULL),
           gross_profit_(NULL),
           handle_(NULL),
+          buy_handle_type_(NULL),
+          sell_handle_type_(NULL),
           value_(NULL) {
     }
 
@@ -185,6 +407,14 @@ public:
         sell_uid_ = new base_logic::FundamentalValue(sell_uid);
     }
 
+    void set_buy_handle(const int32 handle_type){
+        buy_handle_type_ = new base_logic::FundamentalValue(handle_type);
+    }
+
+    void set_sell_handle(const int32 handle_type) {
+        sell_handle_type_ = new base_logic::FundamentalValue(handle_type);
+    }
+
     base_logic::DictionaryValue* get() {
         value_ = new base_logic::DictionaryValue();
         if (position_id_ != NULL)
@@ -213,6 +443,10 @@ public:
             value_->Set(L"closePrice", close_price_);
         if (gross_profit_ != NULL)
             value_->Set(L"grossProfit", gross_profit_);
+        if (buy_handle_type_ != NULL)
+            value_->Set(L"buyHandle", buy_handle_type_);
+        if (sell_handle_type_ != NULL)
+            value_->Set(L"sellHandler", sell_handle_type_);
         if (handle_ != NULL)
             value_->Set(L"handle", handle_);
         return value_;
@@ -233,6 +467,8 @@ private:
     base_logic::FundamentalValue* close_price_;
     base_logic::FundamentalValue* gross_profit_;
     base_logic::FundamentalValue* handle_;
+    base_logic::FundamentalValue* buy_handle_type_;
+    base_logic::FundamentalValue* sell_handle_type_;
     base_logic::DictionaryValue* value_;
 };
 
@@ -246,6 +482,7 @@ public:
           name_(NULL),
           buy_sell_(NULL),
           amount_(NULL),
+          r_amount_(NULL),
           open_price_(NULL),
           position_time_(NULL),
           open_cost_(NULL),
@@ -297,6 +534,10 @@ public:
 
     void set_amount(const int64 amount) {
         amount_ = new base_logic::FundamentalValue(amount);
+    }
+
+    void set_r_amount(const int64 r_amount){
+        r_amount_ = new base_logic::FundamentalValue(r_amount);
     }
 
     void set_open_price(const double open_price) {
@@ -375,6 +616,8 @@ public:
             value_->Set(L"buySell", buy_sell_);
         if (amount_ != NULL)
             value_->Set(L"amount", amount_);
+        if (r_amount_ != NULL)
+            value_->Set(L"rtAmount",r_amount_);
         if (open_price_ != NULL)
             value_->Set(L"openPrice", open_price_);
         if (position_time_ != NULL)
@@ -416,6 +659,7 @@ private:
     base_logic::StringValue* name_;
     base_logic::FundamentalValue* buy_sell_;
     base_logic::FundamentalValue* amount_;
+    base_logic::FundamentalValue* r_amount_;
     base_logic::FundamentalValue* open_price_;
     base_logic::FundamentalValue* position_time_;
     base_logic::FundamentalValue* open_cost_;
@@ -431,6 +675,131 @@ private:
     base_logic::FundamentalValue* interval_;
     base_logic::FundamentalValue* result_;
     base_logic::FundamentalValue* handle_;
+    base_logic::DictionaryValue* value_;
+};
+
+class UserInfoUnit{
+ public:
+    UserInfoUnit()
+        : uid_(NULL)
+        , gender_(NULL)
+        , nickname_(NULL)
+        , head_url_(NULL)
+        , value_(NULL){}
+
+    ~UserInfoUnit(){
+        if (value_) {delete value_; value_ = NULL;}
+    }
+
+    void set_uid(const int64 uid) {
+        uid_ = new base_logic::FundamentalValue(uid);
+    }
+
+    void set_gender(const int32 gender) {
+        gender_ = new base_logic::FundamentalValue(gender);
+    }
+
+    void set_nickname(const std::string& nickname) {
+        nickname_ = new base_logic::StringValue(nickname);   
+    }
+
+    void set_head_url(const std::string& head_url) {
+        head_url_ = new base_logic::StringValue(head_url);
+    }
+
+
+    base_logic::DictionaryValue* get() {
+        value_ = new base_logic::DictionaryValue();
+        if (uid_ != NULL)
+            value_->Set(L"uid", uid_);
+        if (gender_ != NULL)
+            value_->Set(L"gender", gender_);
+        if (nickname_ != NULL)
+            value_->Set(L"nickname", nickname_);
+        if (head_url_ != NULL)
+            value_->Set(L"headUrl", head_url_);
+        return value_;
+    }
+
+
+ private:
+    base_logic::FundamentalValue* uid_;
+    base_logic::FundamentalValue* gender_;
+    base_logic::StringValue* nickname_;
+    base_logic::StringValue* head_url_;
+    base_logic::DictionaryValue* value_;
+};
+
+
+
+class UserTrades {
+public:
+    UserTrades()
+        :  value_(NULL) {
+        value_ = new base_logic::DictionaryValue;
+    }
+
+    ~UserTrades() {
+        if (value_) {
+            delete value_;
+            value_ = NULL;
+        }
+    }
+
+    void set_user(base_logic::DictionaryValue* value) {
+        //user_info_ = base_logic::DictionaryValue(value);
+        value_->Set(L"user",value);
+    }
+
+    void set_trades(base_logic::DictionaryValue* value) {
+        value_->Set(L"trades",value);
+    }
+
+    base_logic::DictionaryValue* get() {
+        return value_;
+    }
+
+private:
+    base_logic::DictionaryValue* user_info_;
+    base_logic::DictionaryValue* trades_info_;
+    base_logic::DictionaryValue* value_;
+};
+
+
+class UserOrder {
+public:
+    UserOrder()
+        :  value_(NULL) {
+        value_ = new base_logic::DictionaryValue;
+    }
+
+    ~UserOrder() {
+        if (value_) {
+            delete value_;
+            value_ = NULL;
+        }
+    }
+
+    void set_buy_user(base_logic::DictionaryValue* value) {
+        //user_info_ = base_logic::DictionaryValue(value);
+        value_->Set(L"buy_user",value);
+    }
+
+    void set_sell_user(base_logic::DictionaryValue* value) {
+        value_->Set(L"sell_user", value);
+    }
+
+    void set_trades(base_logic::DictionaryValue* value) {
+        value_->Set(L"trades",value);
+    }
+
+    base_logic::DictionaryValue* get() {
+        return value_;
+    }
+
+private:
+    base_logic::DictionaryValue* user_info_;
+    base_logic::DictionaryValue* trades_info_;
     base_logic::DictionaryValue* value_;
 };
 
@@ -526,6 +895,8 @@ private:
     base_logic::ListValue* order_info_;
     base_logic::DictionaryValue* value_;
 };
+
+
 }
 
 }

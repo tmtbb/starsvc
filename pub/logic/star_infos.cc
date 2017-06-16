@@ -36,6 +36,7 @@ void UserInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
   dict->GetReal(L"balance", &data_->balance_);
   dict->GetString(L"phone", &data_->phone_num_);
   dict->GetInteger(L"type", &data_->type_);
+  dict->GetInteger(L"gender", &data_->gender_);
   dict->GetString(L"nickname", &data_->nickname_);
   dict->GetString(L"head_url", &data_->head_url_);
 }
@@ -267,6 +268,7 @@ void TradesPosition::ValueSerialization(base_logic::DictionaryValue* dict) {
     dict->GetString(L"name", &data_->name_);
     dict->GetInteger(L"close_type", &data_->close_type_);
     dict->GetBigInteger(L"amount", &data_->amount_);
+    dict->GetBigInteger(L"r_amount", &data_->r_amount_);
     dict->GetBigInteger(L"open_position_time", &data_->open_position_time_);
     dict->GetBigInteger(L"close_position_time", &data_->close_position_time_);
     dict->GetReal(L"gross_profit", &data_->gross_profit_);
@@ -310,6 +312,8 @@ base_logic::DictionaryValue* TradesPosition::GetValue() {
         dict->SetInteger(L"result", 0);
     if(data_->amount_ != 0)
         dict->SetBigInteger(L"amount",data_->amount_);
+    if (data_->r_amount_ != 0)
+        dict->SetBigInteger(L"r_amount",data_->r_amount_);
     if (data_->open_position_time_ != 0.0)
         dict->SetBigInteger(L"open_position_time",data_->open_position_time_);
     if (data_->close_position_time_ != 0)
