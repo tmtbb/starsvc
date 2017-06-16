@@ -12,6 +12,7 @@
 #define DEFAULT_CONFIG_PATH "./plugins/infomation/infomation_config.xml"
 
 #define TIME_DISTRIBUTION_TASK 10001
+#define NO_CHECK_TOKEN_ERRNO -303
 
 namespace infomation_logic {
 
@@ -115,9 +116,48 @@ bool Infomationlogic::OnInfomationMessage(struct server *srv, const int socket,
 	  AddUserOrderStarService(srv,socket,packet);
 	  break;
 	}
+	//获取用户订购明星数
+	case R_ORDER_STAR_NUM:{
+	  GetUserStarNum(srv,socket,packet);
+	  break;
+	}
   default:
       break;
   }
+
+  return true;
+}
+
+bool Infomationlogic::GetUserStarNum(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  int64 uid;
+  bool r = packet_recv->body_->GetBigInteger(L"uid",&uid);
+  if(!r){
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+  
+  int64 amount;
+  if(!sqldb->getuserstaramount(uid,amount)){
+	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  return false;
+  }
+  
+  //发送信息
+  struct PacketControl packet_control_ack; 
+  MAKE_HEAD(packet_control_ack,S_ORDER_STAR_NUM, 1, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic; 
+  dic.SetInteger(L"result", 1);
+  dic.SetBigInteger(L"amount", amount);
+  
+  packet_control_ack.body_ = &dic; 
+  send_message(socket, &packet_control_ack); 
 
   return true;
 }
@@ -132,14 +172,16 @@ bool Infomationlogic::AddUserOrderStarService(struct server* srv,int socket ,str
 
   int64 uid,mid;
   std::string starcode,cityname,appointtime,comment;
-  int meettype;
+  int64 meettype;
   bool r1 = packet_recv->body_->GetBigInteger(L"uid",&uid);
   bool r2 = packet_recv->body_->GetString(L"starcode",&starcode);
   bool r3 = packet_recv->body_->GetBigInteger(L"mid",&mid);
   bool r4 = packet_recv->body_->GetString(L"city_name",&cityname);
   bool r5 = packet_recv->body_->GetString(L"appoint_time",&appointtime);
-  bool r6 = packet_recv->body_->GetInteger(L"meet_type",&meettype);
+  bool r6 = packet_recv->body_->GetBigInteger(L"meet_type",&meettype);
   bool r7 = packet_recv->body_->GetString(L"comment",&comment);
+  LOG_DEBUG2("uid[%ld],starcode[%s],mid[%d],cityname[%s ],appointtime[%s],meettype[%ld],comment[%s]",
+  						uid,starcode.c_str(),mid,cityname.c_str(),appointtime.c_str(),meettype,comment.c_str());
   if(!r1 || !r2 || !r3 || !r4 || !r5 || !r6 || !r7){
 	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	  return false;
