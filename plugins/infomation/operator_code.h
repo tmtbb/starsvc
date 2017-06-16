@@ -44,5 +44,9 @@ namespace infomation_logic {
 //用户订购明星服务
 #define R_ORDER_STAR_SERVICE    INFO_TYPE * 1000 + 21
 #define S_ORDER_STAR_SERVICE    INFO_TYPE * 1000 + 22
+
+//获取用户订购明星数
+#define R_ORDER_STAR_NUM    INFO_TYPE * 1000 + 23
+#define S_ORDER_STAR_NUM    INFO_TYPE * 1000 + 24
 }
 #endif
