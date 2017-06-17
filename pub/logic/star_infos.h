@@ -46,6 +46,7 @@ enum TIMETYPE {
 
 //挂单类型
 enum HANDLETYPE {
+    CANCEL_POSITION = -2, //掛單取消
     NO_HANDLE = -1,
     POSITION_HANDLE = 0, //挂单
     MATCHES_HANDLE = 1, //匹配中

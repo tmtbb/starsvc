@@ -35,6 +35,7 @@ typedef std::list<star_logic::TradesOrder> TRADES_ORDER_LIST;
 typedef std::map<std::string,TRADES_ORDER_LIST>  KEY_ORDER_MAP;
 
 typedef std::map<int64, TRADES_ORDER_LIST> USER_ORDER_MAP;
+
 enum STAR_TRADES_STATUS {
     NO_STAR_TRADES = -100,
     NO_TIME = -101
@@ -119,7 +120,13 @@ private:
                         const int64 order_id);
 
     void SendConfirmOrder(const int socket, const int64 session, const int32 reserved,
-                        const int64 uid, const int64 order_id, const int32 status);
+                          const int64 uid, const int64 order_id, const int32 status);
+
+    void ClearSymbolTrades(const std::string& symbol);
+
+    void ClearTradesPosition(TRADES_POSITION_MAP& trades_position_map,const std::string& symbol);
+
+    void ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order, const std::string& symbol);
 private:
     TradesCache *trades_cache_;
     trades_logic::TradesDB* trades_db_;

@@ -13,7 +13,6 @@ namespace record_logic {
 
 namespace net_request {
 
-
 class PositionCount{
 public:
     PositionCount()
@@ -298,6 +297,14 @@ class PositionCount {
         sell_count_ = new base_logic::FundamentalValue(sell_count);
     }
 
+    void set_buy_time(const int64 buy_time) {
+        buy_time_ = new base_logic::FundamentalValue(buy_time);
+    }
+
+    void set_sell_time(const int64 sell_time){
+        sell_time_ = new base_logic::FundamentalValue(sell_time);
+    }
+
     void set_symbol(const std::string& symbol) {
         symbol_ = new base_logic::StringValue(symbol);
     }
@@ -308,6 +315,10 @@ class PositionCount {
             value_->Set(L"buyCount", buy_count_);
         if (sell_count_ != NULL)
             value_->Set(L"sellCount", sell_count_);
+        if (buy_time_ != NULL)
+            value_->Set(L"buyTime", buy_time_);
+        if (sell_time_ != NULL)
+            value_->Set(L"sellTime", sell_time_);
         if (symbol_ != NULL)
             value_->Set(L"symbol", symbol_);
         return value_;
@@ -316,6 +327,8 @@ class PositionCount {
  public:
     base_logic::FundamentalValue* buy_count_;
     base_logic::FundamentalValue* sell_count_;
+    base_logic::FundamentalValue* buy_time_;
+    base_logic::FundamentalValue* sell_time_;
     base_logic::StringValue*      symbol_;
     base_logic::DictionaryValue*  value_;
 };
