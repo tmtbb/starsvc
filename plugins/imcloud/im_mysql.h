@@ -34,7 +34,7 @@ class Im_Mysql {
   							  std::string& accid,std::string& faccid);
   
   bool ReduceTalkingtimes(std::string& phone,std::string& starcode,int64 deductamount, 
-  	                      int64& ownseconds,std::string& accid,std::string& faccid);
+  	                      int64& ownseconds,std::string& accid,std::string& faccid, int64& result);
 
   bool delorderrecord(std::string& accid,std::string& faccid);
   static void Callreducetalkingtimes(void* param, base_logic::Value* value);

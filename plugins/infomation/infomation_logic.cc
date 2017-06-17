@@ -6,6 +6,7 @@
 #include "logic/logic_comm.h"
 #include "logic/logic_unit.h"
 #include "net/errno.h"
+#include "infomation/errno.h"
 #include <string>
 #include "operator_code.h"
 
@@ -154,7 +155,7 @@ bool Infomationlogic::GetStarTime(struct server* srv,int socket ,struct PacketHe
   
   int64 ltime = 0;
   if(!sqldb->getstartime(starcode,ltime)){
-	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  send_error(socket, ERROR_TYPE, NO_STAR_TIMER_DATA, packet->session_id);
 	  return false;
   }
   
@@ -188,7 +189,7 @@ bool Infomationlogic::GetUserStarTime(struct server* srv,int socket ,struct Pack
   
   int64 ltime = 0;
   if(!sqldb->getuserstartime(uid,starcode,ltime)){
-	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  send_error(socket, ERROR_TYPE, NO_ORDER_STAR_DATA, packet->session_id);
 	  return false;
   }
   
@@ -222,7 +223,7 @@ bool Infomationlogic::GetUserStarNum(struct server* srv,int socket ,struct Packe
   
   int64 amount;
   if(!sqldb->getuserstaramount(uid,amount)){
-	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  send_error(socket, ERROR_TYPE, NO_ORDER_STAR_DATA, packet->session_id);
 	  return false;
   }
   
@@ -265,6 +266,10 @@ bool Infomationlogic::AddUserOrderStarService(struct server* srv,int socket ,str
   }
 
   bool r = sqldb->userorderstarservice(uid,starcode,mid,cityname,appointtime,meettype,comment);
+  if(!r){
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+	  return false;
+  }
   
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_ORDER_STAR_SERVICE, INFO_TYPE, 0,packet->session_id, 0);
@@ -298,7 +303,7 @@ bool Infomationlogic::GetStarService(struct server* srv,int socket ,struct Packe
 
   DicValue ret_list;
   if(!sqldb->getstarservicelist(starcode,ret_list)){
-	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  send_error(socket, ERROR_TYPE, NO_STAR_SERVICE_DATA, packet->session_id);
 	  return false;
   }
   
@@ -334,7 +339,7 @@ bool Infomationlogic::Getfanscomment(struct server* srv,int socket ,struct Packe
 
   DicValue ret_list;
   if(!sqldb->getfanscomments(starcode,ret_list,startnum,endnum)){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_STAR_SERVICE_DATA, packet->session_id);
 	return false;
   }
   
@@ -367,7 +372,7 @@ bool Infomationlogic::Getbannerlist(struct server* srv,int socket ,struct Packet
 
   DicValue ret_list;
   if(!sqldb->getbannerinfo(code,ret_list,all)){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_BANNER_INFO_DATA, packet->session_id);
 	return false;
   }
   
@@ -406,7 +411,7 @@ bool Infomationlogic::Getstarnews(struct server* srv,int socket ,struct PacketHe
 
   DicValue ret_list;
   if(!sqldb->getstarnews(code,name,ret_list,startnum,endnum,all)){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_STAR_NEWS_DATA, packet->session_id);
 	return false;
   }
   
@@ -442,7 +447,7 @@ bool Infomationlogic::GetorderStarinfo(struct server* srv,int socket ,struct Pac
 
   DicValue ret_list;
   if(!sqldb->getorderstarinfo(code,phone,ret_list)){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_ORDER_STAR_INFO_DATA, packet->session_id);
 	return false;
   }
   
@@ -479,7 +484,7 @@ bool Infomationlogic::GetStarinfoList(struct server* srv,int socket ,struct Pack
 
   DicValue ret_list;
   if(!sqldb->getstarinfo(code,phone,ret_list,all)){
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    send_error(socket, ERROR_TYPE, NO_ORDER_STAR_DATA, packet->session_id);
     return false;
   }
   
@@ -523,7 +528,7 @@ bool Infomationlogic::AddStarinfo(struct server* srv,int socket ,struct PacketHe
   }
   
   if(!sqldb->addstarinfo(code,phone,name,gender,brief_url,price,accid,starpic)){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_ADD_STAR_INFO_ERR, packet->session_id);
 	return false;
   }
   

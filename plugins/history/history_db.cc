@@ -289,6 +289,9 @@ void HistoryDB::CallOwnStarRecord(void* param,
 
       if (rows[5] != NULL)
         info_value->SetInteger(L"appoint", atol(rows[5]));
+      
+      if (rows[6] != NULL)
+        info_value->SetString(L"head_url", rows[6]);
 
       list->Append((base_logic::Value *) (info_value));
     }
