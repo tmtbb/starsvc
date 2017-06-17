@@ -185,7 +185,6 @@ bool Recordlogic::OnTodayPosition(struct server* srv, int socket, struct PacketH
     return true;
 }
 
-
 bool Recordlogic::OnTodayOrder(struct server* srv, int socket, struct PacketHead* packet) {
     record_logic::net_request::TodayOrder today_order;
     if (packet->packet_length <= PACKET_HEAD_LENGTH) {
