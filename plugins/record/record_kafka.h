@@ -7,6 +7,7 @@
 #include "basic/basictypes.h"
 #include "logic/base_values.h"
 #include "queue/kafka_consumer.h"
+#include "queue/kafka_producer.h"
 #include <list>
 #include <map>
 #include <string>
@@ -18,11 +19,14 @@ public:
     RecordKafka(config::FileConfig *config);
     RecordKafka(const int32 svc_id, base::ConnAddr& addr);
     virtual ~RecordKafka();
-
+private:
+    void InitConsumer(base::ConnAddr& addr);
+    void InitProducer(base::ConnAddr& addr);
 public:
     bool FectchBatchTempTask(std::list<base_logic::DictionaryValue*> *list);
 private:
     kafka_consumer kafka_consumer_;
+    kafka_producer kafka_producer_;
 };
 }  // namespace record_logic
 

@@ -21,6 +21,8 @@ RecordKafka::RecordKafka(config::FileConfig *config) {
      "kafka_newsparser_algo",
      "192.168.1.85:9091,192.168.1.80:9091,192.168.1.81:9091",
      NULL))*/
+
+    /*
     base::ConnAddr addr = config->kafka_list_.front();
     if (CONSUMER_INIT_SUCCESS
             != kafka_consumer_.Init(addr))
@@ -29,6 +31,16 @@ RecordKafka::RecordKafka(config::FileConfig *config) {
     else
         LOG_MSG2("producer init success: host:%s source %s additional %s",
                  addr.host().c_str(), addr.source().c_str(),addr.additional().c_str());
+    */
+
+    for(std::list<base::ConnAddr>::iterator it = config->kafka_list_.begin();
+            it != config->kafka_list_.end(); it++) {
+        base::ConnAddr addr = (*it);
+        if (addr.additional() == "consumer")
+            InitConsumer(addr);
+        else if(addr.additional() == "producer")
+            InitProducer(addr);
+    }
 }
 
 RecordKafka::RecordKafka(const int32 svc_id, base::ConnAddr& addr) {
@@ -42,8 +54,31 @@ RecordKafka::RecordKafka(const int32 svc_id, base::ConnAddr& addr) {
         LOG_MSG("kafka consumer kafka_task_algo init success");
 }
 
+
+void RecordKafka::InitConsumer(base::ConnAddr& addr) {
+    if (CONSUMER_INIT_SUCCESS
+            != kafka_consumer_.Init(addr))
+        LOG_ERROR2("consumer init failed: host:%s source %s additional %s",
+                   addr.host().c_str(), addr.source().c_str(),addr.additional().c_str());
+    else
+        LOG_MSG2("consumer init success: host:%s source %s additional %s",
+                 addr.host().c_str(), addr.source().c_str(),addr.additional().c_str());
+}
+
+
+void RecordKafka::InitProducer(base::ConnAddr& addr) {
+    if (CONSUMER_INIT_SUCCESS
+            != kafka_producer_.Init(addr))
+        LOG_ERROR2("producer init failed: host:%s source %s additional %s",
+                   addr.host().c_str(), addr.source().c_str(),addr.additional().c_str());
+    else
+        LOG_MSG2("producer init success: host:%s source %s additional %s",
+                 addr.host().c_str(), addr.source().c_str(),addr.additional().c_str());
+}
+
 RecordKafka::~RecordKafka() {
     kafka_consumer_.Close();
+    kafka_producer_.Close();
     LOG_MSG("~RecordKafka()");
 }
 
