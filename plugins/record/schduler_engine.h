@@ -27,6 +27,8 @@ typedef std::map<std::string,TRADES_ORDER_LIST> SYMBOL_TRADES_ORDER_MAP;
 typedef std::map<int64,TRADES_ORDER_LIST> USER_TRADES_ORDER_MAP;
 
 
+typedef std::map<std::string,int64> SYMBOL_POSITION_TIME_MAP;
+
 typedef std::map<int64, star_logic::UserInfo> USER_INFO_MAP;
 class RecordCache {
 public:
@@ -36,8 +38,10 @@ public:
     SYMBOL_TRADES_POSITION_MAP  symbol_sell_trades_position_;
     USER_TRADES_POSITION_MAP    user_sell_trades_position_;
 
-    TRADES_POSITION_MAP         trades_positions_;
+    SYMBOL_POSITION_TIME_MAP    symbol_sell_trades_time_position_;
+    SYMBOL_POSITION_TIME_MAP    symbol_buy_trades_time_position_;
 
+    TRADES_POSITION_MAP         trades_positions_;
 
     SYMBOL_TRADES_ORDER_MAP     symbol_trades_order_;
     USER_TRADES_ORDER_MAP       user_trades_order_;
@@ -92,6 +96,8 @@ private:
                            star_logic::TradesPosition& trades_position, bool init = false);
 
     
+    void SetSymbolPositionTime(SYMBOL_POSITION_TIME_MAP& position_time_map,const std::string symbol, const int64 time);
+    
     void GetSymbolPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_position, const std::string& symbol,
                            const int32 start, const int32 count, std::list<star_logic::TradesPosition>& trades_position_list);
 
@@ -123,6 +129,7 @@ private:
     void SendPosition(const int socket,const int64 session, const int32 reserved,
                     const int operator_code, const int32 start, const int32 count,
                     std::list<star_logic::TradesPosition>& trades_positions_list);
+
 private:
     void Init();
 private:

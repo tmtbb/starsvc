@@ -65,8 +65,10 @@ void TradesManager::TimeStarEvent() {
         //修改状态
         if(time_task.task_type() == TASK_START_TYPE) //开始交易时间任务
             AlterTradesStarState(time_task.symbol(), true);
-        else if (time_task.task_type() == TASK_STOP_TYPE)//结束交易时间任务
+        else if (time_task.task_type() == TASK_STOP_TYPE){//结束交易时间任务
             AlterTradesStarState(time_task.symbol(), false);
+            ClearSymbolTrades(time_task.symbol());
+        }
         LOG_MSG("NEXT STAT");
         ProcessTimeTask(current_time, time_task);
         trades_cache_->trades_task_list_.push_back(time_task);
@@ -481,6 +483,50 @@ void TradesManager::SetTradesOrder(star_logic::TradesPosition& buy_position,
     trades_kafka_->SetTradesPosition(buy_position);
     trades_kafka_->SetTradesPosition(sell_position);
     trades_kafka_->SetTradesOrder(trades_order);
+}
+
+void TradesManager::ClearSymbolTrades(const std::string& symbol) {
+  //全部重置為無效
+    //base_logic::WLockGd lk(lock_);
+    ClearTradesPosition(trades_cache_->buy_trades_position_,symbol);
+    ClearTradesPosition(trades_cache_->sell_trades_position_,symbol);
+    ClearTradesOrder(trades_cache_->symbol_trades_order_,symbol);
+}
+
+void TradesManager::ClearTradesPosition(TRADES_POSITION_MAP& trades_position_map,
+                            const std::string& symbol) {
+
+    TRADES_POSITION_LIST trades_position_list;
+    bool r = base::MapGet<TRADES_POSITION_MAP,TRADES_POSITION_MAP::iterator,
+            std::string,TRADES_POSITION_LIST>(trades_position_map,symbol,
+                                              trades_position_list);
+   /* TRADES_POSITION_LIST::iterator it = buy_trades_position_list.begin();
+    for(; it != buy_trades_position_list.end(); it++) {
+        star_logic::TradesPosition position = (*it);
+        position.set_handle(CANCEL_POSITION);
+    }*/
+
+    while(trades_position_list.size() > 0) {
+        star_logic::TradesPosition position = trades_position_list.front();
+        position.set_handle(CANCEL_POSITION);
+        trades_position_list.pop_front();
+        trades_kafka_->SetTradesPosition(position);
+    }
+}
+
+void TradesManager::ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order,
+                                     const std::string& symbol) {
+    TRADES_ORDER_LIST trades_order_list;
+    bool r = base::MapGet<KEY_ORDER_MAP,KEY_ORDER_MAP::iterator,std::string,
+            TRADES_ORDER_LIST>(symbol_trades_order,symbol,trades_order_list);
+
+    while(trades_order_list.size() > 0) {
+        star_logic::TradesOrder order = trades_order_list.front();
+        trades_order_list.pop_front();
+        order.set_handle_type(CANCEL_ORDER);
+        order.set_buy_handle_type(CANCEL_ORDER);
+        order.set_sell_handle_type(CANCEL_ORDER);
+    }
 }
 
 }

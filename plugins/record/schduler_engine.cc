@@ -179,12 +179,20 @@ void RecordManager::SendPositionCount(const int socket, const int64 session, con
                         const std::string& symbol) {
     int32 buy_count = 0;
     int32 sell_count = 0;
-
+    int64 buy_time = 0;
+    int64 sell_time = 0;
     GetSymbolPositionCount(record_cache_->symbol_sell_trades_position_,symbol,sell_count);
     GetSymbolPositionCount(record_cache_->symbol_buy_trades_position_, symbol, buy_count);
+    base::MapGet<SYMBOL_POSITION_TIME_MAP,SYMBOL_POSITION_TIME_MAP::iterator,std::string,int64>
+                            (record_cache_->symbol_sell_trades_time_position_,symbol,sell_time);
+    
+    base::MapGet<SYMBOL_POSITION_TIME_MAP,SYMBOL_POSITION_TIME_MAP::iterator,std::string,int64>
+                            (record_cache_->symbol_buy_trades_time_position_,symbol,buy_time);
     net_reply::PositionCount net_position_count;
     net_position_count.set_buy_count(buy_count);
     net_position_count.set_sell_count(sell_count);
+    net_position_count.set_buy_time(buy_time);
+    net_position_count.set_sell_time(sell_time);
     net_position_count.set_symbol(symbol);
     struct PacketControl packet_control;
     MAKE_HEAD(packet_control, S_POSITION_COUNT, HISTORY_TYPE, 0, session, 0);
@@ -443,9 +451,16 @@ void RecordManager::SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
     r = base::MapGet<TRADES_POSITION_MAP,TRADES_POSITION_MAP::iterator,int64,star_logic::TradesPosition>
         (record_cache_->trades_positions_,trades_position.position_id(),tmp_trades_position);
     if(r) { //存在，修改状态
-        tmp_trades_position = trades_position;
+        //tmp_trades_position = trades_position;
+        tmp_trades_position.set_handle(trades_position.handle());
         if (!init)
            record_db_->OnUpdateTradesPosition(trades_position);
+        if(trades_position.handle() < 0 && trades_position.buy_sell() == SELL_TYPE)
+            SetSymbolPositionTime(record_cache_->symbol_sell_trades_time_position_,
+                        trades_position.symbol(),-trades_position.amount());
+        else if (trades_position.handle() < 0 && trades_position.buy_sell() == BUY_TYPE)
+            SetSymbolPositionTime(record_cache_->symbol_sell_trades_time_position_,
+                        trades_position.symbol(), -trades_position.amount());
         return;
     }
 
@@ -460,10 +475,28 @@ void RecordManager::SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
     user_position_list.push_back(trades_position);
     user_trades_position[trades_position.uid()] = user_position_list;
     record_cache_->trades_positions_[trades_position.position_id()] = trades_position;
+    
+    if(trades_position.handle() < 0 && trades_position.buy_sell() == SELL_TYPE)
+        SetSymbolPositionTime(record_cache_->symbol_sell_trades_time_position_,
+                        trades_position.symbol(),trades_position.amount());
+    else if (trades_position.handle() < 0 && trades_position.buy_sell() == BUY_TYPE)
+        SetSymbolPositionTime(record_cache_->symbol_sell_trades_time_position_,
+                        trades_position.symbol(), trades_position.amount());
     if (!init)
         record_db_->OnCreateTradesPosition(trades_position);
 }
 
+
+void RecordManager::SetSymbolPositionTime(SYMBOL_POSITION_TIME_MAP& position_map, 
+                                const std::string symbol,const int64 time) {
+    bool r = false;
+    int64 time_s = 0;
+    r = base::MapGet<SYMBOL_POSITION_TIME_MAP,SYMBOL_POSITION_TIME_MAP::iterator, std::string, int64>
+            (position_map,symbol,time_s);
+    int64 now_time = time_s + time;
+    now_time > 0 ? now_time : 0;
+    position_map[symbol] = now_time;
+}
 
 void RecordManager::SetTradesOrder(star_logic::TradesOrder& trades_order) {
     base_logic::WLockGd lk(lock_);
@@ -474,7 +507,12 @@ void RecordManager::SetTradesOrder(star_logic::TradesOrder& trades_order) {
     bool r = base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
              (record_cache_->trades_order_,trades_order.order_id(),tmp_trades_order);
     if(r) { //存在，修改状态
-        tmp_trades_order = trades_order;
+        tmp_trades_order.set_handle_type(trades_order.handle_type());
+        tmp_trades_order.set_buy_handle_type(trades_order.buy_handle_type());
+        tmp_trades_order.set_sell_handle_type(trades_order.sell_handle_type());
+        //tmp_trades_order(trades_order);
+        //tmp_trades_order = trades_order;
+        //LOG_DEBUG("111111111111");
         return;
     }
 
@@ -579,8 +617,10 @@ void RecordManager::GetSymbolPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
         TRADES_POSITION_LIST::iterator it = position_list.begin();
         for(; it != position_list.end() && t_count < count; it++) {
             star_logic::TradesPosition position = (*it);
-            t_start++;
-            trades_position_list.push_back(position);
+            if (position.handle() >= POSITION_HANDLE) {
+                t_start++;
+                trades_position_list.push_back(position);
+            }
         }
     }
 }
