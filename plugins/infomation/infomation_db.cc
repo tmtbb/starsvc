@@ -360,13 +360,16 @@ void Infomation_Mysql::Callgetinfo(void* param, base_logic::Value* value){
 	  if (rows[7] != NULL){
 	  		ret->SetString(L"pic_url", rows[7]);
 	  	}
+    if (rows[8] != NULL){
+	  		ret->SetString(L"pic1", rows[8]);
+	  	}
 	  //dict->Set(L"resultvalue", (base_logic::Value *) (ret));
 	  list->Append((base_logic::Value *) (ret));
 	}
 	dict->Set(L"resultvalue", (base_logic::Value *) (list));
 	}
 	else {
-		LOG_ERROR ("CallUserLoginSelect count < 0");
+		LOG_ERROR ("Callgetinfo count < 0");
 	}
 	dict->Remove(L"sql", &value);
 }
