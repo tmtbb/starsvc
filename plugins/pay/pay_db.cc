@@ -127,7 +127,7 @@ void PayDB::CallUpdateCallBackRechargeOrder(void* param,
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
 }
 
-bool PayDB::OnCheckPayPwd(const int64 uid, std::string& pwd, int32 flag) {
+bool PayDB::OnCheckPayPwd(const int64 uid, std::string& pwd, int32& flag) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;

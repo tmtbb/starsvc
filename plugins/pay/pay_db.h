@@ -32,7 +32,7 @@ class PayDB {
                                      const int32 astatus,int64& uid,
                                      double& balance);
  
-  bool OnCheckPayPwd(const int64 uid, std::string& pwd, int32 flag); 
+  bool OnCheckPayPwd(const int64 uid, std::string& pwd, int32& flag); 
  
  public:
   static void CallCreateRechargeOrder(void* param, base_logic::Value* value);
