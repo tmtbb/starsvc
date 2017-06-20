@@ -738,7 +738,10 @@ class SymbolUnit {
    change_ = new base_logic::FundamentalValue(change);
   }
 
- 
+  void set_pchg(const double pchg) {
+      pchg_ = new base_logic::FundamentalValue(pchg);
+  }
+
   base_logic::DictionaryValue* get() {
     value_ = new base_logic::DictionaryValue();
     if (wid_ != NULL)
@@ -757,6 +760,8 @@ class SymbolUnit {
       value_->Set(L"sysTime", system_unix_time_);
     if (change_ != NULL)
       value_->Set(L"change", change_);
+    if (pchg_ != NULL)
+        value_->Set(L"pchg", pchg_);
     return value_;
   }
    
@@ -769,6 +774,7 @@ class SymbolUnit {
   base_logic::FundamentalValue*   system_unix_time_;
   base_logic::FundamentalValue*   current_unix_time_;
   base_logic::FundamentalValue*   change_;
+  base_logic::FundamentalValue*   pchg_;
   base_logic::DictionaryValue* value_;
 };
 

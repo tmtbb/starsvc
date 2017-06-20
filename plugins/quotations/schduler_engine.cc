@@ -285,6 +285,7 @@ void QuotationsManager::SendQuotationsList(const int socket, const int64 session
             r_symbol_unit->set_system_unix_time(time(NULL));
             r_symbol_unit->set_current_unix_time(quotations.current_unix_time());
             r_symbol_unit->set_change(quotations.change());
+            r_symbol_unit->set_pchg(quotations.pchg());
             symbol_list.set_unit(r_symbol_unit->get());
         }
     }
@@ -330,7 +331,7 @@ void QuotationsManager::SendKChartLine(const int socket, const int64 session,
             continue;
         net_reply::RealTimeUnit* r_real_time_unit = new net_reply::RealTimeUnit;
         //r_real_time_unit->set_change(quotations.change());
-        //r_real_time_unit->set_pchg(quotations.pchg());
+        r_real_time_unit->set_pchg(quotations.pchg());
         r_real_time_unit->set_opening_today_price(quotations.opening_today_price());
         r_real_time_unit->set_closed_yesterday_price(
             quotations.closed_yesterday_price());

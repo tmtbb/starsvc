@@ -523,13 +523,9 @@ bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
     r = user_db_->AccountRealNameInfo(user_real_info.uid(), r_name, id_card);
     if (r_name != "")
     {
-        std::string r_name = "" , id_card = "";
-        r = user_db_->AccountRealNameInfo(user_real_info.uid(), r_name, id_card);
-        if (r_name != "")
-        {
-            userinfo.set_realname(r_name);
-            userinfo.set_id_card(id_card);
-        }
+        userinfo.set_realname(r_name);
+        userinfo.set_id_card(id_card);
+    }
         LOG_DEBUG2("realname[%s], id_card[%s], realname2[%s], id_card2[%s], ",
                    r_name.c_str(), id_card.c_str(), userinfo.realname().c_str(), userinfo.id_card().c_str());
     }
@@ -852,7 +848,7 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
   dic.SetString(L"cardNo", idcard);
   dic.SetString(L"realName", name);
 //  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
-  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, 1);
   LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
 
   users_logic::net_reply::TResult r_ret;;
