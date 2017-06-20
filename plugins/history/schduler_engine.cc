@@ -132,7 +132,7 @@ void HistoryManager::SendHistoryWithDrawls(const int socket,
 
   //没有对应的历史记录
   if (withdrawals_list.size() <= 0) {
-    send_error(socket, ERROR_TYPE, NO_HAVE_HISTROY_DATA, session);
+    send_error(socket, ERROR_TYPE, NO_HAVE_HISTROY_DATA_DRAWLS, session);
     return;
   }
   int32 base_num = 10;
@@ -196,7 +196,7 @@ void HistoryManager::SendHistoryRecharge(const int socket, const int64 session,
 
   //没有对应的历史记录
   if (recharge_list.size() <= 0) {
-    send_error(socket, ERROR_TYPE, NO_HAVE_HISTROY_DATA, session);
+    send_error(socket, ERROR_TYPE, NO_HAVE_HISTROY_DATA_RECHARGE, session);
     return;
   }
   int32 base_num = 10;
@@ -258,7 +258,7 @@ void HistoryManager::SendHistoryOwnStar(const int socket, const int64 session,
   //LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
   //没有对应的历史记录
   if (ownstar_list.size() <= 0) {
-    send_error(socket, ERROR_TYPE, NO_HAVE_HISTROY_DATA, session);
+    send_error(socket, ERROR_TYPE, NO_HAVE_HISTROY_DATA_OWNSTAR, session);
     return;
   }
 /*
@@ -293,6 +293,7 @@ void HistoryManager::SendHistoryOwnStar(const int socket, const int64 session,
     net_ownstar->set_starcode(ownstar.starcode());
     net_ownstar->set_starname(ownstar.starname());
     net_ownstar->set_faccid(ownstar.faccid());
+    net_ownstar->set_headurl(ownstar.headurl());
 
     all_net_ownstar.set_unit(net_ownstar->get());
     t_count++;

@@ -451,11 +451,17 @@ bool Userslogic::OnUserAccount(struct server* srv, int socket,
   r = schduler_engine_->GetUserInfoSchduler(user_account.uid(), &userinfo);
   if (!r){
     LOG_DEBUG2("uid[%ld]",user_account.uid());
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return r;
   }
   
   std::string pwd;
   r = user_db_->AccountBalance(user_account.uid(), balance, pwd);
+  if (!r){
+    LOG_DEBUG2("uid[%ld]",user_account.uid());
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return r;
+  }
   userinfo.set_balance(balance);
 
   net_balance.set_nick_name(userinfo.nickname());
@@ -499,8 +505,12 @@ bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
   users_logic::net_reply::RealInfo net_real_info;
   //获取用户信息
   r = schduler_engine_->GetUserInfoSchduler(user_real_info.uid(), &userinfo);
-  if (!r)
-    return r;
+  if (!r) {
+    LOG_DEBUG2("uid[%ld]",user_real_info.uid());
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
   if (userinfo.id_card().length() < 10) //如果没有实名认证信息则获取
   {
     std::string r_name = "" , id_card = "";
@@ -585,7 +595,7 @@ bool Userslogic::OnUserCheckToken(struct server* srv, int socket,
   //check token
   r = logic::SomeUtils::VerifyToken(check_token.uid(), check_token.token());
   if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    LOG_DEBUG2("uid[%ld]",check_token.uid());
     send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
     return false;
   }
@@ -611,7 +621,6 @@ bool Userslogic::OnResetPasswd(struct server* srv, int socket,
   }
   struct PacketControl* packet_control = (struct PacketControl*) (packet);
 
-
   std::string phonenum;
   std::string passwd;
   bool r1 = packet_control->body_->GetString(L"pwd", &passwd);
@@ -626,13 +635,12 @@ bool Userslogic::OnResetPasswd(struct server* srv, int socket,
 
   int64 uid = 1;
   int32 result = 0;
-
   r = user_db_->ResetAccount(phonenum,passwd);
   if (!r) {
+    LOG_DEBUG2("phonenum[%s],passwd[%s]",phonenum.c_str(),passwd.c_str());
     send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
     return false;
   }
-
 
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_USRES_RESET_PASSWD, USERS_TYPE, 0,packet->session_id, 0);
@@ -641,7 +649,7 @@ bool Userslogic::OnResetPasswd(struct server* srv, int socket,
   ret.Set(L"result",m_result);
   packet_reply.body_ = &ret;
   send_message(socket,&packet_reply);                   
-
+  return r;
 }
 void executeCMD(const char *cmd, char *result){       
 	char buf_ps[1024];      
@@ -706,8 +714,8 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
   executeCMD(sysc.c_str(),m_ret);
   LOG_MSG2("send shell : %s,result = %s",sysc.c_str(),m_ret);
   if(strstr(m_ret,"\"success\":false")!=NULL){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-	return false;
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
   }
   
   //发送信息
@@ -790,6 +798,7 @@ bool Userslogic::OnResetPayPassWD(struct server* srv, int socket,
     //std::string phone = modifypwd.phone() ;
     std::string pwd = modifypwd.pwd() ;
     r = user_db_->ModifyPwd(modifypwd.uid(), pwd);
+    LOG_DEBUG2("pwd[%s]",pwd.c_str());
     if (r) status = 0;
   } 
   net_modifypwd.set_status(status);
@@ -820,6 +829,7 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
 
   std::string idcard = cerfic.id_card();//"411325199005217439";
   std::string name = cerfic.realname();//"唐伟";
+  
   //std::string idcard = "411325199005217439";
   //std::string name = "唐伟";
   //阿里云接口
@@ -879,6 +889,14 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
   }
 //_____________________________________________________________________________________________
 
+//
+  if(!r){
+    //code 3 curl_easy_perform failed: HTTP response code said error
+    //网站报错, 特殊处理
+    r_ret.set_result(0);
+    r = user_db_->Certification(cerfic.uid(), cerfic.id_card(), cerfic.realname());
+  }
+
   struct PacketControl packet_control;
   MAKE_HEAD(packet_control, S_CERTIFICATION, USERS_TYPE, 0, packet->session_id, 0);
   packet_control.body_ = r_ret.get();
@@ -904,21 +922,20 @@ bool Userslogic::OnCheckAccountExist(struct server* srv, int socket,
   }
   
   std::string phone = check_acount_exist_req.phone().c_str();
-
-  ////检测号码是否已经注册
-  r =user_db_->CheckAccountExist(phone);
+  int32 existFlag = 0;
+  //检测号码是否已经注册
+  r =user_db_->CheckAccountExist(phone, existFlag);
+  if(!r){
+    LOG_DEBUG2("phone[%s]",phone.c_str());
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+    return false;
+  }
   
   //发送信息
   struct PacketControl packet_control_ack; 
   MAKE_HEAD(packet_control_ack,S_CHECK_ACCOUNT_EXIST, 1, 0, packet->session_id, 0);
   base_logic::DictionaryValue dic; 
-  if (!r) {
-    dic.SetInteger(L"result", 0);
-  }
-  else{
-    dic.SetInteger(L"result", 1); 
-  }
-  
+  dic.SetInteger(L"result", existFlag); /*0表示不存在未注册*/
   packet_control_ack.body_ = &dic; 
   send_message(socket, &packet_control_ack); 
 
@@ -951,12 +968,18 @@ bool Userslogic::OnResetNickName(struct server* srv, int socket,
   //check token
   r = logic::SomeUtils::VerifyToken(uid, token);
   if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    LOG_DEBUG2("uid[%ld], token[%s]",uid, token.c_str());
     send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
     return false;
   }
 
-  r = user_db_->ModifyNickName(uid,nickname);                
+  int32 flag = 0;
+  r = user_db_->ModifyNickName(uid,nickname,flag);
+  if (!r) {
+    LOG_DEBUG2("uid[%ld], nickname[%s]",uid, nickname.c_str());
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+    return false;
+  }  
 
   //发送信息
   struct PacketControl packet_control_ack; 

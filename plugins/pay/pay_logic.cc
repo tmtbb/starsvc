@@ -359,19 +359,20 @@ bool Paylogic::OnCheckPayPwd(struct server* srv, int socket, struct PacketHead* 
     return false;
   }
 
+  int32 flag=0;
   //校验密码
-  r1 =pay_db_->OnCheckPayPwd(uid, pwd);
+  r1 =pay_db_->OnCheckPayPwd(uid, pwd, flag);
+  if (!r1) {
+    LOG_DEBUG2("uid[%ld],pwd[%s]",uid, pwd.c_str());
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+    return false;
+  }
   
   //发送信息
   struct PacketControl packet_control_ack; 
   MAKE_HEAD(packet_control_ack,S_CHECK_PAY_PWD, 1, 0, packet->session_id, 0);
   base_logic::DictionaryValue dic; 
-  if (!r1) {
-    dic.SetInteger(L"result", 0);
-  }
-  else{
-    dic.SetInteger(L"result", 1); 
-  }
+  dic.SetInteger(L"result", flag); 
   packet_control_ack.body_ = &dic; 
   send_message(socket, &packet_control_ack); 
 

@@ -19,7 +19,7 @@ UsersDB::~UsersDB() {
   }
 }
 
-bool UsersDB::CheckAccountExist(const std::string& phone) {
+bool UsersDB::CheckAccountExist(const std::string& phone, int32& existFlag) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
@@ -34,9 +34,7 @@ bool UsersDB::CheckAccountExist(const std::string& phone) {
     return false;
 
   dict->GetDictionary(L"resultvalue", &info_value);
-  int32 result = 0;
-  r = info_value->GetInteger(L"result", &result);
-  r = (r && result == 1) ? true : false; /*0表示不存在未注册*/
+  r = info_value->GetInteger(L"result", &existFlag);
   if (dict) {
     delete dict;
     dict = NULL;
@@ -494,6 +492,7 @@ try
   
   base_logic::ListValue *listvalue;
   dict->SetString(L"sql", sql);
+  LOG_DEBUG2("sql[%s]",sql.c_str());
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallRegisterAccount);
   if (!r)
@@ -504,6 +503,7 @@ try
   int result = 0;
   r = info_value->GetBigInteger(L"uid", &ruid);
   r = info_value->GetInteger(L"result", &result);
+  LOG_DEBUG2("uid[%ld]",ruid);
   r = (r && ruid > 0) ? true : false;
   
 }   
@@ -560,7 +560,7 @@ catch (...)
   return r;
 }
 
-bool UsersDB::ModifyNickName(const int64 &uid, const std::string &newNickName)
+bool UsersDB::ModifyNickName(const int64 &uid, const std::string &newNickName, int32& flag)
 {
 	bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
@@ -577,10 +577,7 @@ bool UsersDB::ModifyNickName(const int64 &uid, const std::string &newNickName)
     return false;
   
   dict->GetDictionary(L"resultvalue", &info_value);
-  int result = 0;
-  r = info_value->GetInteger(L"result", &result);
-  r = (r && result==1) ? true : false;
-     
+  r = info_value->GetInteger(L"result", &flag);
   if (dict) {
     delete dict;
     dict = NULL;
