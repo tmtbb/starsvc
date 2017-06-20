@@ -91,7 +91,7 @@ bool Commentslogic::OnCommentsMessage(struct server *srv, const int socket,
       }
       case R_COMMENTS_DATA:
       {
-        OnCommentsGetData(srv, socket, packet);
+        //OnCommentsGetData(srv, socket, packet);
         break;
       }
 

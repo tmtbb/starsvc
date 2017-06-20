@@ -51,6 +51,7 @@ Tradeslogic::~Tradeslogic()
 bool Tradeslogic::Init()
 {
     bool r = false;
+    manager_schduler::SchdulerEngine* (*schduler_engine)(void);
     std::string path = DEFAULT_CONFIG_PATH;
     config::FileConfig *config = config::FileConfig::GetFileConfig();
     if (config == NULL)
@@ -64,6 +65,16 @@ bool Tradeslogic::Init()
     trades_logic::TradesEngine::GetSchdulerManager()->InitKafka(trades_kafka_);
     trades_logic::TradesEngine::GetSchdulerManager()->InitData();
     base::SysRadom::GetInstance();
+    std::string schduler_library = "./data_share.so";
+    std::string schduler_func = "GetManagerSchdulerEngine";
+    schduler_engine = (manager_schduler::SchdulerEngine* (*)(void))
+                        logic::SomeUtils::GetLibraryFunction(schduler_library, 
+                        schduler_func);
+
+    schduler_engine_= (*schduler_engine)();
+    if (schduler_engine_ == NULL)
+        assert(0);
+    trades_logic::TradesEngine::GetSchdulerManager()->InitManagerSchduler(schduler_engine_);
     return true;
 }
 

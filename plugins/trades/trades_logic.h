@@ -10,6 +10,7 @@
 #include "trades/trades_kafka.h"
 #include "net/comm_head.h"
 #include "net/packet_processing.h"
+#include "manager/data_share_mgr.h"
 
 namespace trades_logic {
 
@@ -62,6 +63,7 @@ private:
 private:
     trades_logic::TradesDB*  trades_db_;
     trades_logic::TradesKafka*  trades_kafka_;
+    manager_schduler::SchdulerEngine* schduler_engine_;
 };
 } // namespace trades_logic
 

@@ -7,6 +7,32 @@
 
 namespace star_logic {
 
+Auction::Auction() {
+    data_ = new Data();
+}
+
+Auction::Auction(const Auction& aution)
+    : data_(aution.data_) {
+    if (data_ != NULL) {
+        data_->AddRef();
+    }
+}
+
+Auction& Auction::operator =(const Auction& auction) {
+    if (auction.data_ != NULL) {
+        auction.data_->AddRef();
+    }
+
+    if (data_ != NULL) {
+        data_->Release();
+    }
+
+    data_ = auction.data_;
+    return (*this);
+}
+
+
+
 UserInfo::UserInfo() {
     data_ = new Data();
 }
@@ -466,6 +492,8 @@ void StarInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
     dict->GetString(L"nation", &data_->nation_);
     dict->GetString(L"nationality", &data_->nationality_);
     dict->GetString(L"introduction", &data_->introduction_);
+    dict->GetString(L"jianpin", &data_->jianpin_);
+    dict->GetString(L"quanpin", &data_->quanpin_);
 }
 ///TOwnStar
 

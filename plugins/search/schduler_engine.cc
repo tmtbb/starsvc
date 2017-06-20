@@ -97,7 +97,9 @@ void SearchManager::MatchStarInfo(const std::string& message,
         star_logic::StarInfo star = (*it);
         if(regexec(&o_regex,star.name().c_str(),0,NULL,0) == 0 ||
                 regexec(&o_regex,star.introduction().c_str(),0,NULL,0) == 0 ||
-                regexec(&o_regex,star.symbol().c_str(),0,NULL,0) == 0) {
+                regexec(&o_regex,star.symbol().c_str(),0,NULL,0) == 0 ||
+                regexec(&o_regex,star.quanpin().c_str(),0,NULL,0) == 0 ||
+                regexec(&o_regex,star.jianpin().c_str(),0,NULL,0) == 0) {
             list.push_back(star);
             //LOG_MSG2("name %s",star.name().c_str());
         }
