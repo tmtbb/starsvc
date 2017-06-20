@@ -804,7 +804,33 @@ class CheckAccountExistReq {
 };
 typedef UserAccount CheckToken;
 typedef UserAccount UserRealInfo;
+class TGetVersion{
+ public:
+  TGetVersion()
+      : type_(NULL) {
+  }
 
+  ~TGetVersion() {
+    if (type_) {
+      delete type_;
+    }
+  }
+
+  void set_type(const int64 type) {
+    type_ = new base_logic::FundamentalValue(type);
+  }
+
+  int64 type() const {
+    int64 type;
+    type_->GetAsBigInteger(&type);
+    return type;
+  }
+
+  bool set_http_packet(base_logic::DictionaryValue* value);
+
+ private:
+  base_logic::FundamentalValue* type_;
+};
 }
 
 namespace net_reply {
@@ -1188,6 +1214,109 @@ class TResult{
   }
  private:
   base_logic::FundamentalValue* result_;
+  base_logic::DictionaryValue* value_;
+};
+
+class TGetVersion{
+ public:
+  TGetVersion()
+       : type_(NULL),
+         size_(NULL),
+         version_code_(NULL),
+         is_forceupdate_(NULL),
+         app_name_(NULL),
+         update_desc_(NULL),
+         release_time_(NULL),
+         url_(NULL),
+         value_(NULL),
+         version_name_(NULL)
+   {
+   }
+
+   ~TGetVersion() {
+     if (value_) {
+       delete value_;
+       value_ = NULL;
+     }
+   }
+
+   void set_type(const int64 value) {
+     type_ = new base_logic::FundamentalValue(value);
+   }
+
+   void set_size(const int64 value) {
+     size_ = new base_logic::FundamentalValue(value);
+   }
+ 
+   void set_version_code(const int64 value) {
+     version_code_ = new base_logic::FundamentalValue(value);
+   }
+
+   void set_is_forceupdate(const int64 value) {
+     is_forceupdate_ = new base_logic::FundamentalValue(value);
+   }
+
+   void set_app_name(const std::string& value) {
+     app_name_ = new base_logic::StringValue(value);
+   }
+
+   void set_update_desc(const std::string& value) {
+     update_desc_= new base_logic::StringValue(value);
+   }
+   void set_version_name(const std::string& value) {
+     version_name_= new base_logic::StringValue(value);
+   }
+   void set_release_time(const std::string& value) {
+     release_time_= new base_logic::StringValue(value);
+   }
+   void set_url(const std::string& value) {
+     url_= new base_logic::StringValue(value);
+   }
+
+ public:
+  base_logic::DictionaryValue* get() {
+    value_ = new base_logic::DictionaryValue();
+
+    if (type_!= NULL)
+      value_->Set(L"type", type_);
+
+    if (size_!= NULL)
+      value_->Set(L"newAppSize", size_);
+
+    if (version_code_ != NULL)
+      value_->Set(L"newAppVersionCode", version_code_);
+
+    if (version_name_ != NULL)
+      value_->Set(L"newAppVersionName", version_name_);
+
+    if (app_name_ != NULL)
+      value_->Set(L"appName", app_name_);
+
+    if (is_forceupdate_!= NULL)
+      value_->Set(L"isForceUpdate", is_forceupdate_);
+
+    if (update_desc_!= NULL)
+      value_->Set(L"newAppUpdateDesc", update_desc_);
+
+    if (release_time_!= NULL)
+      value_->Set(L"newAppReleaseTime", release_time_);
+
+    if (url_!= NULL)
+      value_->Set(L"newAppUrl", url_);
+
+    return value_;
+  }
+ private:
+  base_logic::FundamentalValue* type_;
+  base_logic::FundamentalValue* size_;
+  base_logic::FundamentalValue* version_code_;
+  base_logic::FundamentalValue* is_forceupdate_;
+  base_logic::StringValue* app_name_;
+  base_logic::StringValue* update_desc_;
+  base_logic::StringValue* version_name_;
+  base_logic::StringValue* release_time_;
+  base_logic::StringValue* url_;
+
   base_logic::DictionaryValue* value_;
 };
 }

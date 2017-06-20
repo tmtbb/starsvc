@@ -78,7 +78,8 @@ class Userslogic {
   bool OnResetPayPassWD(struct server* srv, int socket, struct PacketHead *packet); 
   bool OnCertification(struct server* srv, int socket,
                             struct PacketHead *packet); 
-                            
+  bool OnGetVersion(struct server* srv, int socket,
+                                struct PacketHead *packet);                           
   //验证用户是否存在
   bool OnCheckAccountExist(struct server* srv, int socket,
                             struct PacketHead *packet);

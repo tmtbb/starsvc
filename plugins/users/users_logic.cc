@@ -184,6 +184,10 @@ try
       OnResetNickName(srv, socket, packet);
       break;
     }
+	case R_GET_VERSION:{
+      OnGetVersion(srv, socket, packet);
+      break;
+    }
     default:
       break;
   }
@@ -842,7 +846,7 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
   dic.SetString(L"cardNo", idcard);
   dic.SetString(L"realName", name);
 //  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
-  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, 1);
+  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
   LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
 
   users_logic::net_reply::TResult r_ret;;
@@ -1005,5 +1009,40 @@ bool Userslogic::OnResetNickName(struct server* srv, int socket,
 
   return true;
 }
+bool Userslogic::OnGetVersion(struct server* srv, int socket,
+                                struct PacketHead *packet) {
+  users_logic::net_request::TGetVersion get_version;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  bool r = get_version.set_http_packet(packet_control->body_);
 
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+/*
+  std::string ip;
+  int port;
+  logic::SomeUtils::GetIPAddress(socket, ip, port);
+
+  swp_logic::UserInfo userinfo;
+*/
+  users_logic::net_reply::TGetVersion net_get_version;
+  r = user_db_->GetVersion(get_version.type(), net_get_version);
+  if (!r) {
+    send_error(socket, ERROR_TYPE, NO_VERSION_INFO, packet->session_id);
+    return false;
+  }
+
+  struct PacketControl net_packet_control;
+  MAKE_HEAD(net_packet_control, S_GET_VERSION, 1, 0, packet->session_id, 0);
+  net_packet_control.body_ = net_get_version.get();
+  send_message(socket, &net_packet_control);
+
+  return true;
+}
 }  // namespace trades_logic
