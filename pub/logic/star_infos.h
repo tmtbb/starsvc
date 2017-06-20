@@ -1624,6 +1624,9 @@ public:
     const std::string& faccid() const {
         return data_->faccid_;
     }
+    const std::string& headurl() const {
+        return data_->head_url_;
+    }
 //----
     void set_uid(const int64 value) {
         data_->uid_ = value;
@@ -1644,6 +1647,9 @@ public:
     void set_faccid(const std::string& value) {
         data_->faccid_ = value;
     }
+    void set_headurl(const std::string& value) {
+        data_->head_url_ = value;
+    }
 
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
@@ -1663,6 +1669,7 @@ public:
         std::string starcode_; //明星代码
         std::string starname_;
         std::string faccid_;
+        std::string head_url_;
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);
         }

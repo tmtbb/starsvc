@@ -11,6 +11,7 @@
 #include "config/config.h"
 #include "basic/basictypes.h"
 #include "logic/base_values.h"
+#include "users/users_proto_buf.h"
 #include "basic/scoped_ptr.h"
 
 namespace users_logic {
@@ -27,7 +28,7 @@ class UsersDB {
   bool LoginAccount(const std::string& phone_num, const std::string& passwd,
                     const std::string& ip, star_logic::UserInfo& user);
 
-  bool CheckAccountExist(const std::string& phone);
+  bool CheckAccountExist(const std::string& phone, int32& existFlag);
 
   bool AccountBalance(const int64 uid, double & balance, std::string &pwd);
 
@@ -35,6 +36,7 @@ class UsersDB {
   bool GetUserInfo(const int64 uid, const std::string& ip,
                    star_logic::UserInfo& userinfo);
 
+  bool GetVersion(const int64 type, users_logic::net_reply::TGetVersion &get_version);
  public:
   static void CallRegisterAccount(void* param, base_logic::Value* value);
 
@@ -49,7 +51,7 @@ class UsersDB {
   static void CallChangePasswd(void* param, base_logic::Value* value);
   static void CallAccountRealName(void* param, base_logic::Value* value); 
   static void CallChangeNickName(void* param, base_logic::Value* value);
-  
+  static void CallGetVersion(void* param, base_logic::Value* value) ;
   bool WXBindAccount(const std::string& phone_num, const std::string& passwd,
                        const int32 type,int64& uid, int32& result, const std::string &openid, const std::string &nick_name, 
 		       const std::string &head_url, const std::string &agent_id, const std::string &recommend,
@@ -63,7 +65,7 @@ class UsersDB {
   bool ResetAccount(const std::string& phone_num,const std::string& passwd);
   bool ModifyPwd(const int64 &uid, const std::string &newpwd);
   bool Certification(const int64 &uid, const std::string &idcard, const std::string &realname);
-  bool ModifyNickName(const int64 &uid, const std::string &newNickName);
+  bool ModifyNickName(const int64 &uid, const std::string &newNickName, int32& flag);
  private:
   base_logic::DataEngine* mysql_engine_;
 };

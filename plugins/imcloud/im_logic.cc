@@ -12,6 +12,7 @@
 #include "operator_code.h"
 #include "im_proto.h"
 #include "im_process.h"
+#include "errno.h"
 
 #define DEFAULT_CONFIG_PATH "./plugins/imcloud/imcoud_config.xml"
 
@@ -158,13 +159,17 @@ bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead
 	return false;
   }
   //扣减明星时间
-  int64 times = 0;
+  int64 times = 0,result;
   std::string accid;
   std::string faccid;
 	LOG_DEBUG("true.");
 	
-	if(!sqlengine->ReduceTalkingtimes(phone,starcode,deductamount,times,accid,faccid)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	if(!sqlengine->ReduceTalkingtimes(phone,starcode,deductamount,times,accid,faccid,result)){
+		send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+		return false;
+  }
+  if(result == 0){
+    send_error(socket, ERROR_TYPE, NO_REDUCE_TALKING_TIMES_ERR, packet->session_id);
 		return false;
   }
   
@@ -177,9 +182,9 @@ bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead
   struct PacketControl packet_reply;
   MAKE_HEAD(packet_reply, S_IMCLOUD_SENDMESSAGE, IM_TYPE, 0,packet->session_id, 0);
   base_logic::DictionaryValue ret;
-  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
+  base_logic::FundamentalValue* ret_value = new base_logic::FundamentalValue(result);
   base_logic::FundamentalValue* ownseconds = new base_logic::FundamentalValue(times);
-  ret.Set(L"result",result);
+  ret.Set(L"result",ret_value);
   ret.Set(L"ownseconds",ownseconds);
   packet_reply.body_ = &ret;
   send_message(socket,&packet_reply);
@@ -213,7 +218,7 @@ bool Imlogic::OnEditFriendInfo(struct server* srv,int socket ,struct PacketHead*
 
   r = im_pro.editfriendinfo(accid,faccid,alias,ex);
   if(!r){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_EDIT_FRIEND_INFO_ERR, packet->session_id);
 	return false;
   }
   struct PacketControl packet_reply;
@@ -251,7 +256,7 @@ bool Imlogic::OnGetFriendList(struct server* srv,int socket ,struct PacketHead* 
   base_logic::DictionaryValue ret;
   r = im_pro.getfriendlist(accid,createtime,ret);
   if(!r){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_GET_FRIEND_LIST_ERR, packet->session_id);
 	return false;
   }
   struct PacketControl packet_reply;
@@ -289,7 +294,7 @@ bool Imlogic::OnDelCloudFriend(struct server* srv,int socket ,struct PacketHead*
   im_process::ImProcess im_pro;
   r = im_pro.delfriend(accid,faccid);
   if(!r){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_DEL_FRIEND_ERR, packet->session_id);
     return false;
   }
   struct PacketControl packet_reply;
@@ -329,7 +334,7 @@ bool Imlogic::OnAddCloudFriend(struct server* srv,int socket ,struct PacketHead*
   im_process::ImProcess im_process;
   r = im_process.addfriend(accid,faccid,msg,type);
   if(!r){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_ADD_FRIEND, packet->session_id);
     return false;
   }
   struct PacketControl packet_reply;
@@ -412,7 +417,7 @@ bool Imlogic::OnRefreshTokenImcloud(struct server* srv,int socket ,struct Packet
   im_process::ImProcess tokenfun;
   std::string tokenvalue = tokenfun.refreshtoken(tokencode.accid());
   if(sizeof(tokenvalue)<=0){
-	  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	  send_error(socket, ERROR_TYPE, NO_REFRESH_TOKEN, packet->session_id);
 	  return false;
   }
 	  

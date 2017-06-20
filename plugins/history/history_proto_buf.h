@@ -760,7 +760,8 @@ class OwnStar{
         starcode_(NULL),
         starname_(NULL),
         faccid_(NULL),
-        value_(NULL) {
+        value_(NULL),
+        headurl_(NULL) {
   }
 
   ~OwnStar() {
@@ -790,6 +791,9 @@ class OwnStar{
   void set_faccid(const std::string& deposit_name) {
     faccid_ = new base_logic::StringValue(deposit_name);
   }
+  void set_headurl(const std::string& head_url) {
+    headurl_ = new base_logic::StringValue(head_url);
+  }
 
   base_logic::DictionaryValue* get() {
     value_ = new base_logic::DictionaryValue();
@@ -805,6 +809,8 @@ class OwnStar{
       value_->Set(L"starname", starname_);
     if (faccid_ != NULL)
       value_->Set(L"faccid", faccid_);
+    if (headurl_ != NULL)
+      value_->Set(L"head_url", headurl_);
     return value_;
   }
 
@@ -815,6 +821,7 @@ class OwnStar{
   base_logic::StringValue* starcode_;
   base_logic::StringValue* starname_;
   base_logic::StringValue* faccid_;
+  base_logic::StringValue* headurl_;
 
   base_logic::DictionaryValue* value_;
 };

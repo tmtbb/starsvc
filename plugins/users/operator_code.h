@@ -52,5 +52,8 @@ namespace users_logic {
 //add 修改nickname
 #define R_USRES_RESET_NICK_NAME USERS_TYPE * 1000 + 31
 #define S_USRES_RESET_NICK_NAME USERS_TYPE * 1000 + 32
+
+#define R_GET_VERSION USERS_TYPE * 1000 + 33
+#define S_GET_VERSION USERS_TYPE * 1000 + 34
 }
 #endif

@@ -19,7 +19,7 @@ UsersDB::~UsersDB() {
   }
 }
 
-bool UsersDB::CheckAccountExist(const std::string& phone) {
+bool UsersDB::CheckAccountExist(const std::string& phone, int32& existFlag) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
@@ -34,9 +34,7 @@ bool UsersDB::CheckAccountExist(const std::string& phone) {
     return false;
 
   dict->GetDictionary(L"resultvalue", &info_value);
-  int32 result = 0;
-  r = info_value->GetInteger(L"result", &result);
-  r = (r && result == 1) ? true : false; /*0表示不存在未注册*/
+  r = info_value->GetInteger(L"result", &existFlag);
   if (dict) {
     delete dict;
     dict = NULL;
@@ -494,6 +492,7 @@ try
   
   base_logic::ListValue *listvalue;
   dict->SetString(L"sql", sql);
+  LOG_DEBUG2("sql[%s]",sql.c_str());
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallRegisterAccount);
   if (!r)
@@ -504,6 +503,7 @@ try
   int result = 0;
   r = info_value->GetBigInteger(L"uid", &ruid);
   r = info_value->GetInteger(L"result", &result);
+  LOG_DEBUG2("uid[%ld]",ruid);
   r = (r && ruid > 0) ? true : false;
   
 }   
@@ -560,7 +560,7 @@ catch (...)
   return r;
 }
 
-bool UsersDB::ModifyNickName(const int64 &uid, const std::string &newNickName)
+bool UsersDB::ModifyNickName(const int64 &uid, const std::string &newNickName, int32& flag)
 {
 	bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
@@ -577,10 +577,7 @@ bool UsersDB::ModifyNickName(const int64 &uid, const std::string &newNickName)
     return false;
   
   dict->GetDictionary(L"resultvalue", &info_value);
-  int result = 0;
-  r = info_value->GetInteger(L"result", &result);
-  r = (r && result==1) ? true : false;
-     
+  r = info_value->GetInteger(L"result", &flag);
   if (dict) {
     delete dict;
     dict = NULL;
@@ -603,6 +600,93 @@ void UsersDB::CallChangeNickName(void* param, base_logic::Value* value) {
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
 }
+bool UsersDB::GetVersion(const int64 type, users_logic::net_reply::TGetVersion &get_version)
+{
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+try
+{
+  sql = "call proc_GetVersion(" + base::BasicUtil::StringUtil::Int64ToString(type) +")";
+  //sql = "SELECT APPNAME,VERSIONNAME,TYPE,SIZE,VERSIONCODE,UPDATEDESC,RELEASETIME,URL,ISFORCEUPDATE FROM version_info WHERE TYPE = "  
+  //    + base::BasicUtil::StringUtil::Int64ToString(type);
+  //LOG_ERROR2("______________sql= %s, !!", sql.c_str());
 
+  base_logic::ListValue *listvalue;
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallGetVersion);
+  if (!r)
+    return false;
+
+  dict->GetDictionary(L"resultvalue", &info_value);
+  int64 tmp = 0;
+  std::string temp = "";
+  r = info_value->GetBigInteger(L"type", &tmp);
+  get_version.set_type(tmp);
+  r = info_value->GetBigInteger(L"isforceupdate", &tmp);
+  get_version.set_is_forceupdate(tmp);
+  r = info_value->GetBigInteger(L"size", &tmp);
+  get_version.set_size(tmp);
+  r = info_value->GetBigInteger(L"versioncode", &tmp);
+  get_version.set_version_code(tmp);
+
+  r = info_value->GetString(L"appname", &temp);
+  get_version.set_app_name(temp);
+  r = info_value->GetString(L"versionname", &temp);
+  get_version.set_version_name(temp);
+  r = info_value->GetString(L"updatedesc", &temp);
+  get_version.set_update_desc(temp);
+  r = info_value->GetString(L"releasetime", &temp);
+  get_version.set_release_time(temp);
+  r = info_value->GetString(L"url", &temp);
+  get_version.set_url(temp);
+
+  //r = info_value->GetReal(L"balance", &balance);
+}
+catch (...)
+{
+    LOG_ERROR("catch GetVersion Error!!!" );
+    r = false;
+}
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+
+}
+void UsersDB::CallGetVersion(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetString(L"appname", (rows[0]));
+      if (rows[1] != NULL)
+        info_value->SetString(L"versionname", (rows[1]));
+      if (rows[2] != NULL)
+        info_value->SetInteger(L"type", atoi(rows[2]));
+      if (rows[3] != NULL)
+        info_value->SetBigInteger(L"size", atoll(rows[3]));
+      if (rows[4] != NULL)
+        info_value->SetBigInteger(L"versioncode", atoll(rows[4]));
+      if (rows[5] != NULL)
+        info_value->SetString(L"updatedesc", rows[5]);
+      if (rows[6] != NULL)
+        info_value->SetString(L"releasetime", rows[6]);
+      if (rows[7] != NULL)
+        info_value->SetString(L"url", rows[7]);
+      if (rows[8] != NULL)
+        info_value->SetInteger(L"isforceupdate", atoi(rows[8]));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+}
 }  // namespace history_logic
 

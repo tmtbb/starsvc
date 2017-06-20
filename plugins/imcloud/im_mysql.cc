@@ -239,7 +239,8 @@ bool Im_Mysql::delorderrecord(std::string& phone,std::string& starcode){
 }
 
 bool Im_Mysql::ReduceTalkingtimes(std::string& phone,std::string& starcode,int64 amount, 
-	                                int64& ownseconds,std::string& accid,std::string& faccid){
+	                                int64& ownseconds,std::string& accid,
+                                  std::string& faccid, int64& result){
 	bool r = false;
 	DicValue dic;
 	std::string sql;
@@ -257,7 +258,6 @@ bool Im_Mysql::ReduceTalkingtimes(std::string& phone,std::string& starcode,int64
 	}
 
 	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
-	int64 result;
 	bool r1 = dic.GetDictionary(L"resultvalue", &ret);
 	bool r2 = ret->GetBigInteger(L"result", &result);
 	bool r3 = ret->GetBigInteger(L"ownseconds", &ownseconds);

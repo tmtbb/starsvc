@@ -360,13 +360,16 @@ void Infomation_Mysql::Callgetinfo(void* param, base_logic::Value* value){
 	  if (rows[7] != NULL){
 	  		ret->SetString(L"pic_url", rows[7]);
 	  	}
+    if (rows[8] != NULL){
+	  		ret->SetString(L"pic1", rows[8]);
+	  	}
 	  //dict->Set(L"resultvalue", (base_logic::Value *) (ret));
 	  list->Append((base_logic::Value *) (ret));
 	}
 	dict->Set(L"resultvalue", (base_logic::Value *) (list));
 	}
 	else {
-		LOG_ERROR ("CallUserLoginSelect count < 0");
+		LOG_ERROR ("Callgetinfo count < 0");
 	}
 	dict->Remove(L"sql", &value);
 }
@@ -629,6 +632,51 @@ void Infomation_Mysql::Callgetuserstartime(void* param, base_logic::Value* value
   }
   else {
 		LOG_ERROR ("Callgetuserstartime count < 0");
+	}
+  
+  dict->Remove(L"sql", &value);
+}
+
+bool Infomation_Mysql::getstartime(const std::string starcode, int64& time){
+	bool r = false;
+  DicValue* dic = new DicValue();
+	std::string sql;
+	sql = "call proc_GetStarTime('"
+    + starcode + "');";
+
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetstartime);
+	if (!r) {
+	  return false;
+	}
+  
+  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	bool r1 = dic->GetDictionary(L"resultvalue",&ret);
+	bool r2 = ret->GetBigInteger(L"star_time", &time);
+	if(!r1 || !r2){
+	  return false;
+	}
+	
+	return r;
+}
+
+void Infomation_Mysql::Callgetstartime(void* param, base_logic::Value* value){	
+	base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetBigInteger(L"star_time", atoi(rows[0]));
+    }
+    dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+  }
+  else {
+		LOG_ERROR ("Callgetstartime count < 0");
 	}
   
   dict->Remove(L"sql", &value);
