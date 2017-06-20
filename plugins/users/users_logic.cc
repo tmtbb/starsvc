@@ -533,6 +533,7 @@ bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
         LOG_DEBUG2("realname[%s], id_card[%s], realname2[%s], id_card2[%s], ",
                    r_name.c_str(), id_card.c_str(), userinfo.realname().c_str(), userinfo.id_card().c_str());
     }
+  }
 // net_real_info.set_balance(userinfo.balance());
     net_real_info.set_realname(userinfo.realname());
     net_real_info.set_id_card(userinfo.id_card());
@@ -852,7 +853,7 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
   dic.SetString(L"cardNo", idcard);
   dic.SetString(L"realName", name);
 //  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
-  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, 1);
   LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
 
   users_logic::net_reply::TResult r_ret;;
