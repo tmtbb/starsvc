@@ -134,5 +134,5 @@ json_writer.o :	$(USER_DIR)/json/json_writer.cpp
 $(PLUGIN) : json_reader.o json_value.o json_writer.o im_init.o im_logic.o im_mysql.o im_process.o fcgimodule.o util.o star_infos.o logic_unit.o packet_processing.o \
 	data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o im_proto.o \
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lcurl -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \
 	$^ -o $@

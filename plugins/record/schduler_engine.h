@@ -30,6 +30,8 @@ typedef std::map<int64,TRADES_ORDER_LIST> USER_TRADES_ORDER_MAP;
 typedef std::map<std::string,int64> SYMBOL_POSITION_TIME_MAP;
 
 typedef std::map<int64, star_logic::UserInfo> USER_INFO_MAP;
+
+typedef std::map<std::string, star_logic::Auction>  AUCTION_INFO_MAP;
 class RecordCache {
 public:
     SYMBOL_TRADES_POSITION_MAP  symbol_buy_trades_position_;
@@ -40,6 +42,8 @@ public:
 
     SYMBOL_POSITION_TIME_MAP    symbol_sell_trades_time_position_;
     SYMBOL_POSITION_TIME_MAP    symbol_buy_trades_time_position_;
+
+    AUCTION_INFO_MAP            symbol_auction_map_;
 
     TRADES_POSITION_MAP         trades_positions_;
 
@@ -98,6 +102,8 @@ private:
     
     void SetSymbolPositionTime(SYMBOL_POSITION_TIME_MAP& position_time_map,const std::string symbol, const int64 time);
     
+    void SetSymbolAuction(const std::string& symbol,const int64 time, const int32 buy_sell,const int32 atype);
+
     void GetSymbolPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_position, const std::string& symbol,
                            const int32 start, const int32 count, std::list<star_logic::TradesPosition>& trades_position_list);
 

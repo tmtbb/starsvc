@@ -11,7 +11,7 @@
 #include "trades/trades_kafka.h"
 #include "thread/base_thread_handler.h"
 #include "thread/base_thread_lock.h"
-
+#include "manager/data_share_mgr.h"
 
 namespace trades_logic {
 typedef std::map<std::string, trades_logic::TradesStar> TRADES_STAR_MAP;
@@ -79,6 +79,7 @@ public:
     void InitDB(trades_logic::TradesDB* trades_db);
     void InitKafka(trades_logic::TradesKafka* trades_kafka);
     void InitData();
+    void InitManagerSchduler(manager_schduler::SchdulerEngine* schduler_engine);
     void TimeStarEvent();
 
     void CreateTradesPosition(const int socket, const int64 session, const int32 reserved,
@@ -127,7 +128,11 @@ private:
     void ClearTradesPosition(TRADES_POSITION_MAP& trades_position_map,const std::string& symbol);
 
     void ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order, const std::string& symbol);
+
+    void SendNoiceMessage(const int64 uid, const int32 operator_code, const int64 session,
+                            base_logic::DictionaryValue* message);
 private:
+    manager_schduler::SchdulerEngine* schduler_engine_;
     TradesCache *trades_cache_;
     trades_logic::TradesDB* trades_db_;
     trades_logic::TradesKafka*  trades_kafka_;

@@ -105,7 +105,7 @@ bool Marketlogic::OnInfomationMessage(struct server *srv, const int socket,
 	}
 	//获取明星成就
 	case R_MARKETSTARACHIV_GET:{
-	  getstarachive(srv,socket,packet);
+	  //getstarachive(srv,socket,packet);
 	  break;
 	}
 	case R_SEARCHSTAR_INFO:{

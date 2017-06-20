@@ -86,6 +86,12 @@ void SearchDB::CallGetSearchDetail(void* param, base_logic::Value* value) {
             if (rows[7] != NULL)
                 info_value->SetString(L"introduction", rows[7]);
 
+            if (rows[8] != NULL)
+                info_value->SetString(L"jianpin", rows[8]);
+
+            if (rows[9] != NULL)
+                info_value->SetString(L"quanpin", rows[9]);
+
             list->Append((base_logic::Value *) (info_value));
         }
     }
