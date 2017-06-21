@@ -523,13 +523,9 @@ bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
     r = user_db_->AccountRealNameInfo(user_real_info.uid(), r_name, id_card);
     if (r_name != "")
     {
-        std::string r_name = "" , id_card = "";
-        r = user_db_->AccountRealNameInfo(user_real_info.uid(), r_name, id_card);
-        if (r_name != "")
-        {
-            userinfo.set_realname(r_name);
-            userinfo.set_id_card(id_card);
-        }
+        userinfo.set_realname(r_name);
+        userinfo.set_id_card(id_card);
+    }
         LOG_DEBUG2("realname[%s], id_card[%s], realname2[%s], id_card2[%s], ",
                    r_name.c_str(), id_card.c_str(), userinfo.realname().c_str(), userinfo.id_card().c_str());
     }

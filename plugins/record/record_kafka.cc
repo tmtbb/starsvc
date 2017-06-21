@@ -121,4 +121,59 @@ bool RecordKafka::FectchBatchTempTask(std::list<base_logic::DictionaryValue*> *l
 
 }
 
+bool RecordKafka::SetBuyPosition(const std::string& index, const double price, 
+        const int64 current_time) {
+    int32 re = 0;
+    base_logic::DictionaryValue* buy_info = new base_logic::DictionaryValue();
+    buy_info->SetString(L"index", index);
+    buy_info->SetReal(L"price", price);
+    buy_info->SetBigInteger(L"current",current_time);
+    buy_info->SetInteger(L"type",2);
+    re = kafka_producer_.PushData(buy_info);
+    delete buy_info;
+    if (PUSH_DATA_SUCCESS == re)
+        return true;
+    else {
+        LOG_ERROR("kafka producer send data failed");
+        return false;
+    }
+}
+
+
+bool RecordKafka::SetSellPosition(const std::string& index, const double price, 
+        const int64 current_time) {
+    int32 re = 0;
+    base_logic::DictionaryValue* sell_info = new base_logic::DictionaryValue();
+    sell_info->SetString(L"index", index);
+    sell_info->SetReal(L"price", price);
+    sell_info->SetBigInteger(L"current",current_time);
+    sell_info->SetInteger(L"type",3);
+    re = kafka_producer_.PushData(sell_info);
+    delete sell_info;
+    if (PUSH_DATA_SUCCESS == re)
+        return true;
+    else {
+        LOG_ERROR("kafka producer send data failed");
+        return false;
+    }
+}
+
+
+bool RecordKafka::SetVolume(const std::string& index, const double price, 
+        const int64 current_time) {
+    int32 re = 0;
+    base_logic::DictionaryValue* volume_info = new base_logic::DictionaryValue();
+    volume_info->SetString(L"index", index);
+    volume_info->SetReal(L"price", price);
+    volume_info->SetBigInteger(L"current",current_time);
+    volume_info->SetInteger(L"type",4);
+    re = kafka_producer_.PushData(volume_info);
+    delete volume_info;
+    if (PUSH_DATA_SUCCESS == re)
+        return true;
+    else {
+        LOG_ERROR("kafka producer send data failed");
+        return false;
+    }
+}
 }  // namespace record_logic

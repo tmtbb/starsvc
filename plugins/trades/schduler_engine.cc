@@ -95,7 +95,8 @@ void TradesManager::CancelOrder(const int socket, const int64 session, const int
             send_error(socket,ERROR_TYPE, NO_HAVE_ORDER,session);
             return;
         }
-        if (trades_order.handle_type() != MATCHES_ORDER){//不存在，且已经不为匹配状态
+        if (trades_order.handle_type() != MATCHES_ORDER &&
+                trades_order.handle_type() != CONFIRM_ORDER){//不存在，且已经不为匹配状态
             send_error(socket, ERROR_TYPE, NO_CANCEL_ERROR,session);
             return;
         }
@@ -298,10 +299,12 @@ int32 TradesManager::MatchTrades(const int socket, const int64 session, const in
 
     //排序取出最早的用户 循环找到最早的用户且有效的用户
     //op_trades = price_postion_list.front();
+    price_postion_list.sort(star_logic::TradesPosition::close_after);
     TRADES_POSITION_LIST::iterator it = price_postion_list.begin();
     for(; it != price_postion_list.end(); it++) {
         star_logic::TradesPosition op_trades = (*it);
-        if(op_trades.handle() == POSITION_HANDLE ) {
+        if(op_trades.handle() == POSITION_HANDLE && 
+            op_trades.uid() != trades.uid()) {
             //创建订单
             op_trades.set_handle(MATCHES_HANDLE);
             trades.set_handle(MATCHES_HANDLE);

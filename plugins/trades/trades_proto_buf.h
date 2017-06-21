@@ -113,6 +113,7 @@ public:
     base_logic::StringValue* token_;
     base_logic::FundamentalValue* order_id_;
 };
+
 class CurrentPosition {
 public:
     CurrentPosition()

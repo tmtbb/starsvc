@@ -212,10 +212,11 @@ void QuotationsManager::SetSortQuotations(star_logic::Quotations& quotation) {
 
     if (r) { //存在，利用共享内存机制，修改行情信息，无需修改list节点
         temp_quotations.set_change(quotation.change());
+        temp_quotations.set_pchg(quotation.pchg());
         temp_quotations.set_symbol(quotation.symbol());
         temp_quotations.set_type(quotation.type());
         temp_quotations.set_current_price(quotation.current_price());
-        temp_quotations.set_change(quotation.change());
+        temp_quotations.set_pchg(quotation.pchg());
         temp_quotations.set_current_unix_time(quotation.current_unix_time());
     } else {
         base::MapGet<LAST_QUOTATIONS_SORT_MAP,LAST_QUOTATIONS_SORT_MAP::iterator,LAST_QUOTATIONS_SORT_LIST>(
@@ -285,6 +286,10 @@ void QuotationsManager::SendQuotationsList(const int socket, const int64 session
             r_symbol_unit->set_system_unix_time(time(NULL));
             r_symbol_unit->set_current_unix_time(quotations.current_unix_time());
             r_symbol_unit->set_change(quotations.change());
+            r_symbol_unit->set_pchg(quotations.pchg());
+            LOG_MSG2("current_unix_time %lld symbol %s current_price %f, change %f,pchg %f",
+                    quotations.current_unix_time(),star.symbol().c_str(), quotations.current_price(),
+                    quotations.change(),quotations.pchg());
             symbol_list.set_unit(r_symbol_unit->get());
         }
     }
@@ -329,12 +334,12 @@ void QuotationsManager::SendKChartLine(const int socket, const int64 session,
         if (quotations.current_unix_time() > start_time)
             continue;
         net_reply::RealTimeUnit* r_real_time_unit = new net_reply::RealTimeUnit;
-        //r_real_time_unit->set_change(quotations.change());
-        //r_real_time_unit->set_pchg(quotations.pchg());
+        r_real_time_unit->set_change(quotations.change());
+        r_real_time_unit->set_pchg(quotations.pchg());
         r_real_time_unit->set_opening_today_price(quotations.opening_today_price());
         r_real_time_unit->set_closed_yesterday_price(
             quotations.closed_yesterday_price());
-        //r_real_time_unit->set_current_price(quotations.current_price());
+        r_real_time_unit->set_current_price(quotations.current_price());
         r_real_time_unit->set_high_price(quotations.high_price());
         r_real_time_unit->set_low_price(quotations.low_price());
         r_real_time_unit->set_current_unix_time(quotations.current_unix_time());
