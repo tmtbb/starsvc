@@ -1,3 +1,6 @@
+//  Copyright (c) 2017-2018 The SWP Authors. All rights reserved.
+//  Created on: 2017年2月12日 Author: kerry
+
 #ifndef STAR_IM_LOGIC_H_
 #define STAR_IM_LOGIC_H_
 
