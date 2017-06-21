@@ -42,7 +42,16 @@ void RecordManager::InitData() {
     InitDataHisOrder();
     InitUserInfo();
     InitDataHisPosition();
+    InitStarInfo();
 }
+
+
+void RecordManager::InitStarInfo() {
+    record_db_->OnGetStarInfo(record_cache_->star_info_map_);
+
+    LOG_DEBUG2("star_info %d",record_cache_->star_info_map_.size());
+}
+
 
 void RecordManager::InitDataHisOrder() {
     std::map<int64,star_logic::TradesOrder> trades_order_map;
@@ -508,7 +517,17 @@ void RecordManager::SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
         SetSymbolPositionTime(record_cache_->symbol_buy_trades_time_position_,
                        trades_position.symbol(), trades_position.amount());*/
     if (!init){
-        
+        star_logic::StarInfo star;
+        bool r = base::MapGet<STAR_INFO_MAP,STAR_INFO_MAP::iterator,std::string,star_logic::StarInfo>
+            (record_cache_->star_info_map_, trades_position.symbol(),star);
+        if (r) {
+            if(trades_position.buy_sell() == SELL_TYPE)
+                record_kafka_->SetSellPosition(star.weibo_index_id(),
+                            trades_position.open_price(),trades_position.open_position_time());
+            else
+                record_kafka_->SetBuyPosition(star.weibo_index_id(),
+                            trades_position.open_price(), trades_position.open_position_time());
+        }
         SetSymbolAuction(trades_position.symbol(), trades_position.amount(), 
                         trades_position.buy_sell(),1);
         record_db_->OnCreateTradesPosition(trades_position);
@@ -596,6 +615,12 @@ void RecordManager::SetTradesOrder(star_logic::TradesOrder& trades_order) {
     record_cache_->user_trades_order_[trades_order.sell_uid()] = sell_trades_order_list;
 
     record_cache_->trades_order_[trades_order.order_id()] = trades_order;
+    star_logic::StarInfo star;
+    r = base::MapGet<STAR_INFO_MAP,STAR_INFO_MAP::iterator,std::string,star_logic::StarInfo>
+            (record_cache_->star_info_map_, trades_order.symbol(),star);
+    if (r)
+        record_kafka_->SetVolume(star.weibo_index_id(),trades_order.open_price(),
+            trades_order.open_position_time());
 }
 
 void RecordManager::SetTradesPosition(star_logic::TradesPosition& trades_position,bool init) {
@@ -628,7 +653,7 @@ void RecordManager::GetUserOrder(const int64 uid, const int64 start_pan,
             t_start++;
             if (t_start < start)
                 continue;
-            if(order.open_position_time() > start_pan)
+            if(order.open_position_time() > start_pan){
                 if (status == COMPLETE_ORDER && order.handle_type() == COMPLETE_ORDER)
                     trades_order_list.push_back(order);
                 else if (status == MATCHES_ORDER && 
@@ -637,6 +662,7 @@ void RecordManager::GetUserOrder(const int64 uid, const int64 start_pan,
                     trades_order_list.push_back(order);
                 else if (status == 3)
                     trades_order_list.push_back(order);
+            }
         }
 }
 
@@ -747,6 +773,7 @@ void RecordManager::GetUserPosition(const int64 uid, const int64 start_pan,
     }
 
 }
+
 
 void RecordManager::DistributionRecord() {
     std::list<base_logic::DictionaryValue*> list;

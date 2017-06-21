@@ -15,7 +15,8 @@
 #include <list>
 
 namespace record_logic {
-;
+ 
+typedef std::map<std::string,star_logic::StarInfo> STAR_INFO_MAP;
 typedef std::map<int64, star_logic::TradesPosition> TRADES_POSITION_MAP;
 typedef std::list<star_logic::TradesPosition> TRADES_POSITION_LIST;
 typedef std::map<std::string, TRADES_POSITION_LIST> SYMBOL_TRADES_POSITION_MAP;
@@ -34,6 +35,7 @@ typedef std::map<int64, star_logic::UserInfo> USER_INFO_MAP;
 typedef std::map<std::string, star_logic::Auction>  AUCTION_INFO_MAP;
 class RecordCache {
 public:
+    STAR_INFO_MAP               star_info_map_;
     SYMBOL_TRADES_POSITION_MAP  symbol_buy_trades_position_;
     USER_TRADES_POSITION_MAP    user_buy_trades_position_;
 
@@ -90,6 +92,7 @@ private:
     void InitDataHisOrder();
     void InitDataHisPosition();
     void InitUserInfo();
+    void InitStarInfo();
 private:
     void SetTradesPosition(base_logic::DictionaryValue* dict);
     void SetTradesOrder(base_logic::DictionaryValue* dict);

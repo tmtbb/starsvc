@@ -24,6 +24,9 @@ private:
     void InitProducer(base::ConnAddr& addr);
 public:
     bool FectchBatchTempTask(std::list<base_logic::DictionaryValue*> *list);
+    bool SetBuyPosition(const std::string& index, const double price, const int64 current_time);
+    bool SetSellPosition(const std::string& index, const double price, const int64 current_time);
+    bool SetVolume(const std::string& index, const double price, const int64 current_time);
 private:
     kafka_consumer kafka_consumer_;
     kafka_producer kafka_producer_;
