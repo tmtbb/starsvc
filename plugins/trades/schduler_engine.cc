@@ -248,13 +248,15 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
         if (result = 0)
             trades_order.set_handle_type(COMPLETE_ORDER);
         else if (result = -2)
-            trades_order.set_handle_type(TIME_LESS_THAN);
-        else if (result = -3)
             trades_order.set_handle_type(MONEY_LESS_THAN);
+        else if (result = -3)
+            trades_order.set_handle_type(TIME_LESS_THAN);
         SendOrderResult(socket, session, reserved, trades_order.buy_uid(),
                 trades_order.sell_uid(), trades_order.handle_type(), trades_order.order_id());
         trades_kafka_->SetTradesOrder(trades_order);
-    }
+    }/*else {
+        trades_kafka_->SetTradesOrder(trades_order);
+    }*/
 }
 
 void TradesManager::SendConfirmOrder(const int socket, const int64 session,
