@@ -186,19 +186,19 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
             break;
         }
 
-	case R_GET_VERSION:{
-      OnGetVersion(srv, socket, packet);
-      break;
+        case R_GET_VERSION: {
+            OnGetVersion(srv, socket, packet);
+            break;
+        }
+        default:
+            break;
+        }
     }
-    default:
-      break;
-  }
-}
-catch(...)
-{
-  LOG_ERROR2("catch : operator[%d]", packet->operate_code);
-}
-  return true;
+    catch(...)
+    {
+        LOG_ERROR2("catch : operator[%d]", packet->operate_code);
+    }
+    return true;
 }
 
 bool Userslogic::OnUsersClose(struct server *srv, const int socket) {
@@ -437,99 +437,99 @@ bool Userslogic::OnRegisterAccount(struct server* srv, int socket,
 
 bool Userslogic::OnUserAccount(struct server* srv, int socket,
                                struct PacketHead *packet) {
-  users_logic::net_request::UserAccount user_account;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = user_account.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
+    users_logic::net_request::UserAccount user_account;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = user_account.set_http_packet(packet_control->body_);
+    if (!r) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
 
-  //数据库获取用户余额
-  double balance = 0.0;
-  star_logic::UserInfo userinfo;
-  users_logic::net_reply::Balance net_balance;
-  r = schduler_engine_->GetUserInfoSchduler(user_account.uid(), &userinfo);
-  if (!r){
-    LOG_DEBUG2("uid[%ld]",user_account.uid());
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return r;
-  }
-  
-  std::string pwd;
-  r = user_db_->AccountBalance(user_account.uid(), balance, pwd);
-  if (!r){
-    LOG_DEBUG2("uid[%ld]",user_account.uid());
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return r;
-  }
-  userinfo.set_balance(balance);
+    //数据库获取用户余额
+    double balance = 0.0;
+    star_logic::UserInfo userinfo;
+    users_logic::net_reply::Balance net_balance;
+    r = schduler_engine_->GetUserInfoSchduler(user_account.uid(), &userinfo);
+    if (!r) {
+        LOG_DEBUG2("uid[%ld]",user_account.uid());
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return r;
+    }
 
-  net_balance.set_nick_name(userinfo.nickname());
-  std::string t_sUserHeadUrl = userinfo.head_url();
-  net_balance.set_head_url(t_sUserHeadUrl);
-  net_balance.set_balance(userinfo.balance());
-  net_balance.set_total_amt(0.0);
-  net_balance.set_market_cap(0.0);
-  if (pwd.length() > 0)
-    net_balance.set_is_setpwd(0);
-  else
-    net_balance.set_is_setpwd(1);
+    std::string pwd;
+    r = user_db_->AccountBalance(user_account.uid(), balance, pwd);
+    if (!r) {
+        LOG_DEBUG2("uid[%ld]",user_account.uid());
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return r;
+    }
+    userinfo.set_balance(balance);
 
-  struct PacketControl net_packet_control;
-  MAKE_HEAD(net_packet_control, S_ACCOUNT_ASSET, USERS_TYPE, 0,
-            packet->session_id, 0);
-  net_packet_control.body_ = net_balance.get();
-  send_message(socket, &net_packet_control);
+    net_balance.set_nick_name(userinfo.nickname());
+    std::string t_sUserHeadUrl = userinfo.head_url();
+    net_balance.set_head_url(t_sUserHeadUrl);
+    net_balance.set_balance(userinfo.balance());
+    net_balance.set_total_amt(0.0);
+    net_balance.set_market_cap(0.0);
+    if (pwd.length() > 0)
+        net_balance.set_is_setpwd(0);
+    else
+        net_balance.set_is_setpwd(1);
 
-  return true;
+    struct PacketControl net_packet_control;
+    MAKE_HEAD(net_packet_control, S_ACCOUNT_ASSET, USERS_TYPE, 0,
+              packet->session_id, 0);
+    net_packet_control.body_ = net_balance.get();
+    send_message(socket, &net_packet_control);
+
+    return true;
 }
 
 bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
-                               struct PacketHead *packet) {
-  users_logic::net_request::UserRealInfo user_real_info;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = user_real_info.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-
-  //
-  //double balance = 0.0;
-  star_logic::UserInfo userinfo;
-  users_logic::net_reply::RealInfo net_real_info;
-  //获取用户信息
-  r = schduler_engine_->GetUserInfoSchduler(user_real_info.uid(), &userinfo);
-  if (!r) {
-    LOG_DEBUG2("uid[%ld]",user_real_info.uid());
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-
-  if (userinfo.id_card().length() < 10) //如果没有实名认证信息则获取
-  {
-    std::string r_name = "" , id_card = "";
-    r = user_db_->AccountRealNameInfo(user_real_info.uid(), r_name, id_card);
-    if (r_name != "")
-    {
-        userinfo.set_realname(r_name);
-        userinfo.set_id_card(id_card);
+                                struct PacketHead *packet) {
+    users_logic::net_request::UserRealInfo user_real_info;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
     }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = user_real_info.set_http_packet(packet_control->body_);
+    if (!r) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+
+    //
+    //double balance = 0.0;
+    star_logic::UserInfo userinfo;
+    users_logic::net_reply::RealInfo net_real_info;
+    //获取用户信息
+    r = schduler_engine_->GetUserInfoSchduler(user_real_info.uid(), &userinfo);
+    if (!r) {
+        LOG_DEBUG2("uid[%ld]",user_real_info.uid());
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+
+    if (userinfo.id_card().length() < 10) //如果没有实名认证信息则获取
+    {
+        std::string r_name = "" , id_card = "";
+        r = user_db_->AccountRealNameInfo(user_real_info.uid(), r_name, id_card);
+        if (r_name != "")
+        {
+            userinfo.set_realname(r_name);
+            userinfo.set_id_card(id_card);
+        }
         LOG_DEBUG2("realname[%s], id_card[%s], realname2[%s], id_card2[%s], ",
                    r_name.c_str(), id_card.c_str(), userinfo.realname().c_str(), userinfo.id_card().c_str());
     }
-  }
+    //}
 // net_real_info.set_balance(userinfo.balance());
     net_real_info.set_realname(userinfo.realname());
     net_real_info.set_id_card(userinfo.id_card());
@@ -581,82 +581,82 @@ bool Userslogic::OnLoginAccount(struct server* srv, int socket,
 
 bool Userslogic::OnUserCheckToken(struct server* srv, int socket,
                                   struct PacketHead *packet) {
-  users_logic::net_request::CheckToken check_token;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = check_token.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
+    users_logic::net_request::CheckToken check_token;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = check_token.set_http_packet(packet_control->body_);
+    if (!r) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
 
-  star_logic::UserInfo userinfo;
-  std::string ip;
-  int port;
-  logic::SomeUtils::GetIPAddress(socket, ip, port);
-  userinfo.set_token(check_token.token());
-  //check token
-  r = logic::SomeUtils::VerifyToken(check_token.uid(), check_token.token());
-  if (!r) {
-    LOG_DEBUG2("uid[%ld]",check_token.uid());
-    send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
-    return false;
-  }
+    star_logic::UserInfo userinfo;
+    std::string ip;
+    int port;
+    logic::SomeUtils::GetIPAddress(socket, ip, port);
+    userinfo.set_token(check_token.token());
+    //check token
+    r = logic::SomeUtils::VerifyToken(check_token.uid(), check_token.token());
+    if (!r) {
+        LOG_DEBUG2("uid[%ld]",check_token.uid());
+        send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+        return false;
+    }
 
-  //获取用户信息
-  r = user_db_->GetUserInfo(check_token.uid(), ip, userinfo);
-  if(!r){
-    LOG_DEBUG2("uid[%ld],ip[%s]",check_token.uid(), ip.c_str());
-    send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
-    return false;
-  }
-  
-  //发送用信息
-  SendUserInfo(socket, packet->session_id, S_ACCOUNT_CHECK, userinfo);
-  return true;
+    //获取用户信息
+    r = user_db_->GetUserInfo(check_token.uid(), ip, userinfo);
+    if(!r) {
+        LOG_DEBUG2("uid[%ld],ip[%s]",check_token.uid(), ip.c_str());
+        send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+        return false;
+    }
+
+    //发送用信息
+    SendUserInfo(socket, packet->session_id, S_ACCOUNT_CHECK, userinfo);
+    return true;
 }
 bool Userslogic::OnResetPasswd(struct server* srv, int socket,
-                                      struct PacketHead *packet) {
-  users_logic::net_request::RegisterAccount register_account;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+                               struct PacketHead *packet) {
+    users_logic::net_request::RegisterAccount register_account;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
 
-  std::string phonenum;
-  std::string passwd;
-  bool r1 = packet_control->body_->GetString(L"pwd", &passwd);
-  bool r2 = packet_control->body_->GetString(L"phone", &phonenum);
+    std::string phonenum;
+    std::string passwd;
+    bool r1 = packet_control->body_->GetString(L"pwd", &passwd);
+    bool r2 = packet_control->body_->GetString(L"phone", &phonenum);
 
-  bool r = (r1 && r2);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
+    bool r = (r1 && r2);
+    if (!r) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
 
-  int64 uid = 1;
-  int32 result = 0;
-  r = user_db_->ResetAccount(phonenum,passwd);
-  if (!r) {
-    LOG_DEBUG2("phonenum[%s],passwd[%s]",phonenum.c_str(),passwd.c_str());
-    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
-    return false;
-  }
+    int64 uid = 1;
+    int32 result = 0;
+    r = user_db_->ResetAccount(phonenum,passwd);
+    if (!r) {
+        LOG_DEBUG2("phonenum[%s],passwd[%s]",phonenum.c_str(),passwd.c_str());
+        send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
+        return false;
+    }
 
-  struct PacketControl packet_reply;
-  MAKE_HEAD(packet_reply, S_USRES_RESET_PASSWD, USERS_TYPE, 0,packet->session_id, 0);
-  base_logic::DictionaryValue ret;
-  base_logic::FundamentalValue* m_result = new base_logic::FundamentalValue(1);
-  ret.Set(L"result",m_result);
-  packet_reply.body_ = &ret;
-  send_message(socket,&packet_reply);                   
-  return r;
+    struct PacketControl packet_reply;
+    MAKE_HEAD(packet_reply, S_USRES_RESET_PASSWD, USERS_TYPE, 0,packet->session_id, 0);
+    base_logic::DictionaryValue ret;
+    base_logic::FundamentalValue* m_result = new base_logic::FundamentalValue(1);
+    ret.Set(L"result",m_result);
+    packet_reply.body_ = &ret;
+    send_message(socket,&packet_reply);
+    return r;
 }
 void executeCMD(const char *cmd, char *result) {
     char buf_ps[1024];
@@ -681,68 +681,68 @@ void executeCMD(const char *cmd, char *result) {
 }
 bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
                                       struct PacketHead *packet) {
-  users_logic::net_request::RegisterVerfiycode register_vercode;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = register_vercode.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  
-  std::string phone = register_vercode.phone().c_str();
-  
-/*  
-  ////检测号码是否已经注册
-  if(check_account_flag == CHECK_ACCOUNT_Y){
-	  r =user_db_->CheckAccountExist(phone);
-	  if (!r) {
-	    LOG_DEBUG2("packet_length %d",packet->packet_length);
-	    send_error(socket, ERROR_TYPE, NO_USER_EXIST_REGISTER, packet->session_id);
-	    return true;
-	  }
-  }
-*/
-  
-  int64 rand_code = 100000 + rand() % (999999 - 100000 + 1);
-  std::string shell_sms = SHELL_SMS;
-  std::stringstream ss;
-  ss << SHELL_SMS << " " << phone << " "
-      <<rand_code<<" "
-      << 0;
+    users_logic::net_request::RegisterVerfiycode register_vercode;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = register_vercode.set_http_packet(packet_control->body_);
+    if (!r) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
 
-  std::string sysc = ss.str();
-  //system(sysc.c_str());
-  char m_ret[1024] = {0};
-  executeCMD(sysc.c_str(),m_ret);
-  LOG_MSG2("send shell : %s,result = %s",sysc.c_str(),m_ret);
-  if(strstr(m_ret,"\"success\":false")!=NULL){
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  
-  //发送信息
-  int64 code_time =  time(NULL);
-  std::string v_token = SMS_KEY + base::BasicUtil::StringUtil::Int64ToString(code_time) +
-      base::BasicUtil::StringUtil::Int64ToString(rand_code) + phone;
-  base::MD5Sum md5(v_token.c_str());
-  std::string token = md5.GetHash();
-  LOG_MSG2("====v_token = %s",v_token.c_str());
-  users_logic::net_reply::RegisterVerfiycode register_verfiy;
-  register_verfiy.set_code_time(code_time);
-  register_verfiy.set_token(token);
-  int64 result_ = 1;
-  register_verfiy.set_result(result_);
-  struct PacketControl net_packet_control;
-  MAKE_HEAD(net_packet_control,S_REGISTER_VERFIY_CODE, 1, 0, packet->session_id, 0);
-  net_packet_control.body_ = register_verfiy.get();
-  send_message(socket, &net_packet_control);
+    std::string phone = register_vercode.phone().c_str();
 
-  return true;
+    /*
+      ////检测号码是否已经注册
+      if(check_account_flag == CHECK_ACCOUNT_Y){
+    	  r =user_db_->CheckAccountExist(phone);
+    	  if (!r) {
+    	    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    	    send_error(socket, ERROR_TYPE, NO_USER_EXIST_REGISTER, packet->session_id);
+    	    return true;
+    	  }
+      }
+    */
+
+    int64 rand_code = 100000 + rand() % (999999 - 100000 + 1);
+    std::string shell_sms = SHELL_SMS;
+    std::stringstream ss;
+    ss << SHELL_SMS << " " << phone << " "
+       <<rand_code<<" "
+       << 0;
+
+    std::string sysc = ss.str();
+    //system(sysc.c_str());
+    char m_ret[1024] = {0};
+    executeCMD(sysc.c_str(),m_ret);
+    LOG_MSG2("send shell : %s,result = %s",sysc.c_str(),m_ret);
+    if(strstr(m_ret,"\"success\":false")!=NULL) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+
+    //发送信息
+    int64 code_time =  time(NULL);
+    std::string v_token = SMS_KEY + base::BasicUtil::StringUtil::Int64ToString(code_time) +
+                          base::BasicUtil::StringUtil::Int64ToString(rand_code) + phone;
+    base::MD5Sum md5(v_token.c_str());
+    std::string token = md5.GetHash();
+    LOG_MSG2("====v_token = %s",v_token.c_str());
+    users_logic::net_reply::RegisterVerfiycode register_verfiy;
+    register_verfiy.set_code_time(code_time);
+    register_verfiy.set_token(token);
+    int64 result_ = 1;
+    register_verfiy.set_result(result_);
+    struct PacketControl net_packet_control;
+    MAKE_HEAD(net_packet_control,S_REGISTER_VERFIY_CODE, 1, 0, packet->session_id, 0);
+    net_packet_control.body_ = register_verfiy.get();
+    send_message(socket, &net_packet_control);
+
+    return true;
 }
 
 bool Userslogic::SendUserInfo(const int socket, const int64 session,
@@ -774,87 +774,87 @@ bool Userslogic::SendUserInfo(const int socket, const int64 session,
 }
 
 bool Userslogic::OnResetPayPassWD(struct server* srv, int socket,
-                                struct PacketHead *packet) {
-  users_logic::net_request::ModifyPwd modifypwd;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  } 
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = modifypwd.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  } 
-  std::string phone = modifypwd.phone();
-  std::string v_token = SMS_KEY + base::BasicUtil::StringUtil::Int64ToString(modifypwd.timestamp()) +
-      modifypwd.vcode().c_str() + phone;
-  base::MD5Sum md5(v_token.c_str());
-  std::string token = md5.GetHash();
-  
-  users_logic::net_reply::ModifyPwd net_modifypwd;
-  int status = 1; //0 sucess ,1 failed
-  LOG_DEBUG2("v_token[%s]token[%s]vtoken[%s]", v_token.c_str(), token.c_str(),modifypwd.vtoken().c_str());
-  LOG_DEBUG2("type [%d]", modifypwd.type());
-  if (!strcmp(token.c_str(), modifypwd.vtoken().c_str())
-  || modifypwd.type() == 0) //验证token type 0-设置密码1-重置密码
-  {  
-    LOG_DEBUG2("phone[%s]token[%s]vtoken[%s]___________________", modifypwd.phone().c_str(), token.c_str(),modifypwd.vtoken().c_str());
-    LOG_DEBUG2("pwd[%s]___________________", modifypwd.pwd().c_str());
-    //std::string phone = modifypwd.phone() ;
-    std::string pwd = modifypwd.pwd() ;
-    r = user_db_->ModifyPwd(modifypwd.uid(), pwd);
-    LOG_DEBUG2("pwd[%s]",pwd.c_str());
-    if (r) status = 0;
-  } 
-  net_modifypwd.set_status(status);
-  struct PacketControl net_packet_control;
-  MAKE_HEAD(net_packet_control, S_RESET_PAY_PASS, USERS_TYPE, 0,
-            packet->session_id, 0);
-  net_packet_control.body_ = net_modifypwd.get();
-  send_message(socket, &net_packet_control);
+                                  struct PacketHead *packet) {
+    users_logic::net_request::ModifyPwd modifypwd;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = modifypwd.set_http_packet(packet_control->body_);
+    if (!r) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    std::string phone = modifypwd.phone();
+    std::string v_token = SMS_KEY + base::BasicUtil::StringUtil::Int64ToString(modifypwd.timestamp()) +
+                          modifypwd.vcode().c_str() + phone;
+    base::MD5Sum md5(v_token.c_str());
+    std::string token = md5.GetHash();
 
-  return true;
+    users_logic::net_reply::ModifyPwd net_modifypwd;
+    int status = 1; //0 sucess ,1 failed
+    LOG_DEBUG2("v_token[%s]token[%s]vtoken[%s]", v_token.c_str(), token.c_str(),modifypwd.vtoken().c_str());
+    LOG_DEBUG2("type [%d]", modifypwd.type());
+    if (!strcmp(token.c_str(), modifypwd.vtoken().c_str())
+            || modifypwd.type() == 0) //验证token type 0-设置密码1-重置密码
+    {
+        LOG_DEBUG2("phone[%s]token[%s]vtoken[%s]___________________", modifypwd.phone().c_str(), token.c_str(),modifypwd.vtoken().c_str());
+        LOG_DEBUG2("pwd[%s]___________________", modifypwd.pwd().c_str());
+        //std::string phone = modifypwd.phone() ;
+        std::string pwd = modifypwd.pwd() ;
+        r = user_db_->ModifyPwd(modifypwd.uid(), pwd);
+        LOG_DEBUG2("pwd[%s]",pwd.c_str());
+        if (r) status = 0;
+    }
+    net_modifypwd.set_status(status);
+    struct PacketControl net_packet_control;
+    MAKE_HEAD(net_packet_control, S_RESET_PAY_PASS, USERS_TYPE, 0,
+              packet->session_id, 0);
+    net_packet_control.body_ = net_modifypwd.get();
+    send_message(socket, &net_packet_control);
+
+    return true;
 }
 
 bool Userslogic::OnCertification(struct server* srv, int socket,
-                            struct PacketHead *packet) {
+                                 struct PacketHead *packet) {
 
-  users_logic::net_request::Certification cerfic;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_= (struct PacketControl*) (packet);
-  bool r = cerfic.set_http_packet(packet_->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
+    users_logic::net_request::Certification cerfic;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_= (struct PacketControl*) (packet);
+    bool r = cerfic.set_http_packet(packet_->body_);
+    if (!r) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
 
-  std::string idcard = cerfic.id_card();//"411325199005217439";
-  std::string name = cerfic.realname();//"唐伟";
-  
-  //std::string idcard = "411325199005217439";
-  //std::string name = "唐伟";
-  //阿里云接口
-  std::string strUrl = "http://idcardreturnphoto.haoservice.com/idcard/VerifyIdcardReturnPhoto";
-  ////阿里云接口code
-  //std::string strHeader = "Authorization:APPCODE 900036feeee64ae089177dd06b25faa9";
-  std::string strHeader = "Authorization:APPCODE e361298186714a6faea52316ff1d5c32";
-  std::string strResult;
-  base_logic::DictionaryValue dic;
-  dic.SetString(L"cardNo", idcard);
-  dic.SetString(L"realName", name);
+    std::string idcard = cerfic.id_card();//"411325199005217439";
+    std::string name = cerfic.realname();//"唐伟";
+
+    //std::string idcard = "411325199005217439";
+    //std::string name = "唐伟";
+    //阿里云接口
+    std::string strUrl = "http://idcardreturnphoto.haoservice.com/idcard/VerifyIdcardReturnPhoto";
+    ////阿里云接口code
+    //std::string strHeader = "Authorization:APPCODE 900036feeee64ae089177dd06b25faa9";
+    std::string strHeader = "Authorization:APPCODE e361298186714a6faea52316ff1d5c32";
+    std::string strResult;
+    base_logic::DictionaryValue dic;
+    dic.SetString(L"cardNo", idcard);
+    dic.SetString(L"realName", name);
 //  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
-  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, 1);
-  LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
+    base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, 1);
+    LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
 
-  users_logic::net_reply::TResult r_ret;;
-  r_ret.set_result(1);
-  //r_ret.set_result(0);
+    users_logic::net_reply::TResult r_ret;;
+    r_ret.set_result(1);
+    //r_ret.set_result(0);
 //_________________________________________________________
     base_logic::ValueSerializer* serializer = base_logic::ValueSerializer::Create(
                 base_logic::IMPL_JSON, &strResult, false);
@@ -897,155 +897,155 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
 //_____________________________________________________________________________________________
 
 //
-  if(!r){
-    //code 3 curl_easy_perform failed: HTTP response code said error
-    //网站报错, 特殊处理
-    r_ret.set_result(0);
-    r = user_db_->Certification(cerfic.uid(), cerfic.id_card(), cerfic.realname());
-  }
+    if(!r) {
+        //code 3 curl_easy_perform failed: HTTP response code said error
+        //网站报错, 特殊处理
+        r_ret.set_result(0);
+        r = user_db_->Certification(cerfic.uid(), cerfic.id_card(), cerfic.realname());
+    }
 
-  struct PacketControl packet_control;
-  MAKE_HEAD(packet_control, S_CERTIFICATION, USERS_TYPE, 0, packet->session_id, 0);
-  packet_control.body_ = r_ret.get();
-  send_message(socket, &packet_control);
-/*
-*/
-  return true;
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_CERTIFICATION, USERS_TYPE, 0, packet->session_id, 0);
+    packet_control.body_ = r_ret.get();
+    send_message(socket, &packet_control);
+    /*
+    */
+    return true;
 }
 
 bool Userslogic::OnCheckAccountExist(struct server* srv, int socket,
-                                      struct PacketHead *packet) {
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  users_logic::net_request::CheckAccountExistReq check_acount_exist_req;
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = check_acount_exist_req.set_http_packet(packet_control->body_);
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  
-  std::string phone = check_acount_exist_req.phone().c_str();
-  int32 existFlag = 0;
-  //检测号码是否已经注册
-  r =user_db_->CheckAccountExist(phone, existFlag);
-  if(!r){
-    LOG_DEBUG2("phone[%s]",phone.c_str());
-    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
-    return false;
-  }
-  
-  //发送信息
-  struct PacketControl packet_control_ack; 
-  MAKE_HEAD(packet_control_ack,S_CHECK_ACCOUNT_EXIST, 1, 0, packet->session_id, 0);
-  base_logic::DictionaryValue dic; 
-  dic.SetInteger(L"result", existFlag); /*0表示不存在未注册*/
-  packet_control_ack.body_ = &dic; 
-  send_message(socket, &packet_control_ack); 
+                                     struct PacketHead *packet) {
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    users_logic::net_request::CheckAccountExistReq check_acount_exist_req;
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = check_acount_exist_req.set_http_packet(packet_control->body_);
+    if (!r) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
 
-  return true;
+    std::string phone = check_acount_exist_req.phone().c_str();
+    int32 existFlag = 0;
+    //检测号码是否已经注册
+    r =user_db_->CheckAccountExist(phone, existFlag);
+    if(!r) {
+        LOG_DEBUG2("phone[%s]",phone.c_str());
+        send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+        return false;
+    }
+
+    //发送信息
+    struct PacketControl packet_control_ack;
+    MAKE_HEAD(packet_control_ack,S_CHECK_ACCOUNT_EXIST, 1, 0, packet->session_id, 0);
+    base_logic::DictionaryValue dic;
+    dic.SetInteger(L"result", existFlag); /*0表示不存在未注册*/
+    packet_control_ack.body_ = &dic;
+    send_message(socket, &packet_control_ack);
+
+    return true;
 }
 
 bool Userslogic::OnResetNickName(struct server* srv, int socket,
-                                      struct PacketHead *packet) {
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+                                 struct PacketHead *packet) {
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
 
-  bool r1,r2,r3;
-  int64 uid;
-  std::string token;
-  std::string nickname;
-  r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
-  r2 = packet_control->body_->GetString(L"token", &token);
-  r3 = packet_control->body_->GetString(L"nickname", &nickname);
-  
-  bool r = (r1 && r2 && r3);
-  if (!r1 || !r2 || !r3) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  
-  //check token
-  r = logic::SomeUtils::VerifyToken(uid, token);
-  if (!r) {
-    LOG_DEBUG2("uid[%ld], token[%s]",uid, token.c_str());
-    send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
-    return false;
-  }
+    bool r1,r2,r3;
+    int64 uid;
+    std::string token;
+    std::string nickname;
+    r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
+    r2 = packet_control->body_->GetString(L"token", &token);
+    r3 = packet_control->body_->GetString(L"nickname", &nickname);
 
-  int32 flag = 0;
-  r = user_db_->ModifyNickName(uid,nickname,flag);
-  if (!r) {
-    LOG_DEBUG2("uid[%ld], nickname[%s]",uid, nickname.c_str());
-    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
-    return false;
-  }  
+    bool r = (r1 && r2 && r3);
+    if (!r1 || !r2 || !r3) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
 
-  //发送信息
-  struct PacketControl packet_control_ack; 
-  MAKE_HEAD(packet_control_ack,S_USRES_RESET_NICK_NAME, 1, 0, packet->session_id, 0);
-  base_logic::DictionaryValue dic; 
-  dic.SetInteger(L"result", 0);
-  if (r) {
-    //获取用户信息
-	  star_logic::UserInfo userinfo;
-	  r = user_db_->GetUserInfo(uid, "", userinfo);
-	  if(!r){
-	    LOG_DEBUG2("GetUserInfo error, uid[%ld]",uid);
-	  }
-	  else{
-	    userinfo.set_socket_fd(socket);
-      userinfo.set_is_effective(true);
-      schduler_engine_->SetUserInfoSchduler(userinfo.uid(), &userinfo);
-      dic.SetInteger(L"result", 1);
-	  }
-  }
-  packet_control_ack.body_ = &dic; 
-  send_message(socket, &packet_control_ack); 
+    //check token
+    r = logic::SomeUtils::VerifyToken(uid, token);
+    if (!r) {
+        LOG_DEBUG2("uid[%ld], token[%s]",uid, token.c_str());
+        send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+        return false;
+    }
 
-  return true;
+    int32 flag = 0;
+    r = user_db_->ModifyNickName(uid,nickname,flag);
+    if (!r) {
+        LOG_DEBUG2("uid[%ld], nickname[%s]",uid, nickname.c_str());
+        send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+        return false;
+    }
+
+    //发送信息
+    struct PacketControl packet_control_ack;
+    MAKE_HEAD(packet_control_ack,S_USRES_RESET_NICK_NAME, 1, 0, packet->session_id, 0);
+    base_logic::DictionaryValue dic;
+    dic.SetInteger(L"result", 0);
+    if (r) {
+        //获取用户信息
+        star_logic::UserInfo userinfo;
+        r = user_db_->GetUserInfo(uid, "", userinfo);
+        if(!r) {
+            LOG_DEBUG2("GetUserInfo error, uid[%ld]",uid);
+        }
+        else {
+            userinfo.set_socket_fd(socket);
+            userinfo.set_is_effective(true);
+            schduler_engine_->SetUserInfoSchduler(userinfo.uid(), &userinfo);
+            dic.SetInteger(L"result", 1);
+        }
+    }
+    packet_control_ack.body_ = &dic;
+    send_message(socket, &packet_control_ack);
+
+    return true;
 }
 bool Userslogic::OnGetVersion(struct server* srv, int socket,
-                                struct PacketHead *packet) {
-  users_logic::net_request::TGetVersion get_version;
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-  struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = get_version.set_http_packet(packet_control->body_);
+                              struct PacketHead *packet) {
+    users_logic::net_request::TGetVersion get_version;
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+    bool r = get_version.set_http_packet(packet_control->body_);
 
-  if (!r) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
-    return false;
-  }
-/*
-  std::string ip;
-  int port;
-  logic::SomeUtils::GetIPAddress(socket, ip, port);
+    if (!r) {
+        LOG_DEBUG2("packet_length %d",packet->packet_length);
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    /*
+      std::string ip;
+      int port;
+      logic::SomeUtils::GetIPAddress(socket, ip, port);
 
-  swp_logic::UserInfo userinfo;
-*/
-  users_logic::net_reply::TGetVersion net_get_version;
-  r = user_db_->GetVersion(get_version.type(), net_get_version);
-  if (!r) {
-    send_error(socket, ERROR_TYPE, NO_VERSION_INFO, packet->session_id);
-    return false;
-  }
+      swp_logic::UserInfo userinfo;
+    */
+    users_logic::net_reply::TGetVersion net_get_version;
+    r = user_db_->GetVersion(get_version.type(), net_get_version);
+    if (!r) {
+        send_error(socket, ERROR_TYPE, NO_VERSION_INFO, packet->session_id);
+        return false;
+    }
 
-  struct PacketControl net_packet_control;
-  MAKE_HEAD(net_packet_control, S_GET_VERSION, 1, 0, packet->session_id, 0);
-  net_packet_control.body_ = net_get_version.get();
-  send_message(socket, &net_packet_control);
+    struct PacketControl net_packet_control;
+    MAKE_HEAD(net_packet_control, S_GET_VERSION, 1, 0, packet->session_id, 0);
+    net_packet_control.body_ = net_get_version.get();
+    send_message(socket, &net_packet_control);
 
-  return true;
+    return true;
 }
 }  // namespace trades_logic

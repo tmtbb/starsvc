@@ -56,7 +56,9 @@ enum HANDLETYPE {
 
 //订单类型
 enum ORDERTYPE {
-    NO_ORDER = -2,
+    NO_ORDER = -4,
+    MONEY_LESS_THAN = -3,
+    TIME_LESS_THAN = -2,
     CANCEL_ORDER = -1,
     MATCHES_ORDER = 0,//匹配中
     CONFIRM_ORDER = 1,//确认
