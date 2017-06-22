@@ -32,8 +32,18 @@ namespace pay_logic {
 
 #define R_CERTIFICATION PAY_TYPE * 1000 + 45
 #define S_CERTIFICATION PAY_TYPE * 1000 + 46
-//add 支付密码验证
+
 #define R_CHECK_PAY_PWD PAY_TYPE * 1000 + 11
 #define S_CHECK_PAY_PWD PAY_TYPE * 1000 + 12
+
+//
+#define R_ALIPAY_PAY PAY_TYPE * 1000 + 49
+#define S_ALIPAY_PAY PAY_TYPE * 1000 + 50
+
+#define R_ALIPAY_CLT PAY_TYPE * 1000 + 51 
+#define S_ALIPAY_CLT PAY_TYPE * 1000 + 52
+
+#define R_ALIPAY_SVC PAY_TYPE * 1000 + 53
+#define S_ALIPAY_SVC PAY_TYPE * 1000 + 54
 }
 #endif
