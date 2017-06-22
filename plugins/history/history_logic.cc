@@ -99,34 +99,34 @@ bool Historylogic::OnHistoryMessage(struct server *srv, const int socket,
   }
 
   switch (packet->operate_code) {
-    case R_HISTORY_TRADES: {
+   /* case R_HISTORY_TRADES: {
       OnHistoryTrades(srv, socket, packet);
       break;
-    }
+    }*/
     case R_HISTORY_RECHARGE: {
       OnHistoryRecharge(srv, socket, packet);
       break;
     }
 
-    case R_HISOTRY_WITHDRAWALS: {
+    /*case R_HISOTRY_WITHDRAWALS: {
       OnHistoryWithdrawals(srv, socket, packet);
       break;
-    }
+    }*/
 
-    case R_HANDLE_TRADES_TRADES: {
+   /* case R_HANDLE_TRADES_TRADES: {
       OnHandleTradesPosition(srv, socket, packet);
       break;
-    }
+    }*/
 
-    case R_HISTORY_TRADES_HANDLE: {
+   /* case R_HISTORY_TRADES_HANDLE: {
       OnHisotryHandlePosition(srv, socket, packet);
       break;
-    }
+    }*/
 
-    case R_HANDLE_WITHDRAWALS: {
+    /*case R_HANDLE_WITHDRAWALS: {
       OnHandleWithdrawals(srv, socket, packet);
       break;
-    }
+    }*/
     case R_HISTORY_OWNSTAR: {
       OnHistoryOwnStar(srv, socket, packet);
       break;

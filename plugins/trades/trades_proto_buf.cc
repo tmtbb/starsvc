@@ -151,6 +151,7 @@ bool OpenPosition::set_http_packet(base_logic::DictionaryValue* value) {
     int64 big_buy_sell = 0;
     int32 buy_sell = 0;
     int64 amount = 0;
+    int64 big_price = 0;
     double price = 0.0;
     std::string symbol;
     std::string wid;
@@ -185,10 +186,14 @@ bool OpenPosition::set_http_packet(base_logic::DictionaryValue* value) {
         return false;
 
     r = value->GetReal(L"price", &price);
-    if (r)
-        set_price(price);
-    else
-        return false;
+    if (!r){
+        r = value->GetBigInteger(L"price",&big_price);
+        if(!r)
+           return false;
+        else
+            price = big_price;
+    }
+    set_price(price);
 
     r = value->GetString(L"symbol", &symbol);
     if (r)

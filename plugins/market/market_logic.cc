@@ -105,7 +105,7 @@ bool Marketlogic::OnInfomationMessage(struct server *srv, const int socket,
 	}
 	//获取明星成就
 	case R_MARKETSTARACHIV_GET:{
-	  getstarachive(srv,socket,packet);
+	  //getstarachive(srv,socket,packet);
 	  break;
 	}
 	case R_SEARCHSTAR_INFO:{
@@ -162,7 +162,7 @@ bool Marketlogic::getmarketstartransfer(struct server* srv,int socket ,struct Pa
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->getmarketstartransfer(starcode,startnum,endnum,ret_list)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_GET_MARKET_STAR_TRANSFER, packet->session_id);
 		return false;
 	  }
 	  
@@ -194,7 +194,7 @@ bool Marketlogic::getmarketstarseek(struct server* srv,int socket ,struct Packet
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->getmarketstarseek(starcode,startnum,endnum,ret_list)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_GET_MARKET_STAR_SEEK, packet->session_id);
 		return false;
 	  }
 	  
@@ -279,7 +279,7 @@ bool Marketlogic::addoptionstar(struct server* srv,int socket ,struct PacketHead
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->addoptionstar(phone,starcode)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_ADD_OPTION_STAR, packet->session_id);
 		return false;
 	  }
 	  
@@ -312,7 +312,7 @@ bool Marketlogic::getoptionstarlist(struct server* srv,int socket ,struct Packet
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->getoptionstarlist(phone,startnum,endnum,ret_list)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_GET_OPTION_STAR_LIST, packet->session_id);
 		return false;
 	  }
 	  
@@ -340,7 +340,7 @@ bool Marketlogic::getstarachive(struct server* srv,int socket ,struct PacketHead
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->getstarachive(code,ret_list)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_GET_STAR_ACHIVE, packet->session_id);
 		return false;
 	  }
 	  
@@ -368,7 +368,7 @@ bool Marketlogic::getstarexperience(struct server* srv,int socket ,struct Packet
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->getstarexperience(code,ret_list)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_GET_STAR_EXPERIENCE, packet->session_id);
 		return false;
 	  }
 	  
@@ -397,7 +397,7 @@ bool Marketlogic::searchsatr(struct server* srv,int socket ,struct PacketHead* p
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->searchstarlist(code,ret_list)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_SEARCH_STAR_LIST, packet->session_id);
 		return false;
 	  }
 	  
@@ -427,7 +427,7 @@ bool Marketlogic::searchsatr1(struct server* srv,int socket ,struct PacketHead* 
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->searchstarlist(code,ret_list)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_SEARCH_STAR_LIST, packet->session_id);
 		return false;
 	  }
 	  
@@ -521,7 +521,7 @@ bool Marketlogic::getmarketstarlist(struct server* srv,int socket ,struct Packet
 	  }
 	  DicValue ret_list;
 	  if(!sqldb->getmarketstarlist(type,ret_list,startnum,endnum,sorttype)){
-		send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+		send_error(socket, ERROR_TYPE, NO_GET_MARKET_STAR_LIST, packet->session_id);
 		return false;
 	  }
 	  
@@ -544,7 +544,7 @@ bool Marketlogic::getmarkettypes(struct server* srv,int socket ,struct PacketHea
 
   DicValue ret_list;
   if(!sqldb->getmarkettypes(ret_list)){
-	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+	send_error(socket, ERROR_TYPE, NO_GET_MARKET_TYPES, packet->session_id);
 	return false;
   }
   

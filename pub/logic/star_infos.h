@@ -12,6 +12,7 @@
 #include "logic/base_values.h"
 #include "basic/radom_in.h"
 
+#define HEAD_URL "http://tva2.sinaimg.cn/crop.0.0.180.180.180/71bf6552jw1e8qgp5bmzyj2050050aa8.jpg"
 enum INFOTYPE {
     NO_TYPE = 100,
     TRADES_POSITION_TYPE,
@@ -63,6 +64,113 @@ enum ORDERTYPE {
 };
 
 namespace star_logic {
+
+class Auction {
+ public:
+    Auction();
+    Auction(const Auction& auction);
+
+    Auction& operator =(const Auction& auction);
+    ~Auction() {
+        if (data_ != NULL) {
+            data_->Release();
+        }
+    }
+
+    void set_aid(const int64 aid) {
+        data_->aid_ = aid;
+    }
+
+    void set_buy_count(const int32 buy_count) {
+        data_->buy_count_ = buy_count;
+    }
+
+    void set_sell_count(const int32 sell_count) {
+        data_->sell_count_ = sell_count;
+    }
+
+    void set_sell_time(const int64 sell_time) {
+        data_->sell_time_ = sell_time;
+    }
+
+    void set_buy_time(const int64 buy_time) {
+        data_->buy_time_ = buy_time;
+    }
+
+    void set_start_time(const int64 start_time) {
+        data_->start_time_ = start_time;
+    }
+
+    void set_end_time(const int64 end_time) {
+        data_->end_time_ = end_time;
+    }
+
+    void set_symbol(const std::string& symbol) {
+        data_->symbol_ = symbol;
+    }
+
+    int64 aid() const {
+        return data_->aid_;
+    }
+
+    int32 buy_count() const {
+        return data_->buy_count_;
+    }
+
+    int32 sell_count() const {
+        return data_->sell_count_;
+    }
+
+    int64 sell_time() const {
+        return data_->sell_time_;
+    }
+
+    int64 buy_time() const {
+        return data_->buy_time_;
+    }
+
+    std::string& symbol() const {
+        return data_->symbol_;
+    }
+
+
+    class Data {
+    public:
+        Data()
+            : refcount_(1),
+              aid_(0),
+              buy_count_(0),
+              sell_count_(0),
+              buy_time_(0),
+              sell_time_(0),
+              start_time_(0),
+              end_time_(0){
+        }
+
+
+    public:
+        int64 aid_;
+        int32 buy_count_;
+        int32 sell_count_;
+        int64 buy_time_;
+        int64 sell_time_;
+        int64 start_time_;
+        int64 end_time_;
+        std::string symbol_;
+        void AddRef() {
+            __sync_fetch_and_add(&refcount_, 1);
+        }
+        void Release() {
+            __sync_fetch_and_sub(&refcount_, 1);
+            if (!refcount_)
+                delete this;
+        }
+    private:
+        int refcount_;
+    };
+    Data* data_;
+};
+
 
 class Withdrawals {
 public:
@@ -1375,6 +1483,13 @@ public:
     const std::string& introduction() const {
         return data_->introduction_;
     }
+    const std::string& quanpin() const {
+        return data_->quanpin_;
+    }
+
+    const std::string& jianpin() const {
+        return data_->jianpin_;
+    }
 //----
     void set_weibo_index_id(const std::string& weibo_index_id) {
         data_->weibo_index_id_ = weibo_index_id;
@@ -1424,6 +1539,15 @@ public:
     void set_introduction(const std::string& introduction) {
         data_->introduction_ = introduction;
     }
+
+    void set_jianpin(const std::string& jianpin) {
+        data_->jianpin_ = jianpin;
+    }
+
+    void set_quanpin(const std::string& quanpin) {
+        data_->quanpin_ = quanpin;
+    }
+
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
     class Data {
@@ -1453,6 +1577,8 @@ public:
         std::string nation_;//民族
         std::string nationality_;//国籍
         std::string introduction_;//简介
+        std::string jianpin_;
+        std::string quanpin_;
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);
         }
@@ -1498,6 +1624,9 @@ public:
     const std::string& faccid() const {
         return data_->faccid_;
     }
+    const std::string& headurl() const {
+        return data_->head_url_;
+    }
 //----
     void set_uid(const int64 value) {
         data_->uid_ = value;
@@ -1518,6 +1647,9 @@ public:
     void set_faccid(const std::string& value) {
         data_->faccid_ = value;
     }
+    void set_headurl(const std::string& value) {
+        data_->head_url_ = value;
+    }
 
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
@@ -1537,6 +1669,7 @@ public:
         std::string starcode_; //明星代码
         std::string starname_;
         std::string faccid_;
+        std::string head_url_;
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);
         }

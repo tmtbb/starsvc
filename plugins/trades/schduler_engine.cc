@@ -47,6 +47,10 @@ void TradesManager::InitData() {
     CreateTimeTask();
 }
 
+void TradesManager::InitManagerSchduler(manager_schduler::SchdulerEngine* schduler_engine) {
+   schduler_engine_ = schduler_engine;
+}
+
 void TradesManager::TimeStarEvent() {
     base_logic::RLockGd lk(lock_);
     time_t current_time = time(NULL);
@@ -87,12 +91,21 @@ void TradesManager::CancelOrder(const int socket, const int64 session, const int
         base_logic::WLockGd lk(lock_);
         r = base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
                 (trades_cache_->all_trades_order_,order_id,trades_order);
-        if (!r||trades_order.handle_type() != MATCHES_ORDER)//不存在，且已经不为匹配状态
+        if (!r){
+            send_error(socket,ERROR_TYPE, NO_HAVE_ORDER,session);
             return;
+        }
+        if (trades_order.handle_type() != MATCHES_ORDER &&
+                trades_order.handle_type() != CONFIRM_ORDER){//不存在，且已经不为匹配状态
+            send_error(socket, ERROR_TYPE, NO_CANCEL_ERROR,session);
+            return;
+        }
         //验证是否双方发起
         if(trades_order.buy_uid() != uid && trades_order.sell_uid() != uid 
-            && trades_order.order_id() != order_id)
+            && trades_order.order_id() != order_id){
+            send_error(socket, ERROR_TYPE, NO_LOCK_USER_ORDER_VALID, session);
             return;
+        }
         trades_order.set_handle_type(CANCEL_ORDER);
     }
     
@@ -117,6 +130,9 @@ void TradesManager::TradesSymbolInfo(const int socket, const int64 session, cons
            (trades_cache_->trades_task_map_,symbol, time_task);
     }
 
+    if(!r) {
+        send_error(socket, ERROR_TYPE, NO_HAVE_TRADES_STAR, session);
+    }
     trades_logic::net_reply::TradesSymbol trades_symbol;
     trades_symbol.set_symbol(symbol);
     trades_symbol.set_remaining_time(time_task.task_start_time() - time(NULL));
@@ -136,6 +152,7 @@ void TradesManager::CreateTradesPosition(const int socket, const int64 session, 
     base_logic::WLockGd lk(lock_);
     int64 u = GetTradesStarStatus(symbol);
     if (u == -100) {
+        send_error(socket, ERROR_TYPE, NO_HAVE_TRADES_TIME,session);
         return ;
     }
     //判断属于哪个类型和明星标的
@@ -180,11 +197,16 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
     r = base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
                 (trades_cache_->all_trades_order_,order_id,trades_order);
 
-    if (!r||trades_order.handle_type() == NO_ORDER || 
-        trades_order.handle_type() == COMPLETE_HANDLE ||
-        trades_order.handle_type() == CANCEL_ORDER)//不存在，且已经不为匹配状态
+    if(!r || trades_order.handle_type() == NO_ORDER||
+        trades_order.handle_type() == COMPLETE_HANDLE){
+        send_error(socket, ERROR_TYPE,NO_HAVE_ORDER,session);
         return;
-    
+    }
+
+    if (trades_order.handle_type() == CANCEL_ORDER){//不存在，且已经不为匹配状态
+        send_error(socket, ERROR_TYPE, NO_CANCEL_ERROR, session);
+        return;
+    }
     //更新数据库
     if (trades_order.buy_uid() == uid)
         uid_type = BUY_TYPE;
@@ -192,8 +214,10 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
         uid_type = SELL_TYPE;
     r = trades_db_->OnUpdateOrderState(trades_order.order_id(),uid,
                                        CONFIRM_ORDER,uid_type);
-    if (!r)
+    if (!r){
+        send_error(socket, ERROR_TYPE, NO_UPDATE_DB_ERROR, session);
         return;
+    }
 
     if (trades_order.buy_position_id() == position_id && trades_order.buy_uid()){
         trades_order.set_buy_handle_type(CONFIRM_ORDER);
@@ -206,6 +230,7 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
         uid_type = SELL_TYPE;
     }else{
      //异常数据
+     send_error(socket, ERROR_TYPE, NO_EXCEPTION_DATA, session);
      return;
     }
 
@@ -231,6 +256,7 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
 void TradesManager::SendConfirmOrder(const int socket, const int64 session,
                                 const int32 reserved, const int64 uid,
                                 const int64 order_id, const int32 status) {
+    
     trades_logic::net_reply::OrderConfirm order_confirm;
     order_confirm.set_order_id(order_id);
     order_confirm.set_uid(uid);
@@ -239,20 +265,22 @@ void TradesManager::SendConfirmOrder(const int socket, const int64 session,
     MAKE_HEAD(packet_control, S_CONFIRM_ORDER, 1, 0, session, 0);
     packet_control.body_ = order_confirm.get();
     send_message(socket, &packet_control);
-    send_message(socket, &packet_control);
+    //send_message(socket, &packet_control);
 }
 
 void TradesManager::SendOrderResult(const int socket, const int64 session, const int32 reserved,
         const int64 buy_uid, const int64 sell_uid, const int32 result, const int64 order_id) {
-    int t_socket = 0;
+    //int t_socket = 0;
     trades_logic::net_reply::OrderResult order_result;
     order_result.set_order_id(order_id);
     order_result.set_result(result);
+    SendNoiceMessage(buy_uid,S_ORDER_RESULT,session,order_result.get());
+    SendNoiceMessage(sell_uid,S_ORDER_RESULT,session,order_result.get());
+    /*struct PacketControl packet_control;
+    SendNoiceMessage()
     struct PacketControl packet_control;
-    MAKE_HEAD(packet_control, S_ORDER_RESULT, 1, 0, session, 0);
-    packet_control.body_ = order_result.get();
     send_message(socket, &packet_control);
-    send_message(t_socket, &packet_control);
+    send_message(t_socket, &packet_control);*/
 }
 
 int32 TradesManager::MatchTrades(const int socket, const int64 session, const int32 reserved,
@@ -271,10 +299,12 @@ int32 TradesManager::MatchTrades(const int socket, const int64 session, const in
 
     //排序取出最早的用户 循环找到最早的用户且有效的用户
     //op_trades = price_postion_list.front();
+    price_postion_list.sort(star_logic::TradesPosition::close_after);
     TRADES_POSITION_LIST::iterator it = price_postion_list.begin();
     for(; it != price_postion_list.end(); it++) {
         star_logic::TradesPosition op_trades = (*it);
-        if(op_trades.handle() == POSITION_HANDLE ) {
+        if(op_trades.handle() == POSITION_HANDLE && 
+            op_trades.uid() != trades.uid()) {
             //创建订单
             op_trades.set_handle(MATCHES_HANDLE);
             trades.set_handle(MATCHES_HANDLE);
@@ -425,6 +455,7 @@ int64 TradesManager::GetTradesStarStatus(const std::string& symbol) {
 void TradesManager::MatchNotice(const int socket, const int64 session, const int32 reserved, star_logic::TradesOrder& trades_order) {
     int t_socket;
 
+    //獲取socket
     net_reply::MatchingNotice  match_notice;
     match_notice.set_order_id(trades_order.order_id());
     match_notice.set_buy_uid(trades_order.buy_uid());
@@ -433,11 +464,8 @@ void TradesManager::MatchNotice(const int socket, const int64 session, const int
     match_notice.set_open_price(trades_order.open_price());
     match_notice.set_symbol(trades_order.symbol());
     match_notice.set_amount(trades_order.amount());
-    struct PacketControl packet_control;
-    MAKE_HEAD(packet_control, S_MATCH_NOTICE, 1, 0, session, 0);
-    packet_control.body_ = match_notice.get();
-    send_message(socket, &packet_control);
-    send_message(t_socket,&packet_control);
+    SendNoiceMessage(trades_order.buy_uid(),S_MATCH_NOTICE,session,match_notice.get());
+    SendNoiceMessage(trades_order.sell_uid(), S_MATCH_NOTICE, session, match_notice.get());
 }
 
 void TradesManager::SetTradesOrder(star_logic::TradesPosition& buy_position,
@@ -527,6 +555,17 @@ void TradesManager::ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order,
         order.set_buy_handle_type(CANCEL_ORDER);
         order.set_sell_handle_type(CANCEL_ORDER);
     }
+}
+
+void TradesManager::SendNoiceMessage(const int64 uid, const int32 operator_code, const int64 session,
+                                     base_logic::DictionaryValue* message) {
+    star_logic::UserInfo user;
+    schduler_engine_->GetUserInfoSchduler(uid, &user);
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, operator_code, 1, 0, session, 0);
+    packet_control.body_ = message;
+    send_message(user.socket_fd(), &packet_control);
+
 }
 
 }

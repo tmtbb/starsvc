@@ -28,7 +28,7 @@ class UsersDB {
   bool LoginAccount(const std::string& phone_num, const std::string& passwd,
                     const std::string& ip, star_logic::UserInfo& user);
 
-  bool CheckAccountExist(const std::string& phone);
+  bool CheckAccountExist(const std::string& phone, int32& existFlag);
 
   bool AccountBalance(const int64 uid, double & balance, std::string &pwd);
 
@@ -65,7 +65,7 @@ class UsersDB {
   bool ResetAccount(const std::string& phone_num,const std::string& passwd);
   bool ModifyPwd(const int64 &uid, const std::string &newpwd);
   bool Certification(const int64 &uid, const std::string &idcard, const std::string &realname);
-  bool ModifyNickName(const int64 &uid, const std::string &newNickName);
+  bool ModifyNickName(const int64 &uid, const std::string &newNickName, int32& flag);
  private:
   base_logic::DataEngine* mysql_engine_;
 };
