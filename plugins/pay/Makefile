@@ -106,6 +106,12 @@ schduler_engine.o : ./schduler_engine.cc ./schduler_engine.h
 wx_order.o : ./wx_order.cc ./wx_order.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./wx_order.cc $(INCLUDE_PATHS)
 	
+http_client.o : ./http_client.cc ./http_client.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./http_client.cc $(INCLUDE_PATHS)
+
+aplipay_clt.o : ./aplipay_clt.cc ./aplipay_clt.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./aplipay_clt.cc $(INCLUDE_PATHS)
+
 unionpay_order.o : ./unionpay_order.cc ./unionpay_order.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./unionpay_order.cc $(INCLUDE_PATHS)
 	
@@ -138,7 +144,7 @@ storager_kafka.o :  ./storager_kafka.cc ./storager_kafka.h
 	
 
 
-$(PLUGIN) : unionpay_order.o pay_init.o pay_logic.o pay_db.o pay_proto_buf.o schduler_engine.o wx_order.o logic_unit.o\
+$(PLUGIN) : unionpay_order.o pay_init.o pay_logic.o pay_db.o pay_proto_buf.o schduler_engine.o wx_order.o http_client.o aplipay_clt.o logic_unit.o\
 	star_infos.o packet_processing.o data_engine.o data_engine.o data_mysql_engine.o storager_kafka.o \
 	data_redis_engine.o mysql_pool.o redis_pool.o \
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a\

@@ -136,12 +136,15 @@ PAYNAME = pay_
 PAYPROC_PATH = /pay
 PAY_OBJECT_PATH = ./obj$(NEWSPROC_PATH)
 OTJERPROC_VERSION = /v1
-payproc:$(PAYPROC_PATH)/wx_callback.fcgi $(PAYPROC_PATH)/wx_order.fcgi
+payproc:$(PAYPROC_PATH)/wx_callback.fcgi $(PAYPROC_PATH)/wx_order.fcgi $(PAYPROC_PATH)/alipay_callback.fcgi
 $(PAYPROC_PATH)/wx_callback.fcgi: $(PAY_OBJECT_PATH)/$(PAYNAME)wx_callback.o $(POBJ)
 	$(LINKALL) -o $(OUTPUT_FILE)$(PAYPROC_PATH)$(OTJERPROC_VERSION)/wx_callback.fcgi
 
 $(PAYPROC_PATH)/wx_order.fcgi: $(PAY_OBJECT_PATH)/$(PAYNAME)wx_order.o $(POBJ)
 	$(LINKALL) -o $(OUTPUT_FILE)$(PAYPROC_PATH)$(OTJERPROC_VERSION)/wx_order.fcgi
+
+$(PAYPROC_PATH)/alipay_callback.fcgi: $(PAY_OBJECT_PATH)/$(PAYNAME)alipay_callback.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(PAYPROC_PATH)$(OTJERPROC_VERSION)/alipay_callback.fcgi
 ### 编译
 $(PAY_OBJECT_PATH)/$(PAYNAME)wx_callback.o:
 	$(COMPILE) .$(PAYPROC_PATH)$(OTJERPROC_VERSION)/wx_callback/wx_callback.cc
@@ -149,6 +152,8 @@ $(PAY_OBJECT_PATH)/$(PAYNAME)wx_callback.o:
 $(PAY_OBJECT_PATH)/$(PAYNAME)wx_order.o:
 	$(COMPILE) .$(PAYPROC_PATH)$(OTJERPROC_VERSION)/wx_order/wx_order.cc
 
+$(PAY_OBJECT_PATH)/$(PAYNAME)alipay_callback.o:
+	$(COMPILE) .$(PAYPROC_PATH)$(OTJERPROC_VERSION)/alipay_callback/alipay_callback.cc
 ######################accountproc###############################################
 ACCOUNTNAME = account_
 ACCOUNTPROC_PATH = /account

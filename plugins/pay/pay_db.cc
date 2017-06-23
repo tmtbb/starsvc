@@ -47,6 +47,7 @@ bool PayDB::OnUpdateCallBackRechargeOrder(const int64 rid, const double price,
                                           const std::string& transaction_id,
                                           const int32 astatus, int64& uid,
                                           double& balance) {
+  LOG_DEBUG2("trade_no[%s], trade_status[%d], out_trade_no[%ld]",transaction_id.c_str(), astatus, rid);
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
