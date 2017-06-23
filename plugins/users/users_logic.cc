@@ -549,14 +549,16 @@ bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
 
 bool Userslogic::CheckUserIsLogin(star_logic::UserInfo &userinfo) {
     star_logic::UserInfo tuserinfo;
-    LOG_DEBUG2("uid%ld, socket[%d]", userinfo.uid(), userinfo.socket_fd());
+    LOG_DEBUG2("_______________ uid%ld, socket[%d]", userinfo.uid(), userinfo.socket_fd());
     if (schduler_engine_->GetUserInfoSchduler(userinfo.uid(), &tuserinfo))
     {
         //已登陆发送退出消息
         struct PacketControl packet_reply;
-        //base_logic::DictionaryValue ret_list;
+        base_logic::DictionaryValue ret_list;
         MAKE_HEAD(packet_reply, S_LOGIN_EXISTS, USERS_TYPE, 0,0, 0);
-        //packet_reply.body_ = &ret_list;
+        packet_reply.body_ = &ret_list;
+        int64 ret = 1;
+        ret_list.SetBigInteger(L"result",ret);
         send_message(tuserinfo.socket_fd(),&packet_reply);
         schduler_engine_->CloseUserInfoSchduler(tuserinfo.socket_fd());
         LOG_DEBUG2("close__________________ uid%ld, socket[%d]", userinfo.uid(), userinfo.socket_fd());
