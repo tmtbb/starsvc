@@ -26,7 +26,7 @@ typedef std::map<std::string, TRADES_POSITION_LIST> TRADES_POSITION_MAP;
 typedef std::map<double, TRADES_POSITION_LIST> PRICE_POSITION_MAP; //价格表对应的持仓
 
 typedef std::map<std::string, PRICE_POSITION_MAP> TRADEING_POSITION_MAP; //明星对应的价格
-
+typedef std::map<int64, star_logic::TradesPosition> USER_POSITION_MAP;
 
 typedef std::map<int64, star_logic::TradesOrder>  TRADES_ORDER_MAP;//订单号-订单记录
 
@@ -59,7 +59,7 @@ public:
     TRADES_POSITION_MAP    sell_trades_position_; //转让表 //用于排序
     TRADEING_POSITION_MAP  buy_trading_position_; //用于价格匹配
     TRADEING_POSITION_MAP  sell_trading_position_; //用于价格匹配
-
+    USER_POSITION_MAP      user_trades_position_;
 
     //撮合订单
     TRADES_ORDER_MAP      all_trades_order_;
@@ -113,7 +113,8 @@ private:
                      star_logic::TradesOrder& trades_order);
 
 
-    void SetTradesOrder(star_logic::TradesPosition& buy_position,star_logic::TradesPosition& sell_position,
+    void SetTradesOrder(star_logic::TradesPosition& buy_position,
+                        star_logic::TradesPosition& sell_position,
                         star_logic::TradesOrder& order);
 
     void SendOrderResult(const int socket,const int64 session, const int32 reserved,
@@ -125,12 +126,17 @@ private:
 
     void ClearSymbolTrades(const std::string& symbol);
 
-    void ClearTradesPosition(TRADES_POSITION_MAP& trades_position_map,const std::string& symbol);
+    void ClearTradesPosition(TRADES_POSITION_MAP& trades_position_map,
+                            const std::string& symbol);
 
-    void ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order, const std::string& symbol);
+    void ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order, 
+                    const std::string& symbol);
 
-    void SendNoiceMessage(const int64 uid, const int32 operator_code, const int64 session,
-                            base_logic::DictionaryValue* message);
+    void SendNoiceMessage(const int64 uid, const int32 operator_code, 
+                        const int64 session,base_logic::DictionaryValue* message);
+
+    void AlterTradesPositionState(const int64 position_id,
+                                    const int32 status);
 private:
     manager_schduler::SchdulerEngine* schduler_engine_;
     TradesCache *trades_cache_;

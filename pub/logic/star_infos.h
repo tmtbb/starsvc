@@ -45,21 +45,21 @@ enum TIMETYPE {
     ONE_HOUR = 3600
 };
 
-//挂单类型
+//委托类型
 enum HANDLETYPE {
-    CANCEL_POSITION = -2, //掛單取消
-    NO_HANDLE = -1,
-    POSITION_HANDLE = 0, //挂单
+    CANCEL_POSITION = -2, //委托取消
+    NO_HANDLE = -1,//委托异常
+    POSITION_HANDLE = 0, //委托中
     MATCHES_HANDLE = 1, //匹配中
-    COMPLETE_HANDLE = 2 //订单完成
+    COMPLETE_HANDLE = 2 //委託完成
 };
 
 //订单类型
 enum ORDERTYPE {
-    NO_ORDER = -4,
-    MONEY_LESS_THAN = -3,
-    TIME_LESS_THAN = -2,
-    CANCEL_ORDER = -1,
+    NO_ORDER = -4,//订单异常
+    MONEY_LESS_THAN = -3,//求购发资金不足
+    TIME_LESS_THAN = -2,//转让方时间不足
+    CANCEL_ORDER = -1,//取消订单
     MATCHES_ORDER = 0,//匹配中
     CONFIRM_ORDER = 1,//确认
     COMPLETE_ORDER = 2//完成
