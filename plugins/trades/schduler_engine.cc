@@ -107,6 +107,8 @@ void TradesManager::CancelOrder(const int socket, const int64 session, const int
             return;
         }
         trades_order.set_handle_type(CANCEL_ORDER);
+        AlterTradesPositionState(trades_order.buy_position_id(),CANCEL_POSITION);
+        AlterTradesPositionState(trades_order.sell_position_id(), CANCEL_POSITION);
     }
     
     trades_db_->OnUpdateOrderState(order_id, uid, CANCEL_ORDER,0);
@@ -198,7 +200,7 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
                 (trades_cache_->all_trades_order_,order_id,trades_order);
 
     if(!r || trades_order.handle_type() == NO_ORDER||
-        trades_order.handle_type() == COMPLETE_HANDLE){
+        trades_order.handle_type() == COMPLETE_ORDER){
         send_error(socket, ERROR_TYPE,NO_HAVE_ORDER,session);
         return;
     }
@@ -234,7 +236,7 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
      return;
     }
 
-    trades_kafka_->SetTradesOrder(trades_order);
+    //trades_kafka_->SetTradesOrder(trades_order);
     //通知确认
     SendConfirmOrder(socket,session,reserved,uid,trades_order.order_id(),
                     trades_order.handle_type());
@@ -245,18 +247,27 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
         result = trades_db_->OnConfirmOrder(trades_order.order_id(),
                                             trades_order.buy_uid(),
                                             trades_order.sell_uid());
-        if (result = 0)
-            trades_order.set_handle_type(COMPLETE_ORDER);
-        else if (result = -2)
+        if (result == 0){
+            trades_order.set_handle_type(COMPLETE_ORDER); 
+            AlterTradesPositionState(trades_order.buy_position_id(),COMPLETE_HANDLE);
+            AlterTradesPositionState(trades_order.sell_position_id(),COMPLETE_HANDLE);
+        }
+        else if (result == -2){
             trades_order.set_handle_type(MONEY_LESS_THAN);
-        else if (result = -3)
+            AlterTradesPositionState(trades_order.buy_position_id(),CANCEL_POSITION);
+            AlterTradesPositionState(trades_order.sell_position_id(), CANCEL_POSITION);
+        }
+        else if (result == -3){
             trades_order.set_handle_type(TIME_LESS_THAN);
+            AlterTradesPositionState(trades_order.buy_position_id(),CANCEL_POSITION);
+            AlterTradesPositionState(trades_order.sell_position_id(), CANCEL_POSITION);
+        }
         SendOrderResult(socket, session, reserved, trades_order.buy_uid(),
                 trades_order.sell_uid(), trades_order.handle_type(), trades_order.order_id());
         trades_kafka_->SetTradesOrder(trades_order);
-    }/*else {
+    }else {
         trades_kafka_->SetTradesOrder(trades_order);
-    }*/
+    }
 }
 
 void TradesManager::SendConfirmOrder(const int socket, const int64 session,
@@ -352,6 +363,7 @@ void TradesManager::SetTradesPosition(TRADES_POSITION_MAP& trades_position,
     r_trades_position_list.push_back(trades);
     price_position_map[trades.open_price()] = r_trades_position_list;
     trading_position[trades.symbol()] = price_position_map;
+    trades_cache_->user_trades_position_[trades.position_id()] =  trades;
     trades_kafka_->SetTradesPosition(trades);
 }
 
@@ -561,6 +573,17 @@ void TradesManager::ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order,
         order.set_buy_handle_type(CANCEL_ORDER);
         order.set_sell_handle_type(CANCEL_ORDER);
     }
+}
+
+void TradesManager::AlterTradesPositionState(const int64 position_id,
+                                            const int32 status) {
+    star_logic::TradesPosition  trades_position;
+    bool r = base::MapGet<USER_POSITION_MAP, USER_POSITION_MAP::iterator, star_logic::TradesPosition>
+        (trades_cache_->user_trades_position_, position_id, trades_position);
+    if(!r)
+        return;
+    trades_position.set_handle(status);
+    trades_kafka_->SetTradesPosition(trades_position);
 }
 
 void TradesManager::SendNoiceMessage(const int64 uid, const int32 operator_code, const int64 session,
