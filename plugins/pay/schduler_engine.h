@@ -43,6 +43,10 @@ class PayManager {
   bool OnWXServer(const int socket, const std::string& appid, const std::string& mch_id,
                   const int64 total_fee, const int64 rid,
                   const int64 result, const std::string& transaction_id);
+  bool OnAliPayServer(const int socket, std::string& result );
+  bool OnAliPayServer(const int socket, const std::string& appid, const std::string& mch_id,
+                  const int64 total_fee, const int64 rid,
+                  const int64 result, const std::string& transaction_id);
 
   bool OnSHFJServer(const int socket, const std::string& appid, const std::string& mch_id,
                   const int64 total_fee, const int64 rid,
@@ -51,6 +55,10 @@ class PayManager {
   bool OnSHFJCashServer(const int socket, const std::string& mch_id, 
 			const int64 total_fee, const std::string& transaction_id, 
 			const int64 status, const std::string& rid); 
+  bool OnAliPayCreateOrder(const int socket, const int64 session,
+                       const int32 reversed, const int64 uid,
+                       const std::string& title, const double price,const int32 pay_type,
+                       const std::string& open_id);
  private:
   bool WXOrder(const int socket, const std::string& title, const int64 rid,
                const double price,const int32 pay_type, const std::string& open_id,
