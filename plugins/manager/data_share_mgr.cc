@@ -137,6 +137,7 @@ bool ManagerSchdulerEngine::CloseUserInfoSchduler(int socket) {
   star_logic::UserInfo>(schduler_cache_->socket_map_,
                                             socket, user);
   user.set_is_effective(false);
+  //closelockconnect(socket);
   base::MapDel<SOCKET_MAP, SOCKET_MAP::iterator, int>(
       schduler_cache_->socket_map_, socket);
   return base::MapDel<USER_MAP, USER_MAP::iterator, int64>(
