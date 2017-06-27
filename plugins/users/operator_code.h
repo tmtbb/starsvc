@@ -55,5 +55,7 @@ namespace users_logic {
 
 #define R_GET_VERSION USERS_TYPE * 1000 + 33
 #define S_GET_VERSION USERS_TYPE * 1000 + 34
+
+#define S_LOGIN_EXISTS USERS_TYPE * 1000 + 40
 }
 #endif
