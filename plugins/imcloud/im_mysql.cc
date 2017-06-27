@@ -232,8 +232,7 @@ bool Im_Mysql::delorderrecord(std::string& phone,std::string& starcode){
 	bool r1 = dic.GetDictionary(L"resultvalue", &ret);
 	bool r2 = ret->GetBigInteger(L"result", &result);
 	if(r1 && r2){
-		if(result == 1)
-			return true;
+	  return true;
 	}
 	return false;
 }

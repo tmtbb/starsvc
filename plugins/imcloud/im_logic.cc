@@ -172,6 +172,10 @@ bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead
     send_error(socket, ERROR_TYPE, NO_REDUCE_TALKING_TIMES_ERR, packet->session_id);
 		return false;
   }
+  if(result == 2){
+    send_error(socket, ERROR_TYPE, NO_USER_STAR_TIMES_ERR, packet->session_id);
+		return false;
+  }
   
 	if(times <= 0){
 		//删除云信关联关系

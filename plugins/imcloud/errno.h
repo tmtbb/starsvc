@@ -11,7 +11,8 @@ enum USERERRNO {
       NO_GET_FRIEND_LIST_ERR = -903,
       NO_DEL_FRIEND_ERR = -904,
       NO_ADD_FRIEND = -905,
-      NO_REFRESH_TOKEN = -906
+      NO_REFRESH_TOKEN = -906,
+      NO_USER_STAR_TIMES_ERR = -907
 };
 
 #endif //STAR_IM_LOGIC_H_
