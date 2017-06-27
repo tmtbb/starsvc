@@ -57,6 +57,7 @@ class UsersDB {
   static void CallAccountRealName(void* param, base_logic::Value* value); 
   static void CallChangeNickName(void* param, base_logic::Value* value);
   static void CallGetVersion(void* param, base_logic::Value* value) ;
+  static void CallSaveDeviceId(void* param, base_logic::Value* value) ;
   bool WXBindAccount(const std::string& phone_num, const std::string& passwd,
                 const int32 type,int64& uid, int32& result, 
                 const std::string &openid, const std::string &nick_name, 
@@ -73,6 +74,7 @@ class UsersDB {
   bool ModifyPwd(const int64 &uid, const std::string &newpwd);
   bool Certification(const int64 &uid, const std::string &idcard, const std::string &realname);
   bool ModifyNickName(const int64 &uid, const std::string &newNickName, int32& flag);
+  bool SaveDeviceId(const int64 &uid, const int64 &devicetype, const std::string &deviceid, int32& flag);
  private:
   base_logic::DataEngine* mysql_engine_;
 };
