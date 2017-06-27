@@ -4,6 +4,7 @@
 #include "pay/schduler_engine.h"
 #include "pay/operator_code.h"
 #include "pay/wx_order.h"
+#include "pay/aplipay_clt.h"
 #include "pay/errno.h"
 #include "net/comm_head.h"
 #include "net/packet_processing.h"
@@ -83,6 +84,77 @@ bool PayManager::OnWXCreateOrder(const int socket, const int64 session,
   return true;
 }
 
+bool PayManager::OnAliPayCreateOrder(const int socket, const int64 session,
+                                 const int32 reversed, const int64 uid,
+                                 const std::string& title, const double price,
+                                 const int32 pay_type,const std::string& open_id) {
+  //创建订单号
+  int64 rid = base::SysRadom::GetInstance()->GetRandomID();
+
+  /*
+  pay_logic::WXOrder wx_order;
+  base_logic::DictionaryValue recharge_dic;
+  bool r = WXOrder(socket, title, rid, price, pay_type,open_id, wx_order);
+  if (!r) {
+    send_error(socket, ERROR_TYPE, WX_ORDER_ERROR, session);
+    return false;
+  }
+
+  */
+  bool r = pay_db_->OnCreateRechargeOrder(uid, rid, price, ALIPAY); //
+  if (!r) {
+    send_error(socket, ERROR_TYPE, STOAGE_ORDER_ERROR, session);
+    return r;
+  }
+  pay_logic::AliPayContent  content;
+  content.set_total_amount(base::BasicUtil::StringUtil::DoubleToString(price));
+  content.set_product_code( "QUICK_MSECURITY_PAY");
+  content.set_out_trade_no(base::BasicUtil::StringUtil::Int64ToString(rid));
+  content.set_subject(title);
+
+  std::string body_stream;
+  base_logic::DictionaryValue *value = content.get();
+  base_logic::ValueSerializer *engine = base_logic::ValueSerializer::Create(
+              base_logic::IMPL_JSON);
+  if (engine == NULL) {
+      LOG_ERROR("engine create null");
+      return false;
+  }
+  r = engine->Serialize((*value), &body_stream);
+
+  if (engine) {
+    delete engine;
+    engine = NULL;
+  }
+  //__生成orderinfo
+  //
+  pay_logic::ApliPayOrder aplipay;
+  LOG_ERROR2("body_stream[%s]", body_stream.c_str());
+  //body_stream = "{\"out_trade_no\":\"5830161767537791357\",\"product_code\":\"QUICK_MSECURITY_PAY\",\"total_amount\":\"0.01\",\"subject\":\"title1\"}";
+  std::string orderinfo = aplipay.PlaceOrderSign(body_stream);
+
+  
+  pay_logic::net_reply::AliPayOrder r_alipay_order;
+  struct PacketControl packet_control;
+
+  std::string package;
+
+  MAKE_HEAD(packet_control, S_ALIPAY_PAY, PAY_TYPE, 0, session, 0);
+  r_alipay_order.set_partnerid(orderinfo);
+  /*
+  r_alipay_order.set_appid(wx_order.get_appid());
+  r_alipay_order.set_partnerid(wx_order.get_partnerid());
+  r_alipay_order.set_prepayid(wx_order.get_prepayid());
+  r_alipay_order.set_packetage(package);
+  r_alipay_order.set_noncestr(wx_order.get_nonce_str());
+  r_alipay_order.set_timestamp(wx_order.get_timestamp());
+  r_alipay_order.set_sign(wx_order.get_prepaysign());
+  */
+  //r_alipay_order.set_rid(rid);
+  packet_control.body_ = r_alipay_order.get();
+  send_message(socket, &packet_control);
+  return true;
+}
 bool PayManager::WXOrder(const int socket, const std::string& title,
                          const int64 rid, const double price,
                          const int32 pay_type, const std::string& open_id,
@@ -295,4 +367,65 @@ bool PayManager::ParserUnionPayOrderResult(std::string& result) {
 }
 
 
+
+bool PayManager::OnAliPayServer(const int socket, std::string& result )
+{
+  int64 uid = 0;
+  double balance = 0.0;
+  double price = 0.0;
+  std::string rid, transaction_id;
+  pay_logic::ApliPayOrder alipay_rsaVerify;
+  int status = 0;
+  if (alipay_rsaVerify.DealResponse(result, transaction_id, rid, price, status)) //deal 成功
+  {
+    bool r = pay_db_->OnUpdateCallBackRechargeOrder(atoll(rid.c_str()), price, transaction_id,
+                                                  (int32)status, uid, balance);
+
+      const std::string r_rt = "success";
+      send_full(socket, r_rt.c_str(), r_rt.length());
+
+      if (r) {
+        star_logic::UserInfo user;
+        schduler_engine_->GetUserInfoSchduler(uid, &user);
+        user.set_balance(balance);
+        pay_logic::net_reply::Balance net_balance;
+        net_balance.set_balance(balance);
+        struct PacketControl packet_control;
+        MAKE_HEAD(packet_control, S_NOTICE_SVC, PAY_TYPE, 0, 0, 0);
+        packet_control.body_ = net_balance.get();
+        send_message(user.socket_fd(), &packet_control);
+
+      }
+  }
+  else
+      return false;
+}
+bool PayManager::OnAliPayServer(const int socket, const std::string& appid,
+                            const std::string& mch_id, const int64 total_fee,
+                            const int64 rid, const int64 result,
+                            const std::string& transaction_id) {
+  int64 uid = 0;
+  double balance = 0.0;
+  double price = ((double) total_fee) / 100;
+  bool r = pay_db_->OnUpdateCallBackRechargeOrder(rid, price, transaction_id,
+                                                  result, uid, balance);
+
+  const std::string r_rt =
+      "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>";
+  send_full(socket, r_rt.c_str(), r_rt.length());
+
+  if (r) {
+    star_logic::UserInfo user;
+    schduler_engine_->GetUserInfoSchduler(uid, &user);
+    user.set_balance(balance);
+    pay_logic::net_reply::Balance net_balance;
+    net_balance.set_balance(balance);
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_NOTICE_SVC, PAY_TYPE, 0, 0, 0);
+    packet_control.body_ = net_balance.get();
+    send_message(user.socket_fd(), &packet_control);
+
+  }
+  return true;
+}
 }

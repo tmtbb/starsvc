@@ -40,7 +40,7 @@ enum HttpRequestType{
 
 class FcgiModule{
   public:
-    FcgiModule(bool is_filter = false);
+    FcgiModule(bool is_filter = false, int filter_type = -1);
     ~FcgiModule();
     bool Init(const char *addr, unsigned short port, int api_type, int operate_code, int log_type = 1);
 
@@ -73,9 +73,11 @@ class FcgiModule{
     //log_trace::LogTrace api_logger_;
     int log_type_;
     int operate_code_;
+    int filter_type_; //过滤类型
     bool is_filter_;
   private:
     bool XMLFilter(const std::string& content,std::string& req_msg);
+    bool PostFilter(const std::string& content,std::string& req_msg);
 };
 
 }; // namespace fcgi_module end  

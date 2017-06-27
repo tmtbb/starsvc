@@ -8,11 +8,12 @@
 
 namespace fcgi_module {
 
-FcgiModule::FcgiModule(bool is_filter) {
+FcgiModule::FcgiModule(bool is_filter, int filter_type) {
   api_type_ = 0;
   log_type_ = 0;
   operate_code_ = 0;
   is_filter_ = is_filter;
+  filter_type_ = filter_type;
 }
 
 FcgiModule::~FcgiModule() {
@@ -232,6 +233,12 @@ bool FcgiModule::PostRequestMethod(const std::string & content) {
     if (XMLFilter(ct,result))
       ct = result;
   }
+  //postdeal key=value&key=value
+  if (filter_type_ == 0){
+    std::string result;
+    if (PostFilter(ct,result))
+      ct = result;
+  }
   net::PacketProsess::StrPacket(operate_code_, t_is_zip_encrypt, t_type, 0,
                                 2001, ct.c_str(), &packet_stream,
                                 &packet_stream_length);
@@ -311,4 +318,21 @@ bool FcgiModule::XMLFilter(const std::string& content,std::string& req_msg) {
   }
   return false;
 }
+
+bool FcgiModule::PostFilter(const std::string& content,std::string& req_msg) {
+  if (!content.empty()) {
+    std::string s = content;
+    req_msg = "{\"result\":";
+    s.erase(remove(s.begin(), s.end(), '\n'), s.end());
+    //int beg = s.find("<xml>");
+    //int end = s.find("</xml>") + sizeof("</xml>") + 1;
+    //s = s.substr(beg, end - beg);
+    req_msg += "\"";
+    req_msg += s;
+    req_msg += "\"}";
+    return true;
+  }
+  return false;
+}
+
 }  // namespace fcgi_module end

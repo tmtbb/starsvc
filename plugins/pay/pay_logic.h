@@ -45,6 +45,7 @@ class Paylogic {
 
   bool OnTimeout(struct server *srv, char *id, int opcode, int time);
 
+  bool OnCheckPayPwd(struct server* srv, int socket, struct PacketHead* packet); 
  private:
   bool OnWXPayOrder(struct server* srv, int socket,
                     struct PacketHead *packet);
@@ -56,13 +57,20 @@ class Paylogic {
                     struct PacketHead * packet);
 
 
+  bool OnAliPayOrder(struct server* srv, int socket,
+                    struct PacketHead *packet);
+
+  bool OnAliPayClient(struct server* srv, int socket,
+                     struct PacketHead *packet);
+
+  bool OnAliPaySever(struct server* srv, int socket,
+                    struct PacketHead * packet);
+
+
   bool OnUnionPayOrder(struct server* srv, int socket,
                             struct PacketHead *packet); 
   bool OnCertification(struct server* srv, int socket,
                             struct PacketHead *packet); 
-  //校验支付密码
-  bool OnCheckPayPwd(struct server* srv, int socket,
-                    struct PacketHead* packet);
  private:
   bool Init();
  private:
