@@ -98,6 +98,7 @@ class RegisterAccount {
         user_type_(NULL),
 	member_id_(NULL),
 	agentid_(NULL),
+	sub_agentid_(NULL),
 	recommend_(NULL),
 	device_id_(NULL){
   }
@@ -135,6 +136,10 @@ class RegisterAccount {
     if (agentid_) {
       delete agentid_;
       agentid_ = NULL;
+    }
+    if (sub_agentid_) {
+      delete sub_agentid_;
+      sub_agentid_ = NULL;
     }
     if (recommend_) {
       delete recommend_;
@@ -176,8 +181,11 @@ class RegisterAccount {
   void set_device_id(std::string& device_id) {
     device_id_ = new base_logic::StringValue(device_id);
   }
-  void set_member_id(int64 member_id) {
-    member_id_ = new base_logic::FundamentalValue(member_id);
+  void set_member_id(std::string& value) {
+    member_id_ = new base_logic::StringValue(value);
+  }
+  void set_sub_agentid(std::string& sub_agentid) {
+    sub_agentid_ = new base_logic::StringValue(sub_agentid);
   }
   std::string verify_code() {
     std::string verify_code;
@@ -240,13 +248,12 @@ class RegisterAccount {
     return recommend;
   }
   
-  int64 member_id() {
-    int64 member_id;
+  std::string member_id() {
+    std::string member_id;
     if (member_id_)
-      member_id_->GetAsBigInteger(&member_id);
+      member_id_->GetAsString(&member_id);
     return member_id;
   }
-  
  private:
   base_logic::StringValue* verify_code_;
   base_logic::FundamentalValue* timestamp_;
@@ -255,8 +262,10 @@ class RegisterAccount {
   base_logic::StringValue* phone_num_;
   base_logic::StringValue* passwd_;
   //modify bytw
-  base_logic::FundamentalValue* member_id_;
+ // base_logic::FundamentalValue* member_id_;
+  base_logic::StringValue* member_id_;
   base_logic::StringValue* agentid_;
+  base_logic::StringValue* sub_agentid_;
   base_logic::StringValue* recommend_;
   base_logic::StringValue* device_id_;
 };
@@ -452,6 +461,7 @@ class WXBindAccount {
 	head_url_(NULL),
 	member_id_(NULL),
 	agentid_(NULL),
+	sub_agentid_(NULL),
 	recommend_(NULL),
 	device_id_(NULL){ 
   }
@@ -498,6 +508,10 @@ class WXBindAccount {
     if (agentid_) {
       delete agentid_;
       agentid_ = NULL;
+    }
+    if (sub_agentid_) {
+      delete sub_agentid_;
+      sub_agentid_ = NULL;
     }
     if (recommend_) {
       delete recommend_;
@@ -546,16 +560,24 @@ class WXBindAccount {
   void set_agentid(std::string& agentid) {
     agentid_ = new base_logic::StringValue(agentid);
   }
+  void set_sub_agentid(std::string& sub_agentid) {
+    sub_agentid_ = new base_logic::StringValue(sub_agentid);
+  }
   void set_recommend(std::string& recommend) {
     recommend_ = new base_logic::StringValue(recommend);
   }
   void set_device_id(std::string& device_id) {
     device_id_ = new base_logic::StringValue(device_id);
   }
+  /*
   void set_member_id(int64 member_id) {
     member_id_ = new base_logic::FundamentalValue(member_id);
   }
+  */
 
+  void set_member_id(std::string& value) {
+    member_id_ = new base_logic::StringValue(value);
+  }
   std::string verify_code() {
     std::string verify_code;
     if (verify_code_)
@@ -617,6 +639,12 @@ class WXBindAccount {
       agentid_->GetAsString(&agentid);
     return agentid;
   }
+  std::string sub_agentid() {
+    std::string sub_agentid;
+    if (sub_agentid_)
+      sub_agentid_->GetAsString(&sub_agentid);
+    return sub_agentid;
+  }
   std::string device_id() {
     std::string device_id;
     if (device_id_)
@@ -631,10 +659,10 @@ class WXBindAccount {
     return recommend;
   }
   
-  int64 member_id() {
-    int64 member_id;
+  std::string member_id() {
+    std::string member_id;
     if (member_id_)
-      member_id_->GetAsBigInteger(&member_id);
+      member_id_->GetAsString(&member_id);
     return member_id;
   }
   
@@ -645,13 +673,14 @@ class WXBindAccount {
   //base_logic::StringValue* user_type_;
   base_logic::StringValue* phone_num_;
   base_logic::StringValue* passwd_;
-  //base_logic::FundamentalValue* member_id_;
   base_logic::StringValue* openid_;
   base_logic::StringValue* nick_name_;
   base_logic::StringValue* head_url_;
 //
-  base_logic::FundamentalValue* member_id_;
+  //base_logic::FundamentalValue* member_id_;
+  base_logic::StringValue* member_id_;
   base_logic::StringValue* agentid_;
+  base_logic::StringValue* sub_agentid_;
   base_logic::StringValue* recommend_;
   base_logic::StringValue* device_id_;
 };

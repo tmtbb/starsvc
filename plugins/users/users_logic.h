@@ -5,6 +5,7 @@
 #define SWP_USER_USER_LOGIC_
 
 #include "users/users_db.h"
+#include "users/storager_kafka.h"
 #include "manager/data_share_mgr.h"
 #include "basic/basictypes.h"
 #include "core/common.h"
@@ -84,10 +85,14 @@ class Userslogic {
   bool OnCheckAccountExist(struct server* srv, int socket,
                             struct PacketHead *packet);
   bool OnResetNickName(struct server* srv, int socket,struct PacketHead *packet);
+
+  bool CheckUserIsLogin(star_logic::UserInfo &userinfo); 
+
  private:
   bool Init();
  private:
   users_logic::UsersDB* user_db_;
+//  users_logic::StroagerKafka* kafka_;
 
   manager_schduler::SchdulerEngine* schduler_engine_;
 };

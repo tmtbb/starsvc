@@ -44,6 +44,7 @@ INCLUDE_PATHS = -I/usr/local/libmemcached-1.0.7/include \
 				-I/usr/include/mysql\
 				-I$(USER_DIR)\
 				-I$(CUSTOM_THIRD_PATH)/hiredis\
+				-I$(CUSTOM_THIRD_PATH)/librdkafka/src\
 				-I$(CUSTOM_THIRD_PATH)\
 				-I$(LIB_DIR)/mylib/base\
 				-I../\
@@ -105,6 +106,9 @@ schduler_engine.o : ./schduler_engine.cc ./schduler_engine.h
 users_proto_buf.o : ./users_proto_buf.cc ./users_proto_buf.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./users_proto_buf.cc $(INCLUDE_PATHS)
 	
+storager_kafka.o :  ./storager_kafka.cc ./storager_kafka.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./storager_kafka.cc $(INCLUDE_PATHS)
+
 logic_unit.o :  $(USER_DIR)/logic/logic_unit.cc $(USER_DIR)/logic/logic_unit.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/logic_unit.cc $(INCLUDE_PATHS)
 	
@@ -133,8 +137,9 @@ redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/storage/redis_pool.cc $(INCLUDE_PATHS)
 	
 
-$(PLUGIN) : users_init.o  users_logic.o users_db.o users_proto_buf.o fcgimodule.o\
+$(PLUGIN) : users_init.o  users_logic.o users_db.o users_proto_buf.o fcgimodule.o storager_kafka.o\
 	star_infos.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
-	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a
+	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a \
+	$(CUSTOM_THIRD_PATH)/lib/librdkafka.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lcurl -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \
 	$^ -o $@

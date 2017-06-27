@@ -22,8 +22,13 @@ class UsersDB {
   ~UsersDB();
 
  public:
-  bool RegisterAccount(const std::string& phone_num, const std::string& passwd,
-                       const int32 type,int64& uid, int32& result, const std::string &agentid, const std::string &recommend, const int64 memberid);
+  bool RegisterAccount(const std::string& phone_num, 
+                       const std::string& passwd,
+                       const int32 type,int64& uid, 
+                       int32& result, const std::string &agentid, 
+                       const std::string &recommend, 
+                       const std::string& memberid,
+                       const std::string& sub_agentId);
 
   bool LoginAccount(const std::string& phone_num, const std::string& passwd,
                     const std::string& ip, star_logic::UserInfo& user);
@@ -53,9 +58,11 @@ class UsersDB {
   static void CallChangeNickName(void* param, base_logic::Value* value);
   static void CallGetVersion(void* param, base_logic::Value* value) ;
   bool WXBindAccount(const std::string& phone_num, const std::string& passwd,
-                       const int32 type,int64& uid, int32& result, const std::string &openid, const std::string &nick_name, 
-		       const std::string &head_url, const std::string &agent_id, const std::string &recommend,
-		       const std::string &device_id, const int64 member_id);
+                const int32 type,int64& uid, int32& result, 
+                const std::string &openid, const std::string &nick_name, 
+		        const std::string &head_url, const std::string &agent_id,
+                const std::string &recommend, const std::string &device_id, 
+                const std::string &member_id, const std::string& sub_agentId);
   bool LoginWiXin(const std::string& open_id, const std::string& device_id,
                     const std::string& ip, base_logic::DictionaryValue &ret);
 
