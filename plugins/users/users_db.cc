@@ -84,7 +84,7 @@ bool UsersDB::WXBindAccount(const std::string& phone_num,
 }
 bool UsersDB::LoginWiXin(const std::string& open_id,
                            const std::string &device_id,
-			   const std::string& ip,base_logic::DictionaryValue &ret) {
+			   const std::string& ip,star_logic::UserInfo& user) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
@@ -104,25 +104,30 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
 
   std::string phone, agentName, avatar_Large;
   int64 type,uid;
-  r = info_value->GetString(L"phone", &phone);
-  r = info_value->GetString(L"nickname", &agentName);
-  r = info_value->GetString(L"head_url", &avatar_Large);
+  if(info_value->GetString(L"phone",&phone))
+      user.set_phone_num(phone);
+  if(info_value->GetString(L"nickname",&agentName))
+      user.set_nickname(agentName);
+  if(info_value->GetString(L"head_url",&avatar_Large))
+      user.set_head_url(avatar_Large);
+
   if(!info_value->GetBigInteger(L"type",&type))
     return false;
-  if(!info_value->GetBigInteger(L"id",&uid))
-    return false;
+  user.set_type(type);
   r = (r && phone.length() > 1) ? true : false;
   if (!r)
     return false;
 
-  base_logic::DictionaryValue *tmp = new base_logic::DictionaryValue();
-  tmp->SetString(L"phone",phone);
-  tmp->SetString(L"nickname",agentName);
-  tmp->SetString(L"head_url",avatar_Large);
-  tmp->SetBigInteger(L"type",type);
-  tmp->SetBigInteger(L"id",uid);
-
-  ret.Set(L"userinfo",(base_logic::Value*)tmp);
+  if(info_value->GetBigInteger(L"id", &uid)){
+    if(uid <= 0)
+      return false;
+    user.set_uid(uid);
+  }
+  else
+  {
+    return false;
+  }
+  
   if (dict) {
     delete dict;
     dict = NULL;

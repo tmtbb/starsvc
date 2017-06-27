@@ -65,7 +65,7 @@ class UsersDB {
                 const std::string &recommend, const std::string &device_id, 
                 const std::string &member_id, const std::string& sub_agentId);
   bool LoginWiXin(const std::string& open_id, const std::string& device_id,
-                    const std::string& ip, base_logic::DictionaryValue &ret);
+                    const std::string& ip, star_logic::UserInfo& user);
 
   bool UserChangePasswd(const std::string& phone_num,const std::string& oldpasswd,
   								const std::string& newpasswd);
