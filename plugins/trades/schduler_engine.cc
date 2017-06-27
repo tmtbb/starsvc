@@ -249,11 +249,13 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
                                             trades_order.sell_uid());
         if (result == 0){
             trades_order.set_handle_type(COMPLETE_ORDER); 
+            trades_order.set_buy_handle_type(COMPLETE_ORDER);
+            trades_order.set_sell_handle_type(COMPLETE_ORDER);
             AlterTradesPositionState(trades_order.buy_position_id(),COMPLETE_HANDLE);
             AlterTradesPositionState(trades_order.sell_position_id(),COMPLETE_HANDLE);
         }
         else if (result == -2){
-            trades_order.set_handle_type(MONEY_LESS_THAN);
+            trades_order.set_handle_type(MONEY_LESS_THAN); 
             AlterTradesPositionState(trades_order.buy_position_id(),CANCEL_POSITION);
             AlterTradesPositionState(trades_order.sell_position_id(), CANCEL_POSITION);
         }
@@ -578,7 +580,7 @@ void TradesManager::ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order,
 void TradesManager::AlterTradesPositionState(const int64 position_id,
                                             const int32 status) {
     star_logic::TradesPosition  trades_position;
-    bool r = base::MapGet<USER_POSITION_MAP, USER_POSITION_MAP::iterator, star_logic::TradesPosition>
+    bool r = base::MapGet<USER_POSITION_MAP, USER_POSITION_MAP::iterator, int64,star_logic::TradesPosition>
         (trades_cache_->user_trades_position_, position_id, trades_position);
     if(!r)
         return;
