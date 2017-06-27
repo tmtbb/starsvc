@@ -136,8 +136,12 @@ try
       //OnCertification(srv, socket, packet);
       break;
     }
-     case R_CHECK_PAY_PWD: {
+    case R_CHECK_PAY_PWD: {
       OnCheckPayPwd(srv, socket, packet);
+      break;
+    }
+    case R_CANCLE_PAY: {
+      OnCanclePay(srv, socket, packet);
       break;
     }
     default:
@@ -480,7 +484,27 @@ bool Paylogic::OnCheckPayPwd(struct server* srv, int socket, struct PacketHead* 
   return true;
 }
 //
-//
+
+bool Paylogic::OnCanclePay(struct server* srv, int socket,
+                            struct PacketHead *packet) {
+  pay_logic::net_request::CanclePay cancle_pay;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  bool r = cancle_pay.set_http_packet(packet_control->body_);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  pay_logic::PayEngine::GetSchdulerManager()->OnCanclePay(
+      socket, cancle_pay.uid(), cancle_pay.rid());
+
+  return true;
+}
 //
 //
 }  // namespace trades_logic

@@ -712,6 +712,70 @@ class IDentityCard{
   base_logic::StringValue* id_number_;  //身份证号
   base_logic::StringValue* name_;  //应用名-商品名 eg.交易支付
 };
+
+
+class CanclePay{
+ public:
+  CanclePay()
+      : uid_(NULL),
+        rid_(NULL),
+        pay_result_(NULL) {
+  }
+
+  ~CanclePay() {
+    if (uid_) {
+      delete uid_;
+      uid_ = NULL;
+    }
+
+    if (rid_) {
+      delete rid_;
+      rid_ = NULL;
+    }
+
+    if (pay_result_) {
+      delete pay_result_;
+      pay_result_ = NULL;
+    }
+  }
+
+  bool set_http_packet(base_logic::DictionaryValue* value);
+
+  void set_uid(const int64 uid) {
+    uid_ = new base_logic::FundamentalValue(uid);
+  }
+
+  void set_rid(const int64 rid) {
+    rid_ = new base_logic::FundamentalValue(rid);
+  }
+
+  void set_pay_result(const int32 pay_result) {
+    pay_result_ = new base_logic::FundamentalValue(pay_result);
+  }
+
+  const int32 uid() const {
+    int64 uid = 0;
+    uid_->GetAsBigInteger(&uid);
+    return uid;
+  }
+
+  const int64 rid() const {
+    int64 rid = 0;
+    rid_->GetAsBigInteger(&rid);
+    return rid;
+  }
+
+  const int32 pay_result() const {
+    int32 pay_result = 0;
+    pay_result_->GetAsInteger(&pay_result);
+    return pay_result;
+  }
+
+ private:
+  base_logic::FundamentalValue* uid_;
+  base_logic::FundamentalValue* rid_;
+  base_logic::FundamentalValue* pay_result_;
+};
 }
 
 namespace net_reply {
@@ -863,7 +927,7 @@ class AliPayOrder {
     if (partnerid_ != NULL)
       value_->Set(L"orderinfo", partnerid_);
     if (prepayid_ != NULL)
-      value_->Set(L"prepayid", prepayid_);
+      value_->Set(L"rid", prepayid_);
     if (packetage_ != NULL)
       value_->Set(L"package", packetage_);
     if (noncestr_ != NULL)

@@ -71,6 +71,8 @@ class Paylogic {
                             struct PacketHead *packet); 
   bool OnCertification(struct server* srv, int socket,
                             struct PacketHead *packet); 
+  bool OnCanclePay(struct server* srv, int socket,
+                    struct PacketHead * packet);
  private:
   bool Init();
  private:
