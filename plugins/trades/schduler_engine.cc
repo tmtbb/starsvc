@@ -255,12 +255,12 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
             AlterTradesPositionState(trades_order.sell_position_id(),COMPLETE_HANDLE);
         }
         else if (result == -2){
-            trades_order.set_handle_type(MONEY_LESS_THAN); 
+            trades_order.set_handle_type(TIME_LESS_THAN); 
             AlterTradesPositionState(trades_order.buy_position_id(),CANCEL_POSITION);
             AlterTradesPositionState(trades_order.sell_position_id(), CANCEL_POSITION);
         }
         else if (result == -3){
-            trades_order.set_handle_type(TIME_LESS_THAN);
+            trades_order.set_handle_type(MONEY_LESS_THAN);
             AlterTradesPositionState(trades_order.buy_position_id(),CANCEL_POSITION);
             AlterTradesPositionState(trades_order.sell_position_id(), CANCEL_POSITION);
         }

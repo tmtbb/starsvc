@@ -141,10 +141,11 @@ bool PayManager::OnAliPayCreateOrder(const int socket, const int64 session,
 
   MAKE_HEAD(packet_control, S_ALIPAY_PAY, PAY_TYPE, 0, session, 0);
   r_alipay_order.set_partnerid(orderinfo);
+  r_alipay_order.set_prepayid(base::BasicUtil::StringUtil::Int64ToString(rid));
+
   /*
   r_alipay_order.set_appid(wx_order.get_appid());
   r_alipay_order.set_partnerid(wx_order.get_partnerid());
-  r_alipay_order.set_prepayid(wx_order.get_prepayid());
   r_alipay_order.set_packetage(package);
   r_alipay_order.set_noncestr(wx_order.get_nonce_str());
   r_alipay_order.set_timestamp(wx_order.get_timestamp());
@@ -424,6 +425,31 @@ bool PayManager::OnAliPayServer(const int socket, const std::string& appid,
     MAKE_HEAD(packet_control, S_NOTICE_SVC, PAY_TYPE, 0, 0, 0);
     packet_control.body_ = net_balance.get();
     send_message(user.socket_fd(), &packet_control);
+
+  }
+  return true;
+}
+
+
+
+bool PayManager::OnCanclePay(const int socket, const int64 uid, const int64 rid){
+  bool r = pay_db_->OnUpdateRechargeOrder(uid, rid, 4, 0);
+
+  double balance = 0.0;
+  //if (r) 
+  {
+    //star_logic::UserInfo user;
+    //schduler_engine_->GetUserInfoSchduler(uid, &user);
+    //user.set_balance(balance);
+    //pay_logic::net_reply::Balance net_balance;
+    //net_balance.set_balance(balance);
+    base_logic::DictionaryValue dic; 
+    int flag = 1;
+    dic.SetInteger(L"result", flag); 
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_CANCLE_PAY, PAY_TYPE, 0, 0, 0);
+    packet_control.body_ = &dic;
+    send_message(socket, &packet_control);
 
   }
   return true;

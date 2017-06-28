@@ -45,5 +45,8 @@ namespace pay_logic {
 
 #define R_ALIPAY_SVC PAY_TYPE * 1000 + 53
 #define S_ALIPAY_SVC PAY_TYPE * 1000 + 54
+
+#define R_CANCLE_PAY PAY_TYPE * 1000 + 55
+#define S_CANCLE_PAY PAY_TYPE * 1000 + 56
 }
 #endif

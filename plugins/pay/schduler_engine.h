@@ -59,6 +59,7 @@ class PayManager {
                        const int32 reversed, const int64 uid,
                        const std::string& title, const double price,const int32 pay_type,
                        const std::string& open_id);
+  bool OnCanclePay(const int socket, const int64 uid, const int64 rid);
  private:
   bool WXOrder(const int socket, const std::string& title, const int64 rid,
                const double price,const int32 pay_type, const std::string& open_id,
