@@ -461,7 +461,7 @@ bool Userslogic::OnUserAccount(struct server* srv, int socket,
   r = schduler_engine_->GetUserInfoSchduler(user_account.uid(), &userinfo);
   if (!r){
     LOG_DEBUG2("uid[%ld]",user_account.uid());
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
     return r;
   }
   
@@ -517,7 +517,7 @@ bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
   r = schduler_engine_->GetUserInfoSchduler(user_real_info.uid(), &userinfo);
   if (!r) {
     LOG_DEBUG2("uid[%ld]",user_real_info.uid());
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
     return false;
   }
 
@@ -620,26 +620,24 @@ bool Userslogic::OnUserCheckToken(struct server* srv, int socket,
     return false;
   }
 
-  star_logic::UserInfo userinfo;
   std::string ip;
   int port;
   logic::SomeUtils::GetIPAddress(socket, ip, port);
-  userinfo.set_token(check_token.token());
-  //check token
-  r = logic::SomeUtils::VerifyToken(check_token.uid(), check_token.token());
-  if (!r) {
-    LOG_DEBUG2("uid[%ld]",check_token.uid());
-    send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+
+  star_logic::UserInfo userinfo;
+  if (!schduler_engine_->GetUserInfoSchduler(check_token.uid(), &userinfo)){
+    LOG_DEBUG2("uid[%ld],ip[%s]",check_token.uid(), ip.c_str());
+    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
     return false;
   }
 
-  //获取用户信息
-  r = user_db_->GetUserInfo(check_token.uid(), ip, userinfo);
-  if(!r){
-    LOG_DEBUG2("uid[%ld],ip[%s]",check_token.uid(), ip.c_str());
+  //check token
+  if (check_token.token() != userinfo.token()) {
+    LOG_DEBUG2("check_token[%s],userinfo token[%s]",check_token.token().c_str(), userinfo.token().c_str());
     send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
     return false;
   }
+  
   
   //发送用信息
   SendUserInfo(socket, packet->session_id, S_ACCOUNT_CHECK, userinfo);
@@ -997,11 +995,18 @@ bool Userslogic::OnResetNickName(struct server* srv, int socket,
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
-  
+
+  //获取用户信息
+  star_logic::UserInfo userinfo;
+  if (!schduler_engine_->GetUserInfoSchduler(uid, &userinfo)){
+    LOG_DEBUG2("uid[%ld]", uid);
+    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
+    return false;
+  }
+
   //check token
-  r = logic::SomeUtils::VerifyToken(uid, token);
-  if (!r) {
-    LOG_DEBUG2("uid[%ld], token[%s]",uid, token.c_str());
+  if (token != userinfo.token()) {
+    LOG_DEBUG2("check token[%s],userinfo token[%s]", token.c_str(), userinfo.token().c_str());
     send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
     return false;
   }
