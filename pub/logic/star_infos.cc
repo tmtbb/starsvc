@@ -144,6 +144,8 @@ void Recharge::ValueSerialization(base_logic::DictionaryValue* dict) {
         data_->status_ = 1;
     else if (status == 3)
         data_->status_ = 2;
+    else if (status == 4)
+        data_->status_ = 4;
     else
         data_->status_ = 2;
 
@@ -155,6 +157,8 @@ void Recharge::ValueSerialization(base_logic::DictionaryValue* dict) {
         data_->deposit_name_ = "微信";
     else if (data_->deposit_type_ == 2)
         data_->deposit_name_ = "银联";
+    else if (data_->deposit_type_ == 3)
+        data_->deposit_name_ = "支付宝";
     else
         data_->deposit_name_ = "未知";
     dict->GetInteger(L"recharge_type", &data_->recharge_type_);
