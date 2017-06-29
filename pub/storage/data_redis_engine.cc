@@ -48,8 +48,9 @@ bool DataRedisEngine::ReadListValue(base_logic::Value* value) {
   }
   base_storage::DictionaryStorageEngine* engine =
       redis_pool_.RedisConnectionPop();
-
-  r = engine->GetHashValues(hash_name.c_str(), hash_name.length(), list);
+  r = false;
+  if (engine != NULL)
+    r = engine->GetHashValues(hash_name.c_str(), hash_name.length(), list);
   if (!r)
     return r;
 
