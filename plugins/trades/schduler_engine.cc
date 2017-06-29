@@ -251,8 +251,8 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
             trades_order.set_handle_type(COMPLETE_ORDER); 
             trades_order.set_buy_handle_type(COMPLETE_ORDER);
             trades_order.set_sell_handle_type(COMPLETE_ORDER);
-            AlterTradesPositionState(trades_order.buy_position_id(),COMPLETE_HANDLE);
-            AlterTradesPositionState(trades_order.sell_position_id(),COMPLETE_HANDLE);
+            //AlterTradesPositionState(trades_order.buy_position_id(),COMPLETE_HANDLE);
+            //AlterTradesPositionState(trades_order.sell_position_id(),COMPLETE_HANDLE);
         }
         else if (result == -2){
             trades_order.set_handle_type(TIME_LESS_THAN); 
@@ -325,13 +325,33 @@ int32 TradesManager::MatchTrades(const int socket, const int64 session, const in
         if(op_trades.handle() == POSITION_HANDLE && 
             op_trades.uid() != trades.uid()) {
             //创建订单
-            op_trades.set_handle(MATCHES_HANDLE);
-            trades.set_handle(MATCHES_HANDLE);
+            //op_trades.set_handle(MATCHES_HANDLE);
+            //trades.set_handle(MATCHES_HANDLE);
+            op_trades.set_handle(COMPLETE_HANDLE);
+            trades.set_handle(COMPLETE_HANDLE);
             star_logic::TradesOrder  trades_order;
             if (op_trades.buy_sell() == BUY_TYPE)
+            {
                 SetTradesOrder(op_trades,trades, trades_order);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
+                AlterTradesPositionState(trades_order.buy_position_id(),COMPLETE_HANDLE);
+            }
             else
+            {
                 SetTradesOrder(trades,op_trades,trades_order);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
+                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
+                AlterTradesPositionState(trades_order.sell_position_id(),COMPLETE_HANDLE);
+            }
             //通知双对方
             MatchNotice(socket, session,reserved,trades_order);
             //数据库创建订单
