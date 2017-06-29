@@ -26,7 +26,8 @@ INCLUDE_PATHS = -I${LIB_DIR} \
 		-I../\
 		
 
-all : ${OUT_PUT} del-temp-files
+##all : ${OUT_PUT} del-temp-files
+all : ${OUT_PUT} 
 
 del-temp-files:
 	rm -rf *.o

@@ -50,6 +50,14 @@ void SomeUtils::CreateToken(const int64 uid, const std::string& password,
   (*token) = md5.GetHash();
 }
 
+void SomeUtils::CreateToken(const int64 uid, const int64 time, const std::string& password,
+                            std::string* token) {
+  std::stringstream os;
+  os << uid << time << password;
+  base::MD5Sum md5(os.str());
+  (*token) = md5.GetHash();
+}
+
 bool SomeUtils::VerifyToken(const int64 uid, const std::string& token) {
   return true;
 }

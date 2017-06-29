@@ -75,17 +75,19 @@ bool Im_Mysql::getuserinfofromaccid(const std::string& accid,std::string& head,s
 	return false;
 }
 //写用户信息
-int32 Im_Mysql::SetUserInfo(const std::string& phonenum,std::string accid,std::string token,
-                        DicValue* dic){
+int32 Im_Mysql::SetUserInfo(const int64 uid,const std::string accid,const std::string token,
+                        const int64 usertype, DicValue* dic){
   int32 err = 0;
   bool r = false;
   do {
     std::string sql;
 
     sql = "call star_addcloudinfo('"
-      + phonenum +  "','"
+      + base::BasicUtil::StringUtil::Int64ToString(uid) + "','"
       + accid + "','"
-      + token + "'" + ");";
+      + token + "','" 
+      + base::BasicUtil::StringUtil::Int64ToString(usertype)
+      + "');";
 
     //std::string m_sql = "call star_addcloudinfo(123,1770640,'m_name','m_accid')";
     dic->SetString(L"sql", sql);

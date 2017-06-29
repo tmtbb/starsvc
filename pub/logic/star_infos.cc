@@ -65,6 +65,7 @@ void UserInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
   dict->GetInteger(L"gender", &data_->gender_);
   dict->GetString(L"nickname", &data_->nickname_);
   dict->GetString(L"head_url", &data_->head_url_);
+  dict->GetBigInteger(L"token_time", &data_->token_time_);
 }
 
 

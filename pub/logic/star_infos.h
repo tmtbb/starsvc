@@ -497,11 +497,14 @@ public:
     const std::string& phone_num() const {
         return data_->phone_num_;
     }
-    const std::string nickname() const {
+    const std::string nickname() {
         return data_->nickname_;
     }
     const std::string& token() const {
         return data_->token_;
+    }
+    const int64 token_time() const {
+        return data_->token_time_;
     }
     const std::string& head_url() const {
         return data_->head_url_;
@@ -553,6 +556,9 @@ public:
     }
     void set_token(const std::string& token) {
         data_->token_ = token;
+    }
+    void set_token_time(const int64 token_time) {
+        data_->token_time_ = token_time;
     }
     void set_head_url(const std::string& head_url) {
         data_->head_url_ = head_url;
@@ -624,6 +630,7 @@ public:
         std::string phone_num_;
         std::string nickname_;
         std::string token_;
+        int64 token_time_;
         std::string head_url_;
         std::string real_name_;
         std::string id_card_;
