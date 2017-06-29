@@ -682,6 +682,7 @@ class Recharge {
         deposit_name_(NULL),
         status_(NULL),
         value_(NULL),
+        transaction_id_(NULL),
         recharge_type_(NULL) {
   }
 
@@ -719,6 +720,9 @@ class Recharge {
   void set_recharge_type(const int32 recharge_type) {
   	recharge_type_ = new base_logic::FundamentalValue(recharge_type);
   }
+  void set_transaction_id(const std::string& transaction_id) {
+    transaction_id_ = new base_logic::StringValue(transaction_id);
+  }
 
   base_logic::DictionaryValue* get() {
     value_ = new base_logic::DictionaryValue();
@@ -736,6 +740,8 @@ class Recharge {
       value_->Set(L"status", status_);
     if (recharge_type_ != NULL)
       value_->Set(L"recharge_type", recharge_type_);
+    if (transaction_id_ != NULL)
+      value_->Set(L"transaction_id", transaction_id_);
     return value_;
   }
 
@@ -747,6 +753,7 @@ class Recharge {
   base_logic::StringValue* deposit_name_;
   base_logic::FundamentalValue* status_;
   base_logic::FundamentalValue* recharge_type_;
+  base_logic::StringValue* transaction_id_;
   base_logic::DictionaryValue* value_;
 };
 

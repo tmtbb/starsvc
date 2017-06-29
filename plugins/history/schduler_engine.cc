@@ -224,6 +224,7 @@ void HistoryManager::SendHistoryRecharge(const int socket, const int64 session,
     net_recharge->set_deposit_type(recharge.deposit_type());
     net_recharge->set_status(recharge.status());
     net_recharge->set_recharge_type(recharge.recharge_type());
+    net_recharge->set_transaction_id(recharge.transaction_id());
     all_net_rechagre.set_unit(net_recharge->get());
     t_count++;
     if (all_net_rechagre.Size() % base_num == 0

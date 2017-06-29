@@ -114,7 +114,8 @@ bool RecordKafka::FectchBatchTempTask(std::list<base_logic::DictionaryValue*> *l
             continue;
         base_logic::DictionaryValue *task_info_dic =
             (base_logic::DictionaryValue *) value;
-        list->push_front(task_info_dic);
+        //list->push_front(task_info_dic);
+        list->push_back(task_info_dic);
         base_logic::ValueSerializer::DeleteSerializer(0, engine);
     }  // LOG_DEBUG2("update task info, total task num:%d", list->size());
     return true;
