@@ -74,6 +74,8 @@ class SomeUtils {
 
   static void CreateToken(const int64 uid, const std::string& password,
                           std::string* token);
+  static void CreateToken(const int64 uid, const int64 time, const std::string& password,
+                          std::string* token);
 
   static share::DataShareMgr* GetShareDataMgr();
 

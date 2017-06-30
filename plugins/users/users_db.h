@@ -39,7 +39,7 @@ class UsersDB {
 
   bool AccountRealNameInfo(const int64 uid, std::string &realname,std::string &id_card); 
   bool GetUserInfo(const int64 uid, const std::string& ip,
-                   star_logic::UserInfo& userinfo);
+                   star_logic::UserInfo& userinfo, std::string& pwd);
 
   bool GetVersion(const int64 type, users_logic::net_reply::TGetVersion &get_version);
  public:
@@ -65,7 +65,7 @@ class UsersDB {
                 const std::string &recommend, const std::string &device_id, 
                 const std::string &member_id, const std::string& sub_agentId);
   bool LoginWiXin(const std::string& open_id, const std::string& device_id,
-                    const std::string& ip, star_logic::UserInfo& user);
+                    const std::string& ip, star_logic::UserInfo& user, std::string& pwd);
 
   bool UserChangePasswd(const std::string& phone_num,const std::string& oldpasswd,
   								const std::string& newpasswd);

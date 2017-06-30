@@ -84,7 +84,7 @@ bool UsersDB::WXBindAccount(const std::string& phone_num,
 }
 bool UsersDB::LoginWiXin(const std::string& open_id,
                            const std::string &device_id,
-			   const std::string& ip,star_logic::UserInfo& user) {
+			   const std::string& ip,star_logic::UserInfo& user, std::string& pwd) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
@@ -110,6 +110,7 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
       user.set_nickname(agentName);
   if(info_value->GetString(L"head_url",&avatar_Large))
       user.set_head_url(avatar_Large);
+  info_value->GetString(L"passwd", &pwd);
 
   if(!info_value->GetBigInteger(L"type",&type))
     return false;
@@ -153,6 +154,8 @@ void UsersDB::CallLoginwxAccount(void* param, base_logic::Value* value) {
         info_value->SetString(L"nickname", (rows[3]));
       if (rows[4] != NULL && strlen(rows[4]) > 0)
         info_value->SetString(L"head_url", (rows[4]));
+      if (rows[5] != NULL && strlen(rows[5]) > 0)
+        info_value->SetString(L"passwd", (rows[5]));
     }
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
@@ -235,7 +238,7 @@ bool UsersDB::RegisterAccount(const std::string& phone_num,
 }
 
 bool UsersDB::GetUserInfo(const int64 uid, const std::string& ip,
-                          star_logic::UserInfo& userinfo) {
+                          star_logic::UserInfo& userinfo, std::string& pwd) {
 
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
@@ -254,8 +257,9 @@ bool UsersDB::GetUserInfo(const int64 uid, const std::string& ip,
     return false;
 
   dict->GetDictionary(L"resultvalue", &info_value);
-
   userinfo.ValueSerialization(info_value);
+  info_value->GetString(L"passwd",&pwd);
+
   if (dict) {
     delete dict;
     dict = NULL;
@@ -380,7 +384,6 @@ void UsersDB::CallLoginAccount(void* param, base_logic::Value* value) {
     while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
     if (rows[0] != NULL){
         info_value->SetBigInteger(L"uid", atoll(rows[0]));
-        //info_value->SetInteger(L"uid", atoi(rows[0]));
     }
     if (rows[1] != NULL){
       info_value->SetString(L"phone", rows[1]);
@@ -393,6 +396,9 @@ void UsersDB::CallLoginAccount(void* param, base_logic::Value* value) {
     }
     if (rows[4] != NULL && strlen(rows[4]) > 0){
       info_value->SetString(L"head_url", (rows[4]));
+    }
+    if (rows[5] != NULL && strlen(rows[5]) > 0){
+      info_value->SetString(L"passwd", (rows[5]));
     }
   }
   }

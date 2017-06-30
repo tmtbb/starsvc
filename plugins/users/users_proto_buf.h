@@ -1067,7 +1067,8 @@ class LoginAccount {
   LoginAccount()
       : token_(NULL),
         userinfo_(NULL),
-        value_(NULL) {
+        value_(NULL),
+        token_time_(NULL) {
   }
 
   ~LoginAccount() {
@@ -1082,6 +1083,10 @@ class LoginAccount {
     token_ = new base_logic::StringValue(token);
   }
 
+  void set_token_time(const int64 token_time) {
+    token_time_ = new base_logic::FundamentalValue(token_time);
+  }
+
   void set_userinfo(base_logic::DictionaryValue* dict) {
     userinfo_ = dict;
   }
@@ -1091,6 +1096,8 @@ class LoginAccount {
 	base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
     if (token_ != NULL)
       value_->Set(L"token", token_);
+    if (token_time_ != NULL)
+      value_->Set(L"token_time", token_time_);
 	value_->Set(L"result",result);
     if (userinfo_ != NULL)
       value_->Set(L"userinfo", userinfo_);
@@ -1100,6 +1107,7 @@ class LoginAccount {
  private:
   base_logic::DictionaryValue* userinfo_;
   base_logic::StringValue* token_;
+  base_logic::FundamentalValue* token_time_;
   base_logic::DictionaryValue* value_;
 };
 

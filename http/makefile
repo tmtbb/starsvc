@@ -22,11 +22,13 @@ BASE_DIR = ./../pub
 PLUGIN_DIR = ../plugins
 CUSTOM_THIRD_PATH = $(LIB_DIR)/mylib/third_party
 ## 头文件
-INCLUDE_PATHS = -I$(LIB_DIR)/mylib/public/\
-		-I$(LIB_DIR)/mylib/base\
-		-I/usr/local/lib\
+INCLUDE_PATHS = -I./\
+		-I../\
 		-I$(BASE_DIR)/\
 		-I$(PLUGIN_DIR)\
+		-I$(LIB_DIR)/mylib/public/\
+		-I$(LIB_DIR)/mylib/base\
+		-I/usr/local/lib\
 		-I$(LIB_DIR)/third_party/breakpad/src\
 		-I$(CUSTOM_THIRD_PATH)\
 		
@@ -51,9 +53,10 @@ POBJ =  mig_log.o core_interface.o http_formate.o fcgimodule.o  packet_processin
 
 OUTPUT_FILE = /var/www/cgi-bin/flight
 #############################################################################################################################
-all: clean proc delete-temp-file
+##all: clean proc delete-temp-file
+all: proc 
 
-proc: historyproc quotationsproc tradesproc payproc usersproc bankproc
+proc: historyproc quotationsproc tradesproc payproc usersproc bankproc imcouldproc
 
 ######################bankproc###############################################
 BANKNAME = bank_
@@ -325,7 +328,8 @@ TRADESNAME = trades_
 TRADESPROC_PATH = /trades
 TRADES_OBJECT_PATH = ./obj$(NEWSPROC_PATH)
 OTJERPROC_VERSION = /v1
-tradesproc:$(TRADESPROC_PATH)/cur_position_list.fcgi $(TRADESPROC_PATH)/open_position.fcgi $(TRADESPROC_PATH)/goods.fcgi $(TRADESPROC_PATH)/flight_info.fcgi
+##tradesproc:$(TRADESPROC_PATH)/cur_position_list.fcgi $(TRADESPROC_PATH)/open_position.fcgi $(TRADESPROC_PATH)/goods.fcgi $(TRADESPROC_PATH)/flight_info.fcgi
+tradesproc:$(TRADESPROC_PATH)/cur_position_list.fcgi $(TRADESPROC_PATH)/open_position.fcgi 
 
 $(TRADESPROC_PATH)/cur_position_list.fcgi: $(TRADES_OBJECT_PATH)/$(TRADESNAME)cur_position_list.o $(POBJ)
 	$(LINKALL) -o $(OUTPUT_FILE)$(TRADESPROC_PATH)$(OTJERPROC_VERSION)/cur_position_list.fcgi
@@ -351,6 +355,21 @@ $(TRADES_OBJECT_PATH)/$(TRADESNAME)goods.o:
 
 $(TRADES_OBJECT_PATH)/$(TRADESNAME)flight_info.o:
 	$(COMPILE) .$(TRADESPROC_PATH)$(OTJERPROC_VERSION)/flight_info/flight_info.cc
+
+
+######################imcouldproc###############################################
+IMCOULDNAME = imcould_
+IMCOULDPROC_PATH = /imcloud
+IMCOULD_OBJECT_PATH = ./obj$(NEWSPROC_PATH)
+#OTJERPROC_VERSION = /v1 
+imcouldproc:$(IMCOULDPROC_PATH)/getcloudtoken.fcgi 
+
+$(IMCOULDPROC_PATH)/getcloudtoken.fcgi: $(IMCOULD_OBJECT_PATH)/$(IMCOULDNAME)getcloudtoken.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(IMCOULDPROC_PATH)$(OTJERPROC_VERSION)/getcloudtoken.fcgi
+
+### 编译
+$(IMCOULD_OBJECT_PATH)/$(IMCOULDNAME)getcloudtoken.o:
+	$(COMPILE) .$(IMCOULDPROC_PATH)$(OTJERPROC_VERSION)/getcloudtoken/getcloudtoken.cc
 
 
 

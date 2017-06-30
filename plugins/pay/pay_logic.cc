@@ -298,9 +298,15 @@ bool Paylogic::OnCertification(struct server* srv, int socket,
   base_logic::DictionaryValue dic;
   dic.SetString(L"cardNo", idcard);
   dic.SetString(L"realName", name);
+  base_http::HttpRequestHeader *httphead = new base_http::HttpRequestHeader();
+  httphead->AddHeaderFromString(strHeader);
   //base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
-  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, httphead, strResult, 1);
   LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
+  if(httphead){
+    delete httphead;
+    httphead = NULL;
+  }
 
   //pay_logic::net_reply::TResult r_ret;;
   //r_ret.set_result(1);
