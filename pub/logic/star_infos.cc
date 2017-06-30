@@ -163,6 +163,7 @@ void Recharge::ValueSerialization(base_logic::DictionaryValue* dict) {
     else
         data_->deposit_name_ = "未知";
     dict->GetInteger(L"recharge_type", &data_->recharge_type_);
+    dict->GetString(L"transaction_id", &data_->transaction_id_);
 }
 
 TradesOrder::TradesOrder() {

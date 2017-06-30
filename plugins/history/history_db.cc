@@ -252,6 +252,15 @@ void HistoryDB::CallHistroyRechargeRecord(void* param,
       if (rows[7] != NULL)
         info_value->SetInteger(L"recharge_type", atoi(rows[7]));
 
+      if (rows[8] != NULL)
+        info_value->SetString(L"transaction_id", (rows[8]));
+      else
+      {
+        std::string tmp = "";
+        info_value->SetString(L"transaction_id", tmp.c_str());
+      }
+
+
       list->Append((base_logic::Value *) (info_value));
     }
   }

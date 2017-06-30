@@ -377,6 +377,9 @@ public:
     void set_deposit_name(const std::string& deposit_name) {
         data_->deposit_name_ = deposit_name;
     }
+    void set_transaction_id(const std::string& transaction_id) {
+        data_->transaction_id_ = transaction_id;
+    }
 
     void set_deposit_unix_time(const int64 unix_time) {
         data_->deposit_unix_time_ = unix_time;
@@ -417,6 +420,9 @@ public:
     const std::string& deposit_name() const {
         return data_->deposit_name_;
     }
+    const std::string& transaction_id() const {
+        return data_->transaction_id_;
+    }
     
     const int32 recharge_type() const {
         return data_->recharge_type_;
@@ -451,6 +457,7 @@ public:
         std::string deposit_time_;
         std::string deposit_name_;
         int32 recharge_type_;
+        std::string transaction_id_;
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);
         }

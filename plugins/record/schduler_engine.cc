@@ -594,11 +594,13 @@ void RecordManager::SetTradesOrder(star_logic::TradesOrder& trades_order) {
         //LOG_DEBUG("111111111111");
         return;
     }
-
-    r = base::MapGet<SYMBOL_TRADES_ORDER_MAP,SYMBOL_TRADES_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
-        (record_cache_->symbol_trades_order_,trades_order.symbol(),symbol_order_list);
-    symbol_order_list.push_back(trades_order);
-    record_cache_->symbol_trades_order_[trades_order.symbol()] = symbol_order_list;
+    //if (trades_order.handle_type() == COMPLETE_ORDER )
+    {
+        r = base::MapGet<SYMBOL_TRADES_ORDER_MAP,SYMBOL_TRADES_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
+            (record_cache_->symbol_trades_order_,trades_order.symbol(),symbol_order_list);
+        symbol_order_list.push_back(trades_order);
+        record_cache_->symbol_trades_order_[trades_order.symbol()] = symbol_order_list;
+    }
 
 
 
