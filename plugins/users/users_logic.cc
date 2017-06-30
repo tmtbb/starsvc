@@ -209,6 +209,7 @@ catch(...)
 
 bool Userslogic::OnUsersClose(struct server *srv, const int socket) {
     schduler_engine_->CloseUserInfoSchduler(socket);
+    LOG_DEBUG2("OnUsersClose ==================9999999999[%d]", socket);
     return true;
 }
 
@@ -267,20 +268,20 @@ bool Userslogic::OnLoginWiXin(struct server* srv, int socket,
 
     LOG_ERROR2("get request value  openid : %s,deviceid: %s",openid.c_str(),deviceid.c_str());
     
-    bool r = user_db_->LoginWiXin(openid, deviceid,ip, userinfo);
+    bool r = user_db_->LoginWiXin(openid, deviceid,ip, userinfo, passwd);
     if (!r) {
         send_error(socket, ERROR_TYPE, NO_PASSWORD_ERRNOR, packet->session_id);
         return false;
     }
 
-    if (CheckUserIsLogin(userinfo)) {
-        return false;
-    }
+    CheckUserIsLogin(userinfo);
 
     //token 计算
     std::string token;
-    logic::SomeUtils::CreateToken(userinfo.uid(), passwd, &token);
+    int64 token_time =  time(NULL);
+    logic::SomeUtils::CreateToken(userinfo.uid(), token_time, passwd, &token);
     userinfo.set_token(token);
+    userinfo.set_token_time(token_time);
     //userinfo.set_phone_num(login_account.phone_num());
 
     //发送用信息
@@ -474,7 +475,8 @@ bool Userslogic::OnUserAccount(struct server* srv, int socket,
   }
   userinfo.set_balance(balance);
 
-  net_balance.set_nick_name(userinfo.nickname());
+  std::string snickname = userinfo.nickname();
+  net_balance.set_nick_name(snickname);
   std::string t_sUserHeadUrl = userinfo.head_url();
   net_balance.set_head_url(t_sUserHeadUrl);
   net_balance.set_balance(userinfo.balance());
@@ -551,6 +553,7 @@ bool Userslogic::CheckUserIsLogin(star_logic::UserInfo &userinfo) {
     LOG_DEBUG2("_______________ uid%ld, socket[%d]", userinfo.uid(), userinfo.socket_fd());
     if (schduler_engine_->GetUserInfoSchduler(userinfo.uid(), &tuserinfo))
     {
+        LOG_DEBUG2("close__________________ uid[%ld], socket[%d]", tuserinfo.uid(), tuserinfo.socket_fd());
         //已登陆发送退出消息
         struct PacketControl packet_reply;
         base_logic::DictionaryValue ret_list;
@@ -560,7 +563,6 @@ bool Userslogic::CheckUserIsLogin(star_logic::UserInfo &userinfo) {
         ret_list.SetBigInteger(L"result",ret);
         send_message(tuserinfo.socket_fd(),&packet_reply);
         schduler_engine_->CloseUserInfoSchduler(tuserinfo.socket_fd());
-        LOG_DEBUG2("close__________________ uid%ld, socket[%d]", userinfo.uid(), userinfo.socket_fd());
         return true;
     }
     return false;
@@ -596,8 +598,10 @@ bool Userslogic::OnLoginAccount(struct server* srv, int socket,
 
     //token 计算
     std::string token;
-    logic::SomeUtils::CreateToken(userinfo.uid(), login_account.passwd(), &token);
+    int64 token_time =  time(NULL);
+    logic::SomeUtils::CreateToken(userinfo.uid(), token_time, login_account.passwd(), &token);
     userinfo.set_token(token);
+    userinfo.set_token_time(token_time);
     userinfo.set_phone_num(login_account.phone_num());
 
     //发送用信息
@@ -607,35 +611,61 @@ bool Userslogic::OnLoginAccount(struct server* srv, int socket,
 
 bool Userslogic::OnUserCheckToken(struct server* srv, int socket,
                                   struct PacketHead *packet) {
-  users_logic::net_request::CheckToken check_token;
   if (packet->packet_length <= PACKET_HEAD_LENGTH) {
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
   struct PacketControl* packet_control = (struct PacketControl*) (packet);
-  bool r = check_token.set_http_packet(packet_control->body_);
-  if (!r) {
+
+  int64 uid, tokentime;
+  std::string token;
+  bool r1  = packet_control->body_->GetBigInteger(L"id", &uid);
+  bool r2  = packet_control->body_->GetString(L"token", &token);
+  bool r  = packet_control->body_->GetBigInteger(L"token_time", &tokentime);
+  if(!r1 || !r2 || !r){
     LOG_DEBUG2("packet_length %d",packet->packet_length);
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
 
+  LOG_DEBUG2("OnUserCheckToken begin, uid[%ld], token[%s], tokentime[%ld]", 
+              uid, token.c_str(), tokentime);
   std::string ip;
   int port;
   logic::SomeUtils::GetIPAddress(socket, ip, port);
 
   star_logic::UserInfo userinfo;
-  if (!schduler_engine_->GetUserInfoSchduler(check_token.uid(), &userinfo)){
-    LOG_DEBUG2("uid[%ld],ip[%s]",check_token.uid(), ip.c_str());
-    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
-    return false;
-  }
+  if (!schduler_engine_->GetUserInfoSchduler(uid, &userinfo)){
+    LOG_DEBUG2("User offline, begin to query infor from DB. uid[%ld],ip[%s]",
+                uid, ip.c_str());
+    
+    std::string pwd("");
+    r = user_db_->GetUserInfo(uid, ip, userinfo, pwd);
+    if(!r){
+      LOG_DEBUG2("GetUserInfo error, uid[%ld]", uid);
+      send_error(socket, ERROR_TYPE, NO_USER_NOT_EXIST, packet->session_id);
+      return false;
+    }
 
-  //check token
-  if (check_token.token() != userinfo.token()) {
-    LOG_DEBUG2("check_token[%s],userinfo token[%s]",check_token.token().c_str(), userinfo.token().c_str());
-    send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
-    return false;
+    //token 计算
+    std::string stoken;
+    logic::SomeUtils::CreateToken(userinfo.uid(), tokentime, pwd, &stoken);
+    if (token != stoken) {
+      LOG_DEBUG2("check token[%s],userinfo token[%s]", token.c_str(), stoken.c_str());
+      send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+      return false;
+    }
+    userinfo.set_token(stoken);
+    userinfo.set_token_time(tokentime);
+  }
+  else{
+    //user online
+    //check token
+    if (token != userinfo.token()) {
+      LOG_DEBUG2("check token[%s],userinfo token[%s]", token.c_str(), userinfo.token().c_str());
+      send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+      return false;
+    }
   }
   
   
@@ -774,7 +804,7 @@ bool Userslogic::SendUserInfo(const int socket, const int64 session,
                               star_logic::UserInfo& userinfo) {
     userinfo.set_socket_fd(socket);
     userinfo.set_is_effective(true);
-
+LOG_DEBUG2("SendUserInfo ==================000000000000[%d]", socket);
     //写入共享数据库中
     users_logic::net_reply::LoginAccount net_login_account;
     users_logic::net_reply::UserInfo net_userinfo;
@@ -786,10 +816,13 @@ bool Userslogic::SendUserInfo(const int socket, const int64 session,
     net_userinfo.set_avatar_large(userinfo.head_url());
     net_login_account.set_userinfo(net_userinfo.get());
     net_login_account.set_token(userinfo.token());
+    net_login_account.set_token_time(userinfo.token_time());
     schduler_engine_->SetUserInfoSchduler(userinfo.uid(), &userinfo);
 
     star_logic::UserInfo tuserinfo;
-    schduler_engine_->GetUserInfoSchduler(userinfo.uid(), &tuserinfo);
+    if(schduler_engine_->GetUserInfoSchduler(userinfo.uid(), &tuserinfo)){
+      LOG_DEBUG2("SendUserInfo ==================1111111111[%d]", socket);
+    }
     struct PacketControl net_packet_control;
     MAKE_HEAD(net_packet_control, opcode, 1, 0, session, 0);
     net_packet_control.body_ = net_login_account.get();
@@ -872,9 +905,15 @@ bool Userslogic::OnCertification(struct server* srv, int socket,
   base_logic::DictionaryValue dic;
   dic.SetString(L"cardNo", idcard);
   dic.SetString(L"realName", name);
-  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
-  //base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, 1);
+  base_http::HttpRequestHeader *httphead = new base_http::HttpRequestHeader();
+  httphead->AddHeaderFromString(strHeader);
+  //base_http::HttpAPI::RequestGetMethod(strUrl, &dic, strResult, strHeader, 1);
+  base_http::HttpAPI::RequestGetMethod(strUrl, &dic, httphead, strResult, 1);
   LOG_DEBUG2("strResult [%s]___________________________________________________", strResult.c_str());
+  if(httphead){
+    delete httphead;
+    httphead = NULL;
+  }
 
   users_logic::net_reply::TResult r_ret;;
   r_ret.set_result(1);
@@ -1027,7 +1066,8 @@ bool Userslogic::OnResetNickName(struct server* srv, int socket,
   if (r) {
     //获取用户信息
 	  star_logic::UserInfo userinfo;
-	  r = user_db_->GetUserInfo(uid, "", userinfo);
+    std::string pwd;
+	  r = user_db_->GetUserInfo(uid, "", userinfo, pwd);
 	  if(!r){
 	    LOG_DEBUG2("GetUserInfo error, uid[%ld]",uid);
 	  }

@@ -363,11 +363,13 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
   std::string name;
   std::string accid;
   std::string phone;
+  int64 uid, usertype;
   bool r1 = packet_control->body_->GetString(L"name_value", &name);
-  bool r2 = packet_control->body_->GetString(L"accid_value", &accid);
+  bool r2 = packet_control->body_->GetBigInteger(L"user_type", &usertype);
   bool r3 = packet_control->body_->GetString(L"phone", &phone);
+  bool r4 = packet_control->body_->GetBigInteger(L"uid", &uid);
 
-  bool r = (r1 && r2 && r3);
+  bool r = (r1 && r2 && r3 && r4);
   if (!r) {
     LOG_DEBUG2("packet_length %d",packet->packet_length);
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
@@ -381,9 +383,9 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
   LOG_MSG2("getmessage-----:%s,%s",tokencode.name().c_str(),tokencode.accid().c_str());
   */
   im_process::ImProcess tokenfun;
-  std::string tokenvalue = tokenfun.gettoken(name,accid);
+  std::string tokenvalue = tokenfun.gettoken(name,phone);
   if(tokenvalue.length()<=0){
-    tokenvalue = tokenfun.refreshtoken(accid);
+    tokenvalue = tokenfun.refreshtoken(phone);
   }
 
   if(tokenvalue.length() > 0){
@@ -399,9 +401,7 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
     
     //写入数据
     DicValue *dic = new base_logic::DictionaryValue();
-    int64 userid = 0;
-    int64 phonenum = 0;
-    sqlengine->SetUserInfo(phone,accid,tokenvalue,dic);
+    sqlengine->SetUserInfo(uid,phone,tokenvalue,usertype,dic);
   }else{
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	return false;

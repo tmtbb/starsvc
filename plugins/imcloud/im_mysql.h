@@ -22,8 +22,8 @@ class Im_Mysql {
 
   static void Callgetuserinfofromaccid(void* param, base_logic::Value* value);
   //写入用户信息到数据库
-  int32 SetUserInfo(const std::string& phonenum,std::string accid,std::string token,
-                        DicValue* dic);
+  int32 SetUserInfo(const int64 uid,const std::string accid,const std::string token,
+                        const int64 usertype, DicValue* dic);
 
   //获取用户信息
   int32 GetStaticInfo(int64 phonenum, DicValue* dic);
