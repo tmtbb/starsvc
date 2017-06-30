@@ -456,10 +456,17 @@ bool Paylogic::OnCheckPayPwd(struct server* srv, int socket, struct PacketHead* 
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
+
+  star_logic::UserInfo userinfo;
+  if (!schduler_engine_->GetUserInfoSchduler(uid, &userinfo)){
+    LOG_DEBUG2("uid[%ld]", uid);
+    send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+    return false;
+  }
+
   //check token
-  r1 = logic::SomeUtils::VerifyToken(uid, token);
-  if (!r1) {
-    LOG_DEBUG2("packet_length %d",packet->packet_length);
+  if (token != userinfo.token()) {
+    LOG_DEBUG2("check token[%s],userinfo token[%s]", token.c_str(), userinfo.token().c_str());
     send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
     return false;
   }

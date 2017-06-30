@@ -88,6 +88,8 @@ class Userslogic {
 
   bool CheckUserIsLogin(star_logic::UserInfo &userinfo); 
 
+  bool OnSaveDeviceId(struct server* srv, int socket,struct PacketHead *packet); 
+
  private:
   bool Init();
  private:

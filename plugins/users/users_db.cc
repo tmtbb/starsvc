@@ -84,7 +84,7 @@ bool UsersDB::WXBindAccount(const std::string& phone_num,
 }
 bool UsersDB::LoginWiXin(const std::string& open_id,
                            const std::string &device_id,
-			   const std::string& ip,base_logic::DictionaryValue &ret) {
+			   const std::string& ip,star_logic::UserInfo& user) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
@@ -104,25 +104,30 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
 
   std::string phone, agentName, avatar_Large;
   int64 type,uid;
-  r = info_value->GetString(L"phone", &phone);
-  r = info_value->GetString(L"nickname", &agentName);
-  r = info_value->GetString(L"head_url", &avatar_Large);
+  if(info_value->GetString(L"phone",&phone))
+      user.set_phone_num(phone);
+  if(info_value->GetString(L"nickname",&agentName))
+      user.set_nickname(agentName);
+  if(info_value->GetString(L"head_url",&avatar_Large))
+      user.set_head_url(avatar_Large);
+
   if(!info_value->GetBigInteger(L"type",&type))
     return false;
-  if(!info_value->GetBigInteger(L"id",&uid))
-    return false;
+  user.set_type(type);
   r = (r && phone.length() > 1) ? true : false;
   if (!r)
     return false;
 
-  base_logic::DictionaryValue *tmp = new base_logic::DictionaryValue();
-  tmp->SetString(L"phone",phone);
-  tmp->SetString(L"nickname",agentName);
-  tmp->SetString(L"head_url",avatar_Large);
-  tmp->SetBigInteger(L"type",type);
-  tmp->SetBigInteger(L"id",uid);
-
-  ret.Set(L"userinfo",(base_logic::Value*)tmp);
+  if(info_value->GetBigInteger(L"id", &uid)){
+    if(uid <= 0)
+      return false;
+    user.set_uid(uid);
+  }
+  else
+  {
+    return false;
+  }
+  
   if (dict) {
     delete dict;
     dict = NULL;
@@ -693,5 +698,50 @@ void UsersDB::CallGetVersion(void* param, base_logic::Value* value) {
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
 }
+
+bool UsersDB::SaveDeviceId(const int64 &uid, const int64 &devicetype, const std::string &deviceid, int32& flag)
+{
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+
+  sql = "call proc_SaveDeviceId('" + 
+      base::BasicUtil::StringUtil::Int64ToString(uid) + "','" + 
+      base::BasicUtil::StringUtil::Int64ToString(devicetype) + "','" + 
+      deviceid + "');";
+  
+  base_logic::ListValue *listvalue;
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallSaveDeviceId);
+  if (!r)
+    return false;
+  
+  dict->GetDictionary(L"resultvalue", &info_value);
+  r = info_value->GetInteger(L"result", &flag);
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
+
+void UsersDB::CallSaveDeviceId(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetInteger(L"result", atoi(rows[0]));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+}
+
 }  // namespace history_logic
 

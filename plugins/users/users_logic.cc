@@ -186,6 +186,11 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
             OnResetNickName(srv, socket, packet);
             break;
         }
+        case R_SET_DEVICE_INFO :
+        {
+            OnSaveDeviceId(srv, socket, packet);
+            break;
+        }
 
 	case R_GET_VERSION:{
       OnGetVersion(srv, socket, packet);
@@ -261,30 +266,24 @@ bool Userslogic::OnLoginWiXin(struct server* srv, int socket,
     packet_control->body_->GetString(L"deviceId",&deviceid);
 
     LOG_ERROR2("get request value  openid : %s,deviceid: %s",openid.c_str(),deviceid.c_str());
-    base_logic::DictionaryValue ret_list;
-    bool r = user_db_->LoginWiXin(openid, deviceid,ip, ret_list);
+    
+    bool r = user_db_->LoginWiXin(openid, deviceid,ip, userinfo);
     if (!r) {
         send_error(socket, ERROR_TYPE, NO_PASSWORD_ERRNOR, packet->session_id);
         return false;
     }
 
-    //userinfo.set_token(token);
-    //发送用信息
-    //SendUserInfo(socket, packet->session_id, S_WX_LOGIN, userinfo);
+    if (CheckUserIsLogin(userinfo)) {
+        return false;
+    }
 
-    struct PacketControl packet_reply;
-    //base_logic::DictionaryValue ret_list;
-    MAKE_HEAD(packet_reply, S_WX_LOGIN, INFO_TYPE, 0,packet->session_id, 0);
-    base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
     //token 计算
     std::string token;
     logic::SomeUtils::CreateToken(userinfo.uid(), passwd, &token);
-    int64 ret = 1;
-    ret_list.SetBigInteger(L"result",ret);
-    ret_list.SetString(L"token",token);
+    userinfo.set_token(token);
+    //userinfo.set_phone_num(login_account.phone_num());
 
-    packet_reply.body_ = &ret_list;
-    //send_message(socket,&packet_reply);
+    //发送用信息
     SendUserInfo(socket, packet->session_id, S_WX_LOGIN, userinfo);
     return true;
 }
@@ -462,7 +461,7 @@ bool Userslogic::OnUserAccount(struct server* srv, int socket,
   r = schduler_engine_->GetUserInfoSchduler(user_account.uid(), &userinfo);
   if (!r){
     LOG_DEBUG2("uid[%ld]",user_account.uid());
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
     return r;
   }
   
@@ -518,7 +517,7 @@ bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
   r = schduler_engine_->GetUserInfoSchduler(user_real_info.uid(), &userinfo);
   if (!r) {
     LOG_DEBUG2("uid[%ld]",user_real_info.uid());
-    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
     return false;
   }
 
@@ -562,7 +561,9 @@ bool Userslogic::CheckUserIsLogin(star_logic::UserInfo &userinfo) {
         send_message(tuserinfo.socket_fd(),&packet_reply);
         schduler_engine_->CloseUserInfoSchduler(tuserinfo.socket_fd());
         LOG_DEBUG2("close__________________ uid%ld, socket[%d]", userinfo.uid(), userinfo.socket_fd());
+        return true;
     }
+    return false;
 }
 
 
@@ -619,26 +620,24 @@ bool Userslogic::OnUserCheckToken(struct server* srv, int socket,
     return false;
   }
 
-  star_logic::UserInfo userinfo;
   std::string ip;
   int port;
   logic::SomeUtils::GetIPAddress(socket, ip, port);
-  userinfo.set_token(check_token.token());
-  //check token
-  r = logic::SomeUtils::VerifyToken(check_token.uid(), check_token.token());
-  if (!r) {
-    LOG_DEBUG2("uid[%ld]",check_token.uid());
-    send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
+
+  star_logic::UserInfo userinfo;
+  if (!schduler_engine_->GetUserInfoSchduler(check_token.uid(), &userinfo)){
+    LOG_DEBUG2("uid[%ld],ip[%s]",check_token.uid(), ip.c_str());
+    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
     return false;
   }
 
-  //获取用户信息
-  r = user_db_->GetUserInfo(check_token.uid(), ip, userinfo);
-  if(!r){
-    LOG_DEBUG2("uid[%ld],ip[%s]",check_token.uid(), ip.c_str());
+  //check token
+  if (check_token.token() != userinfo.token()) {
+    LOG_DEBUG2("check_token[%s],userinfo token[%s]",check_token.token().c_str(), userinfo.token().c_str());
     send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
     return false;
   }
+  
   
   //发送用信息
   SendUserInfo(socket, packet->session_id, S_ACCOUNT_CHECK, userinfo);
@@ -996,11 +995,18 @@ bool Userslogic::OnResetNickName(struct server* srv, int socket,
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
-  
+
+  //获取用户信息
+  star_logic::UserInfo userinfo;
+  if (!schduler_engine_->GetUserInfoSchduler(uid, &userinfo)){
+    LOG_DEBUG2("uid[%ld]", uid);
+    send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
+    return false;
+  }
+
   //check token
-  r = logic::SomeUtils::VerifyToken(uid, token);
-  if (!r) {
-    LOG_DEBUG2("uid[%ld], token[%s]",uid, token.c_str());
+  if (token != userinfo.token()) {
+    LOG_DEBUG2("check token[%s],userinfo token[%s]", token.c_str(), userinfo.token().c_str());
     send_error(socket, ERROR_TYPE, NO_CHECK_TOKEN_ERRNO, packet->session_id);
     return false;
   }
@@ -1073,4 +1079,52 @@ bool Userslogic::OnGetVersion(struct server* srv, int socket,
 
   return true;
 }
+
+bool Userslogic::OnSaveDeviceId(struct server* srv, int socket,
+                                      struct PacketHead *packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  bool r1,r2,r3;
+  int64 uid, deviceType;
+  std::string deviceid;
+  r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
+  r2 = packet_control->body_->GetBigInteger(L"device_type", &deviceType);
+  r3 = packet_control->body_->GetString(L"device_id", &deviceid);
+  
+  bool r = (r1 && r2 && r3);
+  if (!r1 || !r2 || !r3) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  
+
+  int32 flag = 0;
+  r = user_db_->SaveDeviceId(uid,deviceType,deviceid,flag);
+  if (!r) {
+    LOG_DEBUG2("uid[%ld], deviceType[%ld], deviceid[%s]",uid, deviceType, deviceid.c_str());
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+    return false;
+  }
+  if(flag<0){
+    LOG_DEBUG2("uid[%ld], deviceType[%ld], deviceid[%s]",uid, deviceType, deviceid.c_str());
+    send_error(socket, ERROR_TYPE, NO_SAVE_DEVICE_ERR, packet->session_id);
+    return false;
+  }
+
+  //发送信息
+  struct PacketControl packet_control_ack; 
+  MAKE_HEAD(packet_control_ack,S_SET_DEVICE_INFO, 1, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic; 
+  dic.SetInteger(L"result", 1);
+  packet_control_ack.body_ = &dic; 
+  send_message(socket, &packet_control_ack); 
+
+  return true;
+}
+
 }  // namespace trades_logic
