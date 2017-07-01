@@ -222,7 +222,7 @@ void RecordManager::SendFansOrder(const int socket, const int64 session, const i
     base_num = base_num < count ? base_num : count;
     int32 t_start = 0;
     int32 t_count = 0;
-    trades_order_list.sort(star_logic::TradesOrder::open_after);
+    trades_order_list.sort(star_logic::TradesOrder::open_price_after);
     record_logic::net_reply::AllOrder net_allorder;
     while (trades_order_list.size() > 0 && t_count < count) {
         star_logic::TradesOrder trades_order = trades_order_list.front();
