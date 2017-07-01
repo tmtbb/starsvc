@@ -209,7 +209,6 @@ catch(...)
 
 bool Userslogic::OnUsersClose(struct server *srv, const int socket) {
     schduler_engine_->CloseUserInfoSchduler(socket);
-    LOG_DEBUG2("OnUsersClose ==================9999999999[%d]", socket);
     return true;
 }
 
@@ -804,7 +803,6 @@ bool Userslogic::SendUserInfo(const int socket, const int64 session,
                               star_logic::UserInfo& userinfo) {
     userinfo.set_socket_fd(socket);
     userinfo.set_is_effective(true);
-LOG_DEBUG2("SendUserInfo ==================000000000000[%d]", socket);
     //写入共享数据库中
     users_logic::net_reply::LoginAccount net_login_account;
     users_logic::net_reply::UserInfo net_userinfo;
@@ -820,9 +818,8 @@ LOG_DEBUG2("SendUserInfo ==================000000000000[%d]", socket);
     schduler_engine_->SetUserInfoSchduler(userinfo.uid(), &userinfo);
 
     star_logic::UserInfo tuserinfo;
-    if(schduler_engine_->GetUserInfoSchduler(userinfo.uid(), &tuserinfo)){
-      LOG_DEBUG2("SendUserInfo ==================1111111111[%d]", socket);
-    }
+    schduler_engine_->GetUserInfoSchduler(userinfo.uid(), &tuserinfo);
+    
     struct PacketControl net_packet_control;
     MAKE_HEAD(net_packet_control, opcode, 1, 0, session, 0);
     net_packet_control.body_ = net_login_account.get();

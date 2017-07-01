@@ -222,7 +222,7 @@ void RecordManager::SendFansOrder(const int socket, const int64 session, const i
     base_num = base_num < count ? base_num : count;
     int32 t_start = 0;
     int32 t_count = 0;
-    trades_order_list.sort(star_logic::TradesOrder::price_after);
+    trades_order_list.sort(star_logic::TradesOrder::open_after);
     record_logic::net_reply::AllOrder net_allorder;
     while (trades_order_list.size() > 0 && t_count < count) {
         star_logic::TradesOrder trades_order = trades_order_list.front();
@@ -258,8 +258,26 @@ void RecordManager::SendFansOrder(const int socket, const int64 session, const i
         star_logic::UserInfo sell_user_info;
         {
             base_logic::RLockGd lk(lock_);
-            base::MapGet<USER_INFO_MAP,USER_INFO_MAP::iterator,int64>
-                (record_cache_->user_info_map_,trades_order.sell_uid(),sell_user_info);
+            if(!base::MapGet<USER_INFO_MAP,USER_INFO_MAP::iterator,int64>
+                (record_cache_->user_info_map_,trades_order.sell_uid(),sell_user_info)){
+                if(net_trades_unit){
+                    delete net_trades_unit;
+                    net_trades_unit = NULL;
+                }
+                if(net_buy_user_unit){
+                    delete net_buy_user_unit;
+                    net_buy_user_unit = NULL;
+                }
+                if(net_sell_user_unit){
+                    delete net_sell_user_unit;
+                    net_sell_user_unit = NULL;
+                }
+                if(net_user_order){
+                    delete net_user_order;
+                    net_user_order = NULL;
+                }
+                continue;
+            }
         }
 
         star_logic::UserInfo buy_user_info;
@@ -339,8 +357,22 @@ void RecordManager::SendFansPosition(const int socket, const int64 session, cons
         star_logic::UserInfo user_info;
         {
             base_logic::RLockGd lk(lock_);
-            base::MapGet<USER_INFO_MAP,USER_INFO_MAP::iterator,int64>
-                    (record_cache_->user_info_map_,trades_position.uid(),user_info);
+            if(!base::MapGet<USER_INFO_MAP,USER_INFO_MAP::iterator,int64>
+                    (record_cache_->user_info_map_,trades_position.uid(),user_info)){
+                if(net_user_unit){
+                    delete net_user_unit;
+                    net_user_unit = NULL;
+                }
+                if(net_position_unit){
+                    delete net_position_unit;
+                    net_position_unit = NULL;
+                }
+                if(net_user_trades){
+                    delete net_user_trades;
+                    net_user_trades = NULL;
+                }
+                continue;
+            }
         }
         net_user_unit->set_uid(user_info.uid());
         net_user_unit->set_gender(user_info.gender());
@@ -418,7 +450,7 @@ void RecordManager::TodayOrder(const int socket, const int64 session, const int3
                                 const int64 uid, const int32 start,const int32 count) {
     std::list<star_logic::TradesOrder> trades_order_list;
     int64 start_pan = ((time(NULL) / 24 / 60 / 60) * 24 * 60 * 60) - (8 * 60 * 60);
-    GetUserOrder(uid,start_pan,start,COMPLETE_ORDER,count,trades_order_list);
+    GetUserOrder(uid,start_pan,COMPLETE_ORDER,start,count,trades_order_list);
     if (trades_order_list.size()<=0) {
         send_error(socket, ERROR_TYPE, NO_HAVE_TODAY_DATA, session);
         return;
@@ -478,14 +510,22 @@ void RecordManager::SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
     //检查是否存在
     r = base::MapGet<TRADES_POSITION_MAP,TRADES_POSITION_MAP::iterator,int64,star_logic::TradesPosition>
         (record_cache_->trades_positions_,trades_position.position_id(),tmp_trades_position);
-    if(r) { //存在，修改状态
+    if(r) { //存在，修改状态, 已经成功的状态不修改
         //tmp_trades_position = trades_position;
-        tmp_trades_position.set_handle(trades_position.handle());
+        if(tmp_trades_position.handle() != COMPLETE_HANDLE){
+            tmp_trades_position.set_handle(trades_position.handle());
+            //当前时间已过，清空列表
+            base::MapGet<SYMBOL_TRADES_POSITION_MAP,SYMBOL_TRADES_POSITION_MAP::iterator,std::string,TRADES_POSITION_LIST>
+                        (symbol_trades_position,trades_position.symbol(),symbol_position_list);
+            symbol_position_list.clear();
+            LOG_DEBUG2("star[%s] current cycle end.%d", trades_position.symbol().c_str(), 99999999);
+        }
         if (!init)
-           record_db_->OnUpdateTradesPosition(trades_position);
+           record_db_->OnUpdateTradesPosition(tmp_trades_position);
            
-        if (trades_position.handle() < 0) 
-            SetSymbolAuction(trades_position.symbol(), trades_position.amount(), 
+        //交易成功或者失败，都更新统计数据
+        //if (trades_position.handle() < 0) 
+        SetSymbolAuction(trades_position.symbol(), trades_position.amount(), 
                         trades_position.buy_sell(),-1);
         /*if(trades_position.handle() < 0 && trades_position.buy_sell() == SELL_TYPE)
             SetSymbolPositionTime(record_cache_->symbol_buy_trades_time_position_,
@@ -592,9 +632,15 @@ void RecordManager::SetTradesOrder(star_logic::TradesOrder& trades_order) {
         //tmp_trades_order(trades_order);
         //tmp_trades_order = trades_order;
         //LOG_DEBUG("111111111111");
+        if (trades_order.handle_type() == COMPLETE_ORDER ){
+            base::MapGet<SYMBOL_TRADES_ORDER_MAP,SYMBOL_TRADES_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
+                        (record_cache_->symbol_trades_order_,trades_order.symbol(),symbol_order_list);
+            symbol_order_list.push_back(trades_order);
+            record_cache_->symbol_trades_order_[trades_order.symbol()] = symbol_order_list;
+        }
         return;
     }
-    //if (trades_order.handle_type() == COMPLETE_ORDER )
+    if (trades_order.handle_type() == COMPLETE_ORDER )
     {
         r = base::MapGet<SYMBOL_TRADES_ORDER_MAP,SYMBOL_TRADES_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
             (record_cache_->symbol_trades_order_,trades_order.symbol(),symbol_order_list);
@@ -705,7 +751,8 @@ void RecordManager::GetSymbolPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
         TRADES_POSITION_LIST::iterator it = position_list.begin();
         for(; it != position_list.end() && t_count < count; it++) {
             star_logic::TradesPosition position = (*it);
-            if (position.handle() >= POSITION_HANDLE) {
+            //只返回委托中的数据
+            if (position.handle() == POSITION_HANDLE || position.handle() == MATCHES_HANDLE) {
                 t_start++;
                 trades_position_list.push_back(position);
             }
@@ -722,10 +769,15 @@ void RecordManager::GetSymbolPositionCount(SYMBOL_TRADES_POSITION_MAP& symbol_tr
         base_logic::RLockGd lk(lock_);
         int32 t_start = 0;
         int32 t_count = 0;
+        count = 0;
         TRADES_POSITION_LIST position_list;
         r = base::MapGet<SYMBOL_TRADES_POSITION_MAP,SYMBOL_TRADES_POSITION_MAP::iterator, std::string, TRADES_POSITION_LIST>
             (symbol_trades_position, symbol, position_list);
-        count = position_list.size();
+        TRADES_POSITION_LIST::iterator it = position_list.begin();
+        //只返回匹配中的
+        for(; it != position_list.end();++it){
+            if(it->handle() == POSITION_HANDLE || it->handle() == MATCHES_HANDLE)count++;
+        }
     }
 }
 
