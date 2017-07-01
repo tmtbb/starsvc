@@ -267,6 +267,17 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
         SendOrderResult(socket, session, reserved, trades_order.buy_uid(),
                 trades_order.sell_uid(), trades_order.handle_type(), trades_order.order_id());
         trades_kafka_->SetTradesOrder(trades_order);
+        //删除symbol_trades_order_ 中的订单
+        TRADES_ORDER_LIST trades_order_list;
+        base::MapGet<KEY_ORDER_MAP,KEY_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
+                (trades_cache_->symbol_trades_order_,trades_order.symbol(),trades_order_list);
+        TRADES_ORDER_LIST::iterator it = trades_order_list.begin();
+        for(; it != trades_order_list.end(); ++it){
+            if(it->order_id() == trades_order.order_id()){
+                it = trades_order_list.erase(it);
+                --it;
+            }
+        }
     }else {
         trades_kafka_->SetTradesOrder(trades_order);
     }
@@ -521,6 +532,8 @@ void TradesManager::SetTradesOrder(star_logic::TradesPosition& buy_position,
                    sell_position.amount():buy_position.amount();
     buy_position.set_r_amount(amount);
     sell_position.set_r_amount(amount);
+    sell_position.set_order_id(trades_order.order_id());
+    buy_position.set_order_id(trades_order.order_id());
     trades_order.set_amount(amount);
     trades_order.set_symbol(buy_position.symbol());
     trades_order.set_open_position_time(time(NULL));
@@ -573,10 +586,12 @@ void TradesManager::ClearTradesPosition(TRADES_POSITION_MAP& trades_position_map
         star_logic::TradesPosition position = (*it);
         position.set_handle(CANCEL_POSITION);
     }*/
-
+    star_logic::TradesOrder  trades_order;
     while(trades_position_list.size() > 0) {
         star_logic::TradesPosition position = trades_position_list.front();
-        position.set_handle(CANCEL_POSITION);
+        if (position.handle() != COMPLETE_HANDLE ){
+            position.set_handle(CANCEL_POSITION);
+        }
         trades_position_list.pop_front();
         trades_kafka_->SetTradesPosition(position);
     }
@@ -591,9 +606,17 @@ void TradesManager::ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order,
     while(trades_order_list.size() > 0) {
         star_logic::TradesOrder order = trades_order_list.front();
         trades_order_list.pop_front();
-        order.set_handle_type(CANCEL_ORDER);
-        order.set_buy_handle_type(CANCEL_ORDER);
-        order.set_sell_handle_type(CANCEL_ORDER);
+        if(order.handle_type() != COMPLETE_ORDER){
+            order.set_handle_type(NO_ORDER);
+            order.set_buy_handle_type(NO_ORDER);
+            order.set_sell_handle_type(NO_ORDER);
+            star_logic::TradesOrder  trades_order;
+            if(base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
+                                (trades_cache_->all_trades_order_,order.order_id(),trades_order)){
+                trades_order.set_handle_type(NO_ORDER);
+                }
+        }
+        trades_kafka_->SetTradesOrder(order);
     }
 }
 

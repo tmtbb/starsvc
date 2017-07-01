@@ -796,6 +796,10 @@ public:
     void set_goods_key(const std::string& goods_key) {
         data_->goods_key_ = goods_key;
     }
+
+    void set_order_id(const int64 order_id) {
+        data_->order_id_ = order_id;
+    }
     const int64 uid() const {
         return data_->uid_;
     }
@@ -899,6 +903,10 @@ public:
         return data_->type_;
     }
 
+    const int64 order_id() const {
+        return data_->order_id_;
+    }
+
 private:
     class Data {
     public:
@@ -967,6 +975,7 @@ private:
         std::string symbol_;
         std::string name_;
         std::string goods_key_;
+        int64 order_id_;
 
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);
@@ -1193,7 +1202,7 @@ class TradesOrder {
 
 
         static bool open_after(const Data* t_data, const Data* r_data) {
-            return t_data->open_position_time_ > r_data->open_position_time_;
+            return t_data->open_position_time_ > r_data->open_position_time_ && t_data->open_price_ > r_data->open_price_;
         }
 
         static bool price_after(const Data* t_data, const Data* r_data){

@@ -5,7 +5,7 @@
 #define STAR_SEARCH_ERRNO_H_
 
 enum SEARCHERRNO {
-    NO_HAVE_SEARCH_DATA = -301
+    NO_HAVE_SEARCH_DATA = -1301
 
 };
 
