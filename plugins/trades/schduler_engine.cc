@@ -606,7 +606,8 @@ void TradesManager::ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order,
     while(trades_order_list.size() > 0) {
         star_logic::TradesOrder order = trades_order_list.front();
         trades_order_list.pop_front();
-        if(order.handle_type() != COMPLETE_ORDER){
+        //匹配了未交易的订单转为失败
+        if(order.handle_type() == CONFIRM_ORDER){
             order.set_handle_type(NO_ORDER);
             order.set_buy_handle_type(NO_ORDER);
             order.set_sell_handle_type(NO_ORDER);
@@ -615,9 +616,11 @@ void TradesManager::ClearTradesOrder(KEY_ORDER_MAP& symbol_trades_order,
                                 (trades_cache_->all_trades_order_,order.order_id(),trades_order)){
                 trades_order.set_handle_type(NO_ORDER);
                 }
-        }
         trades_kafka_->SetTradesOrder(order);
+        }
     }
+
+    symbol_trades_order[symbol] = trades_order_list;//做清楚操作
 }
 
 void TradesManager::AlterTradesPositionState(const int64 position_id,
