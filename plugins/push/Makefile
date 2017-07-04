@@ -23,8 +23,8 @@ LINK_PATHS = -L./ -L/usr/local/libmemcached-1.0.7/lib/  -L/usr/lib64/mysql
 # Flags passed to the preprocessor.
 #CPPFLAGS += -isystem -shared -fPIC -D_DB_POOL_ -D_DEBUG -DUSR_LOG_MSG\
 	-D_DIC_POOL_ -D_REENTRANT -D_GNU_SOURCE -DUSR_LOG_ERROR -DUSR_LOG_MSG\
-	-DNET_WORK -DHEAD_SHORT -Wall
-	
+	-DNET_WORK -DHEAD_SHORT -DFCGI_STD -Wall
+
 #CPPFLAGS += -isystem -shared -fPIC -D_DB_POOL_\
 	-D_DIC_POOL_ -D_REENTRANT -D_GNU_SOURCE -DUSR_LOG_ERROR -DUSR_LOG_MSG\
 	-DNET_WORK -DHEAD_SHORT
@@ -35,9 +35,11 @@ LINK_PATHS = -L./ -L/usr/local/libmemcached-1.0.7/lib/  -L/usr/lib64/mysql
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-PLUGIN = $(SO_DIR)/trades/trades.so
-                
-INCLUDE_PATHS = -I/usr/local/libmemcached-1.0.7/include \
+PLUGIN = $(SO_DIR)/push/push.so
+
+INCLUDE_PATHS = -I.\
+				-I../\
+				-I/usr/local/libmemcached-1.0.7/include \
 				-I$(LIB_DIR)/BasicCore \
 				-I$(THIRD_PATH)\
 				-I/usr/local/include\
@@ -46,15 +48,18 @@ INCLUDE_PATHS = -I/usr/local/libmemcached-1.0.7/include \
 				-I$(CUSTOM_THIRD_PATH)/hiredis\
 				-I$(CUSTOM_THIRD_PATH)\
 				-I$(CUSTOM_THIRD_PATH)/librdkafka/src\
+				-I$(CUSTOM_THIRD_PATH)/gtpush/include/gtpush/\
 				-I$(LIB_DIR)/mylib/base\
-				-I../\
-				
+
 
 
 # House-keeping build targets.
 
 ALL_HEADERS = $(USER_HEADERS)
 all : $(PLUGIN)
+
+install : $(PLUGIN)
+	cp $(PLUGIN) $(STAR_PATH)/bin/plugins/push/
 
 clean :
 	rm -f $(PLUGIN)  *.o
@@ -88,36 +93,39 @@ clean :
 # function.
 
 
-trades_init.o : ./trades_init.cc ./trades_init.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./trades_init.cc $(INCLUDE_PATHS)
+push_init.o : ./push_init.cc ./push_init.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./push_init.cc $(INCLUDE_PATHS)
 
-trades_logic.o : ./trades_logic.cc ./trades_logic.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./trades_logic.cc $(INCLUDE_PATHS)
+push_logic.o : ./push_logic.cc ./push_logic.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./push_logic.cc $(INCLUDE_PATHS)
 
-trades_db.o : ./trades_db.cc ./trades_db.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./trades_db.cc $(INCLUDE_PATHS)
+push_db.o : ./push_db.cc ./push_db.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./push_db.cc $(INCLUDE_PATHS)
 
-trades_info.o : ./trades_info.cc ./trades_info.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./trades_info.cc $(INCLUDE_PATHS)
+push_kafka.o : ./push_kafka.cc ./push_kafka.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./push_kafka.cc $(INCLUDE_PATHS)
 
-trades_kafka.o : ./trades_kafka.cc ./trades_kafka.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./trades_kafka.cc $(INCLUDE_PATHS)
-
-schduler_engine.o : ./schduler_engine.cc ./schduler_engine.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./schduler_engine.cc $(INCLUDE_PATHS)
-
-trades_proto_buf.o : ./trades_proto_buf.cc ./trades_proto_buf.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./trades_proto_buf.cc $(INCLUDE_PATHS)
-
+record_info.o : ./record_info.cc ./record_info.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./record_info.cc $(INCLUDE_PATHS)
+		
+push_engine.o : ./push_engine.cc ./push_engine.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./push_engine.cc $(INCLUDE_PATHS)
+	
+push_message.o : ./push_message.cc ./push_message.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./push_message.cc $(INCLUDE_PATHS)
+	
 logic_unit.o :  $(USER_DIR)/logic/logic_unit.cc $(USER_DIR)/logic/logic_unit.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/logic_unit.cc $(INCLUDE_PATHS)
-
+	
 star_infos.o :  $(USER_DIR)/logic/star_infos.cc $(USER_DIR)/logic/star_infos.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/star_infos.cc $(INCLUDE_PATHS)
 
 packet_processing.o :  $(USER_DIR)/net/packet_processing.cc $(USER_DIR)/net/packet_processing.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/net/packet_processing.cc $(INCLUDE_PATHS)
 
+fcgimodule.o :  $(USER_DIR)/fcgimodule/fcgimodule.cc $(USER_DIR)/fcgimodule/fcgimodule.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/fcgimodule/fcgimodule.cc $(INCLUDE_PATHS)
+	
 data_engine.o :  $(USER_DIR)/storage/data_engine.cc $(USER_DIR)/storage/data_engine.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/storage/data_engine.cc $(INCLUDE_PATHS)
 	
@@ -132,14 +140,15 @@ mysql_pool.o :  $(USER_DIR)/storage/mysql_pool.cc $(USER_DIR)/storage/mysql_pool
 
 redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/storage/redis_pool.cc $(INCLUDE_PATHS)
+	
 
-time.o :  $(USER_DIR)/logic/time.cc $(USER_DIR)/logic/time.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/time.cc $(INCLUDE_PATHS)
-
-$(PLUGIN) : trades_init.o  trades_logic.o trades_db.o trades_info.o trades_kafka.o schduler_engine.o trades_proto_buf.o\
-	star_infos.o time.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
-	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient \
+$(PLUGIN) : push_init.o  push_logic.o push_db.o push_kafka.o push_engine.o push_message.o \
+	star_infos.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o \
+	data_redis_engine.o mysql_pool.o redis_pool.o \
+	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a \
+	$(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a \
+	$(HOME)/fortest/GETUI_C++_SDK/libgtpushsdk_gc4.1.2_64.so 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \
 	$^ -o $@
 
 include $(STAR_PATH)/base.mk
