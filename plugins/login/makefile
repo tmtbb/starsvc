@@ -89,3 +89,6 @@ ${OUT_PUT} : login_init.o login_logic.o login_mysql.o login_proto.o util.o\
 	${CXX} ${CXXFLAGS} $^ -o ${OUT_PUT} ${LINK_PATH} -lpthread -lmysqlclient -lcurl \
 	${LIB_DIR}/mylib/base/lib/mybase.a \
 	${LIB_DIR}/mylib/third_party/dmg_fp/lib/dmg_fp.a -lexpat
+
+
+ include $(STAR_PATH)/base.mk
