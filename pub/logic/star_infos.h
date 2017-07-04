@@ -1013,6 +1013,11 @@ class TradesOrder {
                             const TradesOrder& r_trades_order) {
         return Data::open_after(t_trades_order.data_, r_trades_order.data_);
     }
+    
+    static bool open_price_after(const TradesOrder& t_trades_order,
+                            const TradesOrder& r_trades_order) {
+        return Data::open_price_after(t_trades_order.data_, r_trades_order.data_);
+    }
 
     static bool price_after(const TradesOrder& t_trades_order,
                         const TradesOrder& r_trades_order){
@@ -1202,7 +1207,11 @@ class TradesOrder {
 
 
         static bool open_after(const Data* t_data, const Data* r_data) {
-            return t_data->open_position_time_ > r_data->open_position_time_ && t_data->open_price_ > r_data->open_price_;
+            return t_data->open_position_time_ > r_data->open_position_time_;
+        }
+        
+        static bool open_price_after(const Data* t_data, const Data* r_data) {
+                return t_data->open_price_ >= r_data->open_price_ && t_data->open_position_time_ > r_data->open_position_time_;
         }
 
         static bool price_after(const Data* t_data, const Data* r_data){
