@@ -11,7 +11,8 @@
 
 #include "net/typedef.h"
 const std::string ACP_SERVER_URL = "http://61.147.114.78:8080/ACPSample_AppServer/form05_6_2_AppConsume";
-#define UNIONPAY_CONFIG_FILE "plugins/user/acp_sdk.properties"
+//#define UNIONPAY_CONFIG_FILE "plugins/user/acp_sdk.properties"
+#define UNIONPAY_CONFIG_FILE ".acp_sdk.properties"
 //#define PFX_PASSWD "000000" //test
 #define PFX_PASSWD "172017"
 
@@ -54,7 +55,7 @@ const std::string ACP_SERVER_URL = "http://61.147.114.78:8080/ACPSample_AppServe
 #define K_REQ_RESERVED "reqReserved"
 #define K_ACC_NO "accNo"
 #define K_ORDER_DESC "orderDesc"
-#define WP_UNIONPAY "航空定盘-充值"
+#define WP_UNIONPAY "星享-充值"
 /*
  *命名规则为银联文档命名方式
  */
@@ -103,7 +104,8 @@ class UnionpayOrder {
     }*/
   void PreSign();
   void PreSerialize(DicValue* dic);
-  std::string PlaceOrder();
+  std::string PlaceOrder();     //充值
+  std::string Withdrawals(); //提现
   
   std::string URLEncode(const std::string& value);
   std::string URLDecode(std::string& value);

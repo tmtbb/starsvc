@@ -168,6 +168,57 @@ void PayDB::CallCheckPayPwd(void* param, base_logic::Value* value) {
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
 }
 
+void PayDB::CallUnionWithdrow(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_logic::ListValue *list = new base_logic::ListValue();
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  //info_value->SetInteger(L"result", 0);
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetBigInteger(L"result", atoll(rows[0]));
+      if (rows[1] != NULL)
+        info_value->SetReal(L"balance", atof(rows[1]));
+    }
+  }
+  dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+}
+
+bool PayDB::OnCreateUnionWithDraw(const int64 uid, const int64 rid, const double price)
+{
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+
+  std::string sql;
+  //
+  sql = "call proc_Withdraw("
+      + base::BasicUtil::StringUtil::Int64ToString(uid) + ","
+      + base::BasicUtil::StringUtil::Int64ToString(rid) + ","
+      + base::BasicUtil::StringUtil::DoubleToString(price) + ");";
+
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallUnionWithdrow);
+
+  base_logic::DictionaryValue *info_value = NULL;
+  int64 result = 0;
+  dict->GetDictionary(L"resultvalue", &info_value);
+
+  r = info_value->GetBigInteger(L"result", &result);
+  if (r && result == 1) //创建订单成功
+      r = true;
+  else
+      r = false;
+  //r = info_value->GetReal(L"balance", &balance);
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
 
 }  // namespace history_logic
 

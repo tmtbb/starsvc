@@ -144,6 +144,9 @@ try
       OnCanclePay(srv, socket, packet);
       break;
     }
+    case R_UNION_WITHDRAW: {
+      OnUnionWithDraw(srv, socket, packet);
+    }
     default:
       break;
   }
@@ -520,4 +523,35 @@ bool Paylogic::OnCanclePay(struct server* srv, int socket,
 }
 //
 //
+
+bool Paylogic::OnUnionWithDraw(struct server* srv, int socket,
+                            struct PacketHead *packet) {
+  pay_logic::net_request::UnionWithDraw union_withdraw;
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  bool r = union_withdraw.set_http_packet(packet_control->body_);
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+
+  //创建取现订单号
+  //
+  int64 rid = base::SysRadom::GetInstance()->GetRandomID();
+  r = pay_logic::PayEngine::GetSchdulerManager()->UnionWithDraw(
+      socket, union_withdraw.uid(), rid, union_withdraw.price(), packet->session_id);
+  
+  if (!r)
+  {
+    send_error(socket, ERROR_TYPE, UNIWITHDRAW_ERROR, packet->session_id);
+    return false;
+  }
+  return true;
+}
+
 }  // namespace trades_logic

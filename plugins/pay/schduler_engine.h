@@ -60,6 +60,7 @@ class PayManager {
                        const std::string& title, const double price,const int32 pay_type,
                        const std::string& open_id);
   bool OnCanclePay(const int socket, const int64 uid, const int64 rid);
+  bool UnionWithDraw(const int socket, const int64 uid, const int64 rid, const double price, const int session);
  private:
   bool WXOrder(const int socket, const std::string& title, const int64 rid,
                const double price,const int32 pay_type, const std::string& open_id,
