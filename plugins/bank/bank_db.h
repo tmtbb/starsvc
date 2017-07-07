@@ -28,7 +28,7 @@ class BankDB {
   bool OnGetBankCard(const int64 uid, std::list<bank_logic::BankCard>& bank_list);
 
   bool OnBindBankCard(const int64 uid, const std::string& card_no, 
-                      const std::string& brach_bank, const std::string& name,
+                      const std::string& name,
                       bank_logic::BankCard& card); 
  
   bool OnUnbindBankCard(const int64 uid, const int32 bankcard_id);

@@ -209,32 +209,25 @@ bool Banklogic::OnGetBindBank(struct server* srv, int socket,
     t_start++;
     if (t_start < bank_card.start())
         continue;
-    bank_logic::net_reply::BankCardInfo* r_bank_card = new bank_logic::net_reply::BankCardInfo;
-    r_bank_card->set_bid(card.id());
-    r_bank_card->set_bank(card.bank_name());
-    r_bank_card->set_branch_bank(card.branch_bank());
-    r_bank_card->set_card_no(card.card_no());
-    r_bank_card->set_card_name(card.card_name());    
-    r_bank_card->set_name(card.name());
-    r_bank_card->set_is_default(card.is_default());
+    bank_logic::net_reply::BankCardInfo r_bank_card ;
+    r_bank_card.set_bid(card.id());
+    r_bank_card.set_bank(card.bank_name());
+    //r_bank_card.set_branch_bank(card.branch_bank());
+    r_bank_card.set_card_no(card.card_no());
+    r_bank_card.set_card_name(card.card_name());    
+    r_bank_card.set_name(card.name());
+    //r_bank_card.set_is_default(card.is_default());
     t_count++;
-    net_all_bank_card.set_unit(r_bank_card->get());
-    if (net_all_bank_card.Size() % base_num == 0 && net_all_bank_card.Size() != 0) {
-        struct PacketControl r_packet_control;
-        MAKE_HEAD(r_packet_control,S_GET_BIND_BANK,1,0,packet_control->session_id,0);
-        r_packet_control.body_ = net_all_bank_card.get();
-        send_message(socket, &r_packet_control);
-        net_all_bank_card.Reset();
-    }
-  }
-  
-  if (net_all_bank_card.Size() > 0){ 
+    
+        
     struct PacketControl r_packet_control;
     MAKE_HEAD(r_packet_control,S_GET_BIND_BANK,1,0,packet_control->session_id,0);
-    r_packet_control.body_ = net_all_bank_card.get();
+    r_packet_control.body_ = r_bank_card.get();
     send_message(socket, &r_packet_control);
-    net_all_bank_card.Reset();
+ 
+    return true;
   }
+  
   return true;
 }
 
@@ -292,7 +285,7 @@ bool Banklogic::OnBindBankCard(struct server* srv, int socket, struct PacketHead
   //int32 bank_id = 0;
   bank_logic::BankCard  bank_card;
   r = bank_db_->OnBindBankCard(bind_bank_card.id(), bind_bank_card.card_no(),
-                           bind_bank_card.branch_bank(),bind_bank_card.name(),bank_card);
+                           bind_bank_card.name(),bank_card);
  
   if (!r){//绑定失败
    send_error(socket, ERROR_TYPE, BIND_BANK_CARD_ERROR, packet->session_id); 
@@ -303,7 +296,7 @@ bool Banklogic::OnBindBankCard(struct server* srv, int socket, struct PacketHead
   r_bind_bank_card.set_bank_card_id(bank_card.id());
   r_bind_bank_card.set_bank_id(bank_card.bank_id());
   r_bind_bank_card.set_bank_name(bank_card.bank_name());
-  r_bind_bank_card.set_branch_bank_name(bank_card.branch_bank());
+  //r_bind_bank_card.set_branch_bank_name(bank_card.branch_bank());
   r_bind_bank_card.set_card_no(bank_card.card_no());
   r_bind_bank_card.set_name(bank_card.name());
  
@@ -362,7 +355,7 @@ bool Banklogic::OnUnbindBankCard(struct server* srv, int socket, struct PacketHe
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
-  r = bank_db_->OnUnbindBankCard(unbind_bank_card.id(), unbind_bank_card.bank_card_id());
+  r = bank_db_->OnUnbindBankCard(unbind_bank_card.id() , 0);
   if (!r) {
      send_error(socket, ERROR_TYPE, UNBIND_BANK_CARD_ERROR, packet->session_id);
      return false;

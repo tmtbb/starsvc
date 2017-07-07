@@ -505,7 +505,7 @@ class BankCardInfo {
    if (is_default_ != NULL)
       value_->Set(L"isDefault", is_default_); 
    if (name_ != NULL)
-      value_->Set(L"name", name_);
+      value_->Set(L"bankUsername", name_);
    if (card_name_ != NULL)
       value_->Set(L"cardName", card_name_);
     return value_;
