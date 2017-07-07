@@ -50,7 +50,7 @@ bool Historylogic::Init() {
   //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryTradesData();
   history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryRechargeData();
   history_logic::HistoryEngine::GetSchdulerManager()->InitOwnStarData();
-  //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
+  history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
 
   std::string schduler_library = "./data_share.so";
   std::string schduler_func = "GetManagerSchdulerEngine";
@@ -108,10 +108,10 @@ bool Historylogic::OnHistoryMessage(struct server *srv, const int socket,
       break;
     }
 
-    /*case R_HISOTRY_WITHDRAWALS: {
+    case R_HISOTRY_WITHDRAWALS: {
       OnHistoryWithdrawals(srv, socket, packet);
       break;
-    }*/
+    }
 
    /* case R_HANDLE_TRADES_TRADES: {
       OnHandleTradesPosition(srv, socket, packet);
@@ -174,7 +174,7 @@ bool Historylogic::OnTimeout(struct server *srv, char *id, int opcode,
       history_logic::HistoryEngine::GetSchdulerManager()
           ->InitHistoryRechargeData();
       history_logic::HistoryEngine::GetSchdulerManager()->InitOwnStarData();
-      //history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
+      history_logic::HistoryEngine::GetSchdulerManager()->InitHistoryWithDrawals();
       break;
     }
     default:
