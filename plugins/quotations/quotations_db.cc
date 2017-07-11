@@ -88,6 +88,21 @@ void QuotationsDB::CallGetStarInfo(void* param, base_logic::Value* value) {
       if (rows[7] != NULL)
         info_value->SetString(L"weibo_id", rows[7]);
 
+      if (rows[8] != NULL)
+        info_value->SetInteger(L"display_on_home", atoi(rows[8]));
+      if (rows[9] != NULL)
+        info_value->SetInteger(L"hot_priority1", atoi(rows[9]));
+      if (rows[10] != NULL)
+        info_value->SetInteger(L"hot_priority2", atoi(rows[10]));
+      if (rows[11] != NULL)
+        info_value->SetString(L"pic1", rows[11]);
+      if (rows[12] != NULL)
+        info_value->SetString(L"home_button_pic", rows[12]);
+      if (rows[13] != NULL)
+        info_value->SetInteger(L"add_time", atoi(rows[13]));
+      if (rows[14] != NULL)
+        info_value->SetInteger(L"publish_type", atoi(rows[14]));
+
       list->Append((base_logic::Value *) (info_value));
     }
   }

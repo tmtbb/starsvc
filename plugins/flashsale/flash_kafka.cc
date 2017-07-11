@@ -1,13 +1,13 @@
 //  Copyright (c) 2015-2016 The KID Authors. All rights reserved.
 //  Created on: 2016.8.18 Author: kerry
 
-#include "trades_kafka.h"
-#include "logic/logic_comm.h"
+#include "flashsale/flash_kafka.h"
 #include "basic/radom_in.h"
+#include "logic/logic_comm.h"
 
-namespace trades_logic {
+namespace flash_logic {
 
-TradesKafka::TradesKafka(config::FileConfig* config) {
+FlashKafka::FlashKafka(config::FileConfig* config) {
   /*
    if (PRODUCER_INIT_SUCCESS
    != kafka_producer_.Init(
@@ -27,7 +27,7 @@ TradesKafka::TradesKafka(config::FileConfig* config) {
         addr.host().c_str(), addr.source().c_str(),addr.additional().c_str());
 }
 
-TradesKafka::TradesKafka(base::ConnAddr& addr) {
+FlashKafka::FlashKafka(base::ConnAddr& addr) {
   if (PRODUCER_INIT_SUCCESS != kafka_producer_.Init(addr))
     LOG_ERROR2("producer init failed: host:%s source:%s additional %s",
               addr.host().c_str(),addr.source().c_str(),addr.additional().c_str());
@@ -36,27 +36,11 @@ TradesKafka::TradesKafka(base::ConnAddr& addr) {
               addr.host().c_str(), addr.source().c_str(),addr.additional().c_str());
 }
 
-TradesKafka::~TradesKafka() {
+FlashKafka::~FlashKafka() {
   kafka_producer_.Close();
 }
 
-bool TradesKafka::SetTradesPosition(star_logic::TradesPosition& position) {
-
-LOG_DEBUG2("position ________________________________________ %ld, %d", position.position_id(), position.handle());
-    int re = PUSH_DATA_SUCCESS; 
-    base_logic::DictionaryValue* task_info = position.GetValue();
-    re = kafka_producer_.PushData(task_info);
-    delete task_info;
-    if (PUSH_DATA_SUCCESS == re)
-        return true;
-    else {
-        LOG_ERROR("kafka producer send data failed");
-        return false;
-    }
-}
-
-
-bool TradesKafka::SetTradesOrder(star_logic::TradesOrder& order) {
+bool FlashKafka::SetFlashOrder(star_logic::TradesOrder& order) {
     int re = PUSH_DATA_SUCCESS;   
     base_logic::DictionaryValue* task_info = order.GetValue();
     re = kafka_producer_.PushData(task_info);

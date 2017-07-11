@@ -4,11 +4,12 @@
 #ifndef QUOTATIONS_SCHDULER_ENGINE_H__
 #define QUOTATIONS_SCHDULER_ENGINE_H__
 
-#include "quotations/quotations_db.h"
 #include "logic/star_infos.h"
-#include "quotations/quotations_redis.h"
+#include "manager/data_share_mgr.h"
 #include "thread/base_thread_handler.h"
 #include "thread/base_thread_lock.h"
+#include "quotations/quotations_db.h"
+#include "quotations/quotations_redis.h"
 
 
 typedef std::map<std::string,star_logic::StarInfo> BASIC_INFO_MAP;
@@ -89,6 +90,9 @@ public:
                         const int32 atype,
                         const int32 sort, const int32 pos, const int32 count);
 
+    void SendHomeSymbolList(const int socket, const int64 session, const int32 reversed,
+                        const int32 atype);
+
     void TimeEvent(int opcode, int time);
 
     void InitRedis(quotations_logic::QuotationsRedis* quotations_redis);
@@ -131,13 +135,14 @@ private:
                              const int32 pos,const int32 count,const int32 sort);
 
     void SendQuotationsList(const int socket, const int64 session, const int32 reserved,
-                            std::list<star_logic::Quotations>& list);
+                            const int32 atype, std::list<star_logic::StarInfo>& list);
 private:
     void Init();
 private:
     QuotationsCache *quotations_cache_;
     quotations_logic::QuotationsRedis* quotations_redis_;
     quotations_logic::QuotationsDB* quotations_db_;
+    manager_schduler::SchdulerEngine* manager_schduler_engine_;
     struct threadrw_t *lock_;
 };
 

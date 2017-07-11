@@ -12,6 +12,7 @@ namespace manager_schduler {
 
 typedef std::map<int64, star_logic::UserInfo> USER_MAP;
 typedef std::map<int, star_logic::UserInfo> SOCKET_MAP;
+typedef std::map<std::string, star_logic::StarInfo> STAR_MAP;
 
 class SchdulerEngine {
  public:
@@ -38,6 +39,16 @@ class SchdulerEngine {
 
   virtual bool SetRecvErrorCount(int socket) = 0;
 
+  virtual bool SetStarInfoSchduler(const std::string symbol,
+                                   star_logic::StarInfo* star) = 0;
+
+  virtual bool GetStarInfoSchduler(const std::string symbol,
+                                   star_logic::StarInfo* star) = 0;
+
+  virtual bool DelStarInfoSchduler(const std::string symbol) = 0;
+
+  virtual bool GetAllStarInfoSchduler(std::list<star_logic::StarInfo>& list) = 0;
+
 };
 
 class SchdulerEngineImpl : public SchdulerEngine {
@@ -63,12 +74,22 @@ class SchdulerEngineImpl : public SchdulerEngine {
 
   bool SetRecvErrorCount(int socket);
 
+  bool SetStarInfoSchduler(const std::string symbol, star_logic::StarInfo* star);
+
+  bool GetStarInfoSchduler(const std::string symbol,
+                           star_logic::StarInfo* star);
+
+  bool DelStarInfoSchduler(const std::string symbol);
+
+  bool GetAllStarInfoSchduler(std::list<star_logic::StarInfo>& list);
+
 };
 
 class SchdulerCache {
  public:
   USER_MAP user_map_;
   SOCKET_MAP socket_map_;
+  STAR_MAP star_map_;
 };
 
 __attribute__((visibility("default")))
@@ -98,6 +119,15 @@ __attribute__((visibility("default")))
 
   bool SetRecvErrorCount(int socket);
 
+  bool SetStarInfoSchduler(const std::string symbol, star_logic::StarInfo* star);
+
+  bool GetStarInfoSchduler(const std::string symbol,
+                           star_logic::StarInfo* star);
+
+  bool DelStarInfoSchduler(const std::string symbol);
+
+  bool GetAllStarInfoSchduler(std::list<star_logic::StarInfo>& list);
+
  private:
   void Init();
 
@@ -108,6 +138,7 @@ __attribute__((visibility("default")))
 
  private:
   struct threadrw_t* lock_;
+  struct threadrw_t* lock_star_;
   SchdulerCache* schduler_cache_;
 };
 
