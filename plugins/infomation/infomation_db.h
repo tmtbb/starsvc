@@ -24,38 +24,43 @@ class Infomation_Mysql {
   						const double price,
   						const std::string& accid,
   						const std::string& picurl);
-  //获取粉丝评论
+  //禄帽脠隆路脹脣驴脝脌脗脹
   bool getfanscomments(const std::string& starcode,DicValue &ret,int64& startnum,int64& endnum);
   static void Callgetfanscomments(void* param, base_logic::Value* value);
-  //获取全量明星信息
+  //禄帽脠隆脠芦脕驴脙梅脨脟脨脜脧垄
   bool getstarinfo(const std::string& code,const std::string& phone,DicValue &ret,int64 all);
 
-  //获取banner信息
+  //禄帽脠隆banner脨脜脧垄
   bool getbannerinfo(const std::string& code,DicValue &ret,int64 all);
   
-  //获取预约明星列表
+  //禄帽脠隆脭陇脭录脙梅脨脟脕脨卤铆
   bool getorderstarinfo(const std::string& code,const std::string& phone,DicValue &ret);
 
-  //获取咨询列表
+  //禄帽脠隆脳脡脩炉脕脨卤铆
   bool getstarnews(const std::string& code,const std::string& name,DicValue &ret,
   					int64& startnum,int64& endnum,int64& all);
   
-  //获取明星服务列表
+  //禄帽脠隆脙梅脨脟路镁脦帽脕脨卤铆
   bool getstarservicelist(const std::string& code, DicValue &ret);
-  //用户订购明星服务
+  //脫脙禄搂露漏鹿潞脙梅脨脟路镁脦帽
   bool userorderstarservice(const int64 uid, const std::string& starcode,const int64 mid,
   	        const std::string& cityname,const std::string& appointtime,const int64 meettype,
   	        const std::string& comment);
   					
-  //获取用户订购明星数
+  //禄帽脠隆脫脙禄搂露漏鹿潞脙梅脨脟脢媒
   bool getuserstaramount(const int64 uid, int64& num);
   
-  //获取用户明星时间
+  //禄帽脠隆脫脙禄搂脙梅脨脟脢卤录盲
   bool getuserstartime(const int64 uid, const std::string code, int64& time);
   
-  //获取明星时间
+  //禄帽脠隆脙梅脨脟脢卤录盲
   bool getstartime(const std::string code, int64& time);
-  
+
+  //鑾峰彇绾﹁鎯呭喌
+  bool getUserStarMeetinfo(const int64 uid,const int64 pos,const int64 count, DicValue &ret);
+  //鑾峰彇鏌愪釜鏄庢槦淇℃伅鐢ㄤ簬涓汉淇℃伅浠嬬粛
+  bool OngetOnestarInfo(const std::string& starcode, DicValue* dic);
+
   static void Callpublicback(void* param, base_logic::Value* value);
   
   static void Callgetinfo(void* param, base_logic::Value* value);
@@ -71,6 +76,8 @@ class Infomation_Mysql {
   static void Callgetuserstaramount(void* param, base_logic::Value* value);
   static void Callgetuserstartime(void* param, base_logic::Value* value);
   static void Callgetstartime(void* param, base_logic::Value* value);
+  static void CallgetUserStarMeetinfo(void* param, base_logic::Value* value);
+  static void CallgetOnestarInfo(void* param, base_logic::Value* value);
   private:
   base_logic::DataEngine* mysql_engine_;
 };

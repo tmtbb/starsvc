@@ -1471,6 +1471,15 @@ public:
             data_->Release();
         }
     }
+    static bool sort_add_time(const StarInfo& t_info, const StarInfo& r_info) {
+        return Data::sort_add_time(t_info.data_, r_info.data_);
+    }
+
+    static bool sort_hot_priority(const StarInfo& t_info, const StarInfo& r_info) {
+        return Data::sort_hot_priority(t_info.data_, r_info.data_);
+    }
+
+
     const double updown() const {
         return data_->updown_;
     }
@@ -1523,6 +1532,27 @@ public:
 
     const std::string& jianpin() const {
         return data_->jianpin_;
+    }
+    const int32 display_on_home() const {
+        return data_->display_on_home_;
+    }
+    const int64 hot_priority1() const {
+        return data_->hot_priority1_;
+    }
+    const int64 hot_priority2() const {
+        return data_->hot_priority2_;
+    }
+    const std::string& home_pic() const {
+        return data_->home_pic_;
+    }
+    const std::string& home_button_pic() const {
+        return data_->home_button_pic_;
+    }
+    const int64 hot_add_time() const {
+        return data_->add_time_;
+    }
+    const int32 publish_type() const {
+        return data_->publish_type_;
     }
 //----
     void set_weibo_index_id(const std::string& weibo_index_id) {
@@ -1581,6 +1611,27 @@ public:
     void set_quanpin(const std::string& quanpin) {
         data_->quanpin_ = quanpin;
     }
+    void set_display_on_home(const int32 i) {
+        data_->display_on_home_ = i;
+    }
+    void set_hot_priority1(const int64 l) {
+        data_->hot_priority1_ = l;
+    }
+    void set_hot_priority2(const int64 l) {
+        data_->hot_priority2_ = l;
+    }
+    void set_home_pic(const std::string& pic) {
+        data_->home_pic_ = pic;
+    }
+    void set_home_button_pic(const std::string& pic) {
+        data_->home_button_pic_ = pic;
+    }
+    void set_add_time(const int64 l) {
+        data_->add_time_ = l;
+    }
+    void set_publish_type(const int32 i) {
+        data_->publish_type_ = i;
+    }
 
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
@@ -1613,6 +1664,31 @@ public:
         std::string introduction_;//简介
         std::string jianpin_;
         std::string quanpin_;
+        int32 display_on_home_;//是否在主页显示 1-显示
+        int64 hot_priority1_;//热度优先级1
+        int64 hot_priority2_;//热度优先级2
+        std::string home_pic_;//主页大图
+        std::string home_button_pic_;//主页底部图片
+        int64 add_time_;//创建时间
+        int32 publish_type_;//0-预售 1-发售 2-流通
+
+        static bool sort_add_time(const Data* t_info, const Data* r_info) {
+            if (t_info == NULL || r_info == NULL)
+                return false;
+            return t_info->add_time_ > r_info->add_time_;
+        }
+        static bool sort_hot_priority(const Data* t_info, const Data* r_info) {
+            if (t_info == NULL || r_info == NULL)
+                return false;
+            if(t_info->hot_priority1_ > r_info->hot_priority1_){
+                return true;
+            }else if(t_info->hot_priority1_ < r_info->hot_priority1_){
+                return false;
+            }else{
+                return t_info->hot_priority2_ > r_info->hot_priority2_;
+            }
+        }
+
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);
         }
@@ -2014,6 +2090,7 @@ class StarBrief {
   };
   Data* data_;
 };
+
 }  // namespace quotations_logic
 
 #endif /* QUOTATIONS_PUB_LOGIC_QUOTATIONS_INFOS_H_ */

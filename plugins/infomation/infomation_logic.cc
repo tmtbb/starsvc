@@ -87,54 +87,125 @@ bool Infomationlogic::OnInfomationMessage(struct server *srv, const int socket,
 	  AddStarinfo(srv,socket,packet);
 	  break;
 	}
-	//��ȡ�ѹ������б�
+	//»ñÈ¡ÒÑ¹ºÃ÷ÐÇÁÐ±í
 	case R_GET_ORDERSTAR:{
 	  GetorderStarinfo(srv,socket,packet);
 	  break;
 	}
-	//��ȡ������Ѷ
+	//»ñÈ¡Ã÷ÐÇ×ÊÑ¶
 	case R_GET_STARNEWS:{
 	  Getstarnews(srv,socket,packet);
 	  break;
 	}
-	//��ȡbanner��Ϣ
+	//»ñÈ¡bannerÐÅÏ¢
 	case R_GET_BANNER:{
 	  Getbannerlist(srv,socket,packet);
 	  break;
 	}
-	//��ȡ��˿����
+	//»ñÈ¡·ÛË¿ÆÀÂÛ
 	case R_GET_FANSCOMMENT:{
 	  Getfanscomment(srv,socket,packet);
 	  break;
 	}
-	//��ȡ���Ƿ����б�
+	//»ñÈ¡Ã÷ÐÇ·þÎñÁÐ±í
 	case R_GET_STAR_SERVICE:{
 	  GetStarService(srv,socket,packet);
 	  break;
 	}
-	//�û��������Ƿ���
+	//ÓÃ»§¶©¹ºÃ÷ÐÇ·þÎñ
 	case R_ORDER_STAR_SERVICE:{
 	  AddUserOrderStarService(srv,socket,packet);
 	  break;
 	}
-	//��ȡ�û�����������
+	//»ñÈ¡ÓÃ»§¶©¹ºÃ÷ÐÇÊý
 	case R_ORDER_STAR_NUM:{
 	  GetUserStarNum(srv,socket,packet);
 	  break;
 	}
-  //��ȡ�û�����ʱ��
+  //»ñÈ¡ÓÃ»§Ã÷ÐÇÊ±¼ä
 	case R_ORDER_STAR_TIME:{
 	  GetUserStarTime(srv,socket,packet);
 	  break;
 	}
-  //��ȡ����ʱ��
+  //»ñÈ¡Ã÷ÐÇÊ±¼ä
 	case R_STAR_TIME:{
 	  GetStarTime(srv,socket,packet);
 	  break;
 	}
+  //获取用户约见明星详情
+  case R_USER_STAR_MEETINFO:{
+    GetUserStarMeetinfo(srv,socket,packet);
+    break;
+  }
+  //获取某个明星信息，与获取明星经验配合使用
+  case R_STAR_INFO:{
+    GetOneStarInfo(srv,socket,packet);
+    break;
+  }
   default:
       break;
   }
+
+  return true;
+}
+
+bool Infomationlogic::GetOneStarInfo(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string starcode;
+  bool r = packet_recv->body_->GetString(L"star_code",&starcode);
+  if(!r){
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  DicValue* dic = new DicValue();
+  if(!sqldb->OngetOnestarInfo(starcode,dic)){
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+    return false;
+  }
+  
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_STAR_INFO, INFO_TYPE, 0,packet->session_id, 0);
+  packet_reply.body_ = dic;
+  send_message(socket,&packet_reply);
+
+  return true;
+}
+
+bool Infomationlogic::GetUserStarMeetinfo(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  int64 uid, pos, count;
+  bool r = packet_recv->body_->GetBigInteger(L"uid",&uid);
+  bool r2 = packet_recv->body_->GetBigInteger(L"pos",&pos);
+  bool r3 = packet_recv->body_->GetBigInteger(L"count",&count);
+  if(!r || !r2 || !r3){
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  DicValue ret_list;
+  if(!sqldb->getUserStarMeetinfo(uid,pos,count,ret_list)){
+    send_error(socket, ERROR_TYPE, NO_USER_STAR_MEETINFO_ERR, packet->session_id);
+    return false;
+  }
+  
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_USER_STAR_MEETINFO, INFO_TYPE, 0,packet->session_id, 0);
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
+  ret_list.Set(L"result",result);
+  packet_reply.body_ = &ret_list;
+  send_message(socket,&packet_reply);
 
   return true;
 }
@@ -159,7 +230,7 @@ bool Infomationlogic::GetStarTime(struct server* srv,int socket ,struct PacketHe
 	  return false;
   }
   
-  //������Ϣ
+  //·¢ËÍÐÅÏ¢
   struct PacketControl packet_control_ack; 
   MAKE_HEAD(packet_control_ack,S_STAR_TIME, 1, 0, packet->session_id, 0);
   base_logic::DictionaryValue dic; 
@@ -193,7 +264,7 @@ bool Infomationlogic::GetUserStarTime(struct server* srv,int socket ,struct Pack
 	  return false;
   }
   
-  //������Ϣ
+  //·¢ËÍÐÅÏ¢
   struct PacketControl packet_control_ack; 
   MAKE_HEAD(packet_control_ack,S_ORDER_STAR_TIME, 1, 0, packet->session_id, 0);
   base_logic::DictionaryValue dic; 
@@ -227,7 +298,7 @@ bool Infomationlogic::GetUserStarNum(struct server* srv,int socket ,struct Packe
 	  return false;
   }
   
-  //������Ϣ
+  //·¢ËÍÐÅÏ¢
   struct PacketControl packet_control_ack; 
   MAKE_HEAD(packet_control_ack,S_ORDER_STAR_NUM, 1, 0, packet->session_id, 0);
   base_logic::DictionaryValue dic; 

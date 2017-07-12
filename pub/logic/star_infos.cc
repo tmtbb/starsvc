@@ -500,6 +500,13 @@ void StarInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
     dict->GetString(L"introduction", &data_->introduction_);
     dict->GetString(L"jianpin", &data_->jianpin_);
     dict->GetString(L"quanpin", &data_->quanpin_);
+    dict->GetInteger(L"display_on_home", &data_->display_on_home_);
+    dict->GetBigInteger(L"hot_priority1", &data_->hot_priority1_);
+    dict->GetBigInteger(L"hot_priority2", &data_->hot_priority2_);
+    dict->GetString(L"pic1", &data_->home_pic_);
+    dict->GetString(L"home_button_pic", &data_->home_button_pic_);
+    dict->GetBigInteger(L"add_time", &data_->add_time_);
+    dict->GetInteger(L"publish_type", &data_->publish_type_);
 }
 ///TOwnStar
 
@@ -656,5 +663,6 @@ void StarBrief::ValueSerialization(base_logic::DictionaryValue* dict) {
   dict->GetString(L"pic_url", &data_->pic_url_);
   dict->GetBigInteger(L"owntimes", &data_->owntimes_);
 }
+
 
 }  // namespace quotations_logic
