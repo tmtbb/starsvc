@@ -30,8 +30,8 @@ bool BindBankCard::set_http_packet(base_logic::DictionaryValue* value) {
     set_token(token);
   else
     return false;
-
-  r = value->GetBigInteger(L"bankId", &big_bank_id);
+/*
+  r = value->GetBigInteger(L"account", &big_bank_id);
   if (r){
     bank_id = big_bank_id;
     set_bank_id(bank_id);
@@ -50,14 +50,14 @@ bool BindBankCard::set_http_packet(base_logic::DictionaryValue* value) {
     set_branch_bank(branch_bank);
   else
     return false;
-
-  r = value->GetString(L"cardNO", &card_no);
+*/
+  r = value->GetString(L"account", &card_no);
   if (r)
     set_card_no(card_no);
   else
     return false;
 
-  r = value->GetString(L"name", &name);
+  r = value->GetString(L"bankUsername", &name);
   if (r)
     set_name(name);
   else
@@ -85,7 +85,7 @@ bool UnbindBankCard::set_http_packet(base_logic::DictionaryValue* value) {
     set_token(token);
   else
     return false;
-
+/*
   r = value->GetBigInteger(L"bankCardId", &big_bank_card_id);
   if (r){
      bank_card_id = big_bank_card_id;
@@ -93,6 +93,7 @@ bool UnbindBankCard::set_http_packet(base_logic::DictionaryValue* value) {
   }else{
      return false;
   }
+  */
 
   r = value->GetString(L"verCode",&ver_code);
   if (r)

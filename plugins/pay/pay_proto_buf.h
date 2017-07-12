@@ -776,6 +776,80 @@ class CanclePay{
   base_logic::FundamentalValue* rid_;
   base_logic::FundamentalValue* pay_result_;
 };
+
+
+class UnionWithDraw{
+ public:
+  UnionWithDraw()
+      : uid_(NULL),
+        rid_(NULL),
+        pay_result_(NULL) {
+  }
+
+  ~UnionWithDraw() {
+    if (uid_) {
+      delete uid_;
+      uid_ = NULL;
+    }
+
+    if (rid_) {
+      delete rid_;
+      rid_ = NULL;
+    }
+
+    if (pay_result_) {
+      delete pay_result_;
+      pay_result_ = NULL;
+    }
+  }
+
+  bool set_http_packet(base_logic::DictionaryValue* value);
+
+  void set_uid(const int64 uid) {
+    uid_ = new base_logic::FundamentalValue(uid);
+  }
+  void set_price(double price) {
+    price_ = new base_logic::FundamentalValue(price);
+  }
+
+  void set_rid(const int64 rid) {
+    rid_ = new base_logic::FundamentalValue(rid);
+  }
+
+  void set_pay_result(const int32 pay_result) {
+    pay_result_ = new base_logic::FundamentalValue(pay_result);
+  }
+
+  const int32 uid() const {
+    int64 uid = 0;
+    uid_->GetAsBigInteger(&uid);
+    return uid;
+  }
+
+  const int64 rid() const {
+    int64 rid = 0;
+    rid_->GetAsBigInteger(&rid);
+    return rid;
+  }
+  double price() {
+    double price;
+    if (price_)
+      price_->GetAsReal(&price);
+    return price;
+  }
+
+  const int32 pay_result() const {
+    int32 pay_result = 0;
+    pay_result_->GetAsInteger(&pay_result);
+    return pay_result;
+  }
+
+ private:
+  base_logic::FundamentalValue* uid_;
+  base_logic::FundamentalValue* rid_;
+  base_logic::FundamentalValue* price_;
+  base_logic::FundamentalValue* pay_result_;
+};
 }
 
 namespace net_reply {

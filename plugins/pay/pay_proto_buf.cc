@@ -367,6 +367,52 @@ bool CanclePay::set_http_packet(base_logic::DictionaryValue* value) {
 
   return true;
 }
+
+bool UnionWithDraw::set_http_packet(base_logic::DictionaryValue* value) {
+  int32 err = 0;
+  bool r = false;
+  int64 uid;
+  std::string rid;
+  int64 big_pay_result;
+  int32 pay_result;
+  double price;
+  if (value == NULL)
+    return false;
+  r = value->GetBigInteger(L"id", &uid);
+  if (r)
+    set_uid(uid);
+  else
+    return false;
+/*
+  r = value->GetString(L"rid", &rid);
+  if (r)
+    set_rid(atoll(rid.c_str()));
+  else
+    return false;
+
+  r = value->GetBigInteger(L"payResult", &big_pay_result);
+  if (r) {
+    pay_result = big_pay_result;
+    set_pay_result(pay_result);
+  } //else
+    //return false;
+    */
+
+  int64 big_price;
+  r = value->GetReal(L"price", &price);
+  if (r)
+    set_price(price);
+  else {
+    int64 big_price = 0;
+    r = value->GetBigInteger(L"price", &big_price);
+    if (!r)
+      return false;
+    price = big_price;
+    set_price(price);
+  }
+
+  return true;
+}
 }
 
 }

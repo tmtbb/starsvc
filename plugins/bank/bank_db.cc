@@ -122,7 +122,7 @@ bool BankDB::OnGetBankCard(const int64 uid,
   return true;
 }
 
-bool BankDB::OnBindBankCard(const int64 uid, const std::string& card_no, const std::string& branch_bank, 
+bool BankDB::OnBindBankCard(const int64 uid, const std::string& card_no, 
                             const std::string& name, bank_logic::BankCard& bank_card) {
    bool r = false;
    std::string sql;
@@ -132,8 +132,6 @@ bool BankDB::OnBindBankCard(const int64 uid, const std::string& card_no, const s
    sql = "call proc_BindBankCard(" + base::BasicUtil::StringUtil::Int64ToString(uid)
        + ",'"
        + card_no
-       + "','"
-       + branch_bank
        + "','"
        + name
        + "');";
@@ -157,7 +155,7 @@ bool BankDB::OnUnbindBankCard(const int64 uid , const int32 bankcard_id) {
    //call actuals.proc_UnbindBankCard(32,57)
    base_logic::DictionaryValue* dict = new base_logic::DictionaryValue;
    sql = "call proc_UnbindBankCard(" + base::BasicUtil::StringUtil::Int64ToString(uid)
-         + "," + base::BasicUtil::StringUtil::Int64ToString(bankcard_id) + ");";
+         + ");";
    dict->SetString(L"sql", sql);
    r = mysql_engine_->WriteData(0, (base_logic::Value*)(dict));
    if (dict) {delete dict; dict = NULL;}
@@ -218,8 +216,8 @@ void BankDB::CallBindBankCard(void* param, base_logic::Value* value) {
       if (rows[4] != NULL)
         info_value->SetInteger(L"bank_id", atoi(rows[4]));
 
-      if (rows[5] != NULL)
-        info_value->SetString(L"branch_bank", rows[5]);
+      //if (rows[5] != NULL)
+       // info_value->SetString(L"branch_bank", rows[5]);
 
       if (rows[6] != NULL)
         info_value->SetString(L"card_name", rows[6]);
@@ -303,19 +301,20 @@ void BankDB::CallGetBankCard(void* param, base_logic::Value* value) {
         info_value->SetString(L"bank_username", rows[3]);
 
       if (rows[4] != NULL)
-        info_value->SetInteger(L"bank_id", atoi(rows[4]));
+        info_value->SetInteger(L"bank_id", 0);
+        //info_value->SetInteger(L"bank_id", atoi(rows[4]));
 
       if (rows[5] != NULL)
-        info_value->SetString(L"branch_bank", rows[5]);
+        info_value->SetString(L"branch_bank", "test");
 
       if (rows[6] != NULL)
-        info_value->SetString(L"card_name", rows[6]);
+        info_value->SetString(L"card_name", "test");
 
       if (rows[7] != NULL)
-        info_value->SetString(L"bank_name", rows[7]);
+        info_value->SetString(L"bank_name", "temp");
 
       if (rows[8] != NULL)
-        info_value->SetInteger(L"is_default", atoi(rows[8]));
+        info_value->SetInteger(L"is_default", 1);
 
       list->Append((base_logic::Value *) (info_value));
     }

@@ -48,5 +48,8 @@ namespace pay_logic {
 
 #define R_CANCLE_PAY PAY_TYPE * 1000 + 55
 #define S_CANCLE_PAY PAY_TYPE * 1000 + 56
+
+#define R_UNION_WITHDRAW PAY_TYPE * 1000 + 57
+#define S_UNION_WITHDRAW PAY_TYPE * 1000 + 58
 }
 #endif

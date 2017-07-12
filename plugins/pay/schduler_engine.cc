@@ -454,4 +454,45 @@ bool PayManager::OnCanclePay(const int socket, const int64 uid, const int64 rid)
   }
   return true;
 }
+//-------------------------
+
+bool PayManager::UnionWithDraw(const int socket, const int64 uid, 
+                const int64 rid, const double price, const int session){
+  
+try
+{
+  bool r = pay_db_->OnCreateUnionWithDraw(uid, rid, price);
+
+  if (r) //本地创建订单成功
+  {
+    /*
+    LOG_DEBUG2("uid[%d] withdraw create sucess", uid);
+    pay_logic::UnionpayOrder::GetInstance()->Init(); 
+    pay_logic::UnionpayOrder::GetInstance()->Withdrawals(); 
+    */
+  }
+  else //本地创建订单失败
+  {
+    LOG_DEBUG2("uid[%d] withdraw create failed", uid);
+    return false;
+  }
+
+}
+catch (...)
+{
+    return false;
+}
+
+
+  struct PacketControl packet_control;
+
+  //MAKE_HEAD(packet_control, S_UNION_WITHDRAW, USER_TYPE, 0, 0, 0);
+  MAKE_HEAD(packet_control, S_UNION_WITHDRAW, USER_TYPE, 0, session, 0);
+  base_logic::DictionaryValue dic;
+  dic.SetInteger(L"result", 1);
+  packet_control.body_ = &dic;
+  send_message(socket, &packet_control);
+
+  return true;
+}
 }

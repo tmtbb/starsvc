@@ -368,8 +368,7 @@ bool UnionpayOrder::VerifySignature(std::string& result) {
   }
 
   std::string resp_str = ToString(resp_data, false, true);
-  std::string md_hex = ShaDigest(resp_str);
-
+  std::string md_hex = ShaDigest(resp_str); 
   EVP_MD_CTX md_ctx;
   EVP_VerifyInit(&md_ctx, EVP_sha1());
   EVP_VerifyUpdate(&md_ctx, md_hex.c_str(), md_hex.length());
@@ -385,6 +384,108 @@ bool UnionpayOrder::VerifySignature(std::string& result) {
 
   return true;
 }
+//_____________________________________________________________________
+//提现
 
+std::string UnionpayOrder::Withdrawals() {
+
+  content_data_["bizType"] = "000401";               
+  content_data_["txnSubType"] = "00";       
+  content_data_["backUrl"] = "ttps://61.147.114.78:8071/cgi-bin/paycall/unionpaycall/unionpaycall.fcgi";               
+  content_data_["txnType"] = "12";               
+  content_data_["channelType"] = "08";       
+  content_data_["encoding"] = "UTF-8";               
+  content_data_["version"] = "5.1.0";                 
+  content_data_["accessType"] = "0";         
+  content_data_["merId"] = "104210242141007";                   
+  content_data_["accType"] = "01";               
+  content_data_["currencyCode"] = "156";     
+  content_data_["signMethod"] = "01";         
+
+//std::stringstream req_url;
+  time_t seconds = time(0);
+  struct tm* now = localtime(&seconds);
+  std::stringstream ss;
+  char time_buf[128];
+  snprintf(time_buf, 128, "%04d%02d%02d%02d%02d%02d", now->tm_year + 1900,
+           now->tm_mon + 1, now->tm_mday, now->tm_hour, now->tm_min,
+           now->tm_sec);
+  LOG_MSG2("time now:%s", time_buf);
+  std::string orderId = time_buf;
+  std::string time_send = orderId;
+  //req_url << ACP_SERVER_URL << "?merId=" << mer_id_
+  //       << "&txnTime=" << time_send << "&orderId="
+  //       << orderId << "&txnAmt=" << price_;
+
+  content_data_[K_TXN_TIME] = time_send;
+  content_data_[K_ORDER_ID] = orderId;
+  content_data_[K_TXN_TYPE] = "12"; //提现重新设置交易类型 <12 代付>
+  content_data_[K_PRICE] = price_;
+  LOG_DEBUG2("kkkk price_:%s", price_);
+  content_data_[K_REQ_RESERVED] = req_reserved_; //商户自定义保留域，交易应答时会原样返回
+  LOG_DEBUG2("kkkk req_reserved_:%s", req_reserved_);
+  content_data_[K_REQ_RESERVED] = req_reserved_;
+  content_data_[K_ACC_NO] = "6214835891604306";
+  //content_data_[K_ORDER_DESC] = WP_UNIONPAY; //提现不需要该字段
+
+  std::string req_str = ToString(content_data_);
+
+  LOG_DEBUG2("testunion req_str:%s", req_str.c_str());
+  std::string md_hex = ShaDigest(req_str);
+  LOG_DEBUG2("testunion md_hex [req_str:[%s]]", md_hex.c_str());
+  EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey_, NULL);
+  if (!ctx) {
+    LOG_ERROR("evp pkey cxt new null");
+    return "";
+  }
+  if (EVP_PKEY_encrypt_init(ctx) <= 0) {
+    LOG_ERROR("evp pkey encrypt init err");
+    return "";
+  }
+
+  EVP_MD_CTX md_ctx;
+  EVP_SignInit(&md_ctx, EVP_sha1());
+  EVP_SignUpdate(&md_ctx, md_hex.c_str(), md_hex.length());
+  unsigned int sign_len;
+  if (!EVP_SignFinal(&md_ctx, NULL, &sign_len, pkey_)) {
+    LOG_ERROR("pkey sign get len error");
+    return "";
+  }
+  unsigned char* sign_buf = (unsigned char*) OPENSSL_malloc(sign_len);
+  if (!EVP_SignFinal(&md_ctx, sign_buf, &sign_len, pkey_)) {
+    LOG_ERROR("pkey sign error");
+    return "";
+  }
+  //OPENSSL_free(sign_buf);!!!!!!!!!!!!!!
+  LOG_DEBUG2("pkey sign len:%d result:s", sign_len, sign_buf);
+  content_data_[K_SIGNATURE] = base64_encode(sign_buf, sign_len); //签名
+  LOG_DEBUG2("sign base64:%s", content_data_[K_SIGNATURE].c_str());
+
+  std::string post_data = ToString(content_data_, true);
+
+  std::map<std::string, std::string>::iterator it_sig = content_data_.find(
+  K_SIGNATURE);
+  content_data_.erase(it_sig);
+
+  LOG_MSG2("unionpay post data:%s", post_data.c_str());
+
+  //std::string url = "https://101.231.204.80:5000/gateway/api/appTransReq.do";
+  /*
+  std::string url = "https://gateway.95516.com/gateway/api/appTransReq.do";  //////////////////////
+  http::HttpMethodPost hmp(url);
+  //std::string headers = "Content-Type: text/xml";
+  //hmp.SetHeaders(headers);
+  hmp.Post(post_data.c_str());
+  std::string result;
+  hmp.GetContent(result);
+  LOG_MSG2("http get result:%s", result.c_str());
+
+  if (!VerifySignature(result))
+    return "";
+
+  return result;
+  */
+  return "";
+}
 }
 
