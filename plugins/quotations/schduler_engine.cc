@@ -508,6 +508,7 @@ void QuotationsManager::SendTimeLine(const int socket, const int64 session,
 void QuotationsManager::SendRealTime(const int socket, const int64 session,
                                      const int32 reversed,
                                      base_logic::ListValue* value) {
+    bool r;
     net_reply::RealTime net_reply_real_time;
     for (base_logic::ListValue::iterator it = value->begin(); it != value->end();
             it++) {
@@ -515,7 +516,11 @@ void QuotationsManager::SendRealTime(const int socket, const int64 session,
         base_logic::Value* value = (*it);
 
         net_request::RealTimeUnit real_time_unit;
-        real_time_unit.set_htt_packet((base_logic::DictionaryValue*) (value));
+        r = real_time_unit.set_htt_packet((base_logic::DictionaryValue*) (value));
+        if(!r){
+          LOG_DEBUG2("SendRealTime get fields error.[%d]", -1);
+          continue;
+        }
 
         //查找对应的行情数据
         std::string key = "star_index:" + real_time_unit.symbol();
