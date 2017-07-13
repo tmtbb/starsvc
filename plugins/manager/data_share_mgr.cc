@@ -76,6 +76,32 @@ bool SchdulerEngineImpl::SetRecvErrorCount(const int socket) {
   return schduler_mgr->SetRecvErrorCount(socket);
 }
 
+bool SchdulerEngineImpl::SetStarInfoSchduler(const std::string symbol, 
+                                      star_logic::StarInfo* star) {
+  ManagerSchdulerEngine* schduler_mgr =
+      EngineSchdulerEngine::GetSchdulerManager();
+  return schduler_mgr->SetStarInfoSchduler(symbol, star);
+}
+
+bool SchdulerEngineImpl::GetStarInfoSchduler(const std::string symbol, 
+                                      star_logic::StarInfo* star) {
+  ManagerSchdulerEngine* schduler_mgr =
+      EngineSchdulerEngine::GetSchdulerManager();
+  return schduler_mgr->GetStarInfoSchduler(symbol, star);
+}
+
+bool SchdulerEngineImpl::DelStarInfoSchduler(const std::string symbol) {
+  ManagerSchdulerEngine* schduler_mgr =
+      EngineSchdulerEngine::GetSchdulerManager();
+  return schduler_mgr->DelStarInfoSchduler(symbol);
+}
+
+bool SchdulerEngineImpl::GetAllStarInfoSchduler(std::list<star_logic::StarInfo>& list) {
+  ManagerSchdulerEngine* schduler_mgr =
+      EngineSchdulerEngine::GetSchdulerManager();
+  return schduler_mgr->GetAllStarInfoSchduler(list);
+}
+
 
 ManagerSchdulerEngine* EngineSchdulerEngine::schduler_mgr_ = NULL;
 EngineSchdulerEngine* EngineSchdulerEngine::schduler_engine_ = NULL;
@@ -87,12 +113,15 @@ ManagerSchdulerEngine::ManagerSchdulerEngine() {
 
 void ManagerSchdulerEngine::Init() {
   InitThreadrw (&lock_);
+  InitThreadrw (&lock_star_);
 }
 
 ManagerSchdulerEngine::~ManagerSchdulerEngine() {
   DeinitThreadrw (lock_);
+  DeinitThreadrw (lock_star_);
   schduler_cache_->user_map_.clear();
   schduler_cache_->socket_map_.clear();
+  schduler_cache_->star_map_.clear();
   if (schduler_cache_) {
     delete schduler_cache_;
     schduler_cache_ = NULL;
@@ -176,6 +205,36 @@ bool ManagerSchdulerEngine::SetRecvErrorCount(int socket) {
   return true;
 }
 
+bool ManagerSchdulerEngine::SetStarInfoSchduler(const std::string symbol,
+                                                star_logic::StarInfo* star){
+  base_logic::WLockGd lk(lock_star_);
+  return base::MapAdd<STAR_MAP, std::string, star_logic::StarInfo>(
+      schduler_cache_->star_map_, symbol, (*star));
+}
+
+bool ManagerSchdulerEngine::GetStarInfoSchduler(const std::string symbol,
+                                                star_logic::StarInfo* star) {
+  base_logic::RLockGd lk(lock_star_);
+  return base::MapGet<STAR_MAP, STAR_MAP::iterator, std::string,
+      star_logic::StarInfo>(schduler_cache_->star_map_, symbol,
+                                            (*star));
+}
+
+bool ManagerSchdulerEngine::DelStarInfoSchduler(const std::string symbol) {
+  base_logic::WLockGd lk(lock_star_);
+  return base::MapDel<STAR_MAP, STAR_MAP::iterator, std::string>(
+      schduler_cache_->star_map_, symbol);
+}
+
+bool ManagerSchdulerEngine::GetAllStarInfoSchduler(
+          std::list<star_logic::StarInfo>& list) {
+  base_logic::WLockGd lk(lock_star_);
+  STAR_MAP::iterator it = schduler_cache_->star_map_.begin();
+  for(; it!=schduler_cache_->star_map_.end(); ++it){
+    list.push_back(it->second);
+  }
+  return true;
+}
 
 
 bool ManagerSchdulerEngine::CheckHeartPacket() {

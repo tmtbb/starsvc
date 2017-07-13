@@ -22,38 +22,44 @@ namespace infomation_logic {
 #define R_ADD_ORDERSTAR    INFO_TYPE * 1000 + 9
 #define S_ADD_ORDERSTAR    INFO_TYPE * 1000 + 10
 
-//获取已购明星
+//??取?压?????
 #define R_GET_ORDERSTAR    INFO_TYPE * 1000 + 11
 #define S_GET_ORDERSTAR    INFO_TYPE * 1000 + 12
 
-//获取明星咨询
+//??取??????询
 #define R_GET_STARNEWS    INFO_TYPE * 1000 + 13
 #define S_GET_STARNEWS    INFO_TYPE * 1000 + 14
 
-//获取banner信息
+//??取banner??息
 #define R_GET_BANNER    INFO_TYPE * 1000 + 15
 #define S_GET_BANNER    INFO_TYPE * 1000 + 16
 
-//获取粉丝评论
+//??取??丝????
 #define R_GET_FANSCOMMENT    INFO_TYPE * 1000 + 17
 #define S_GET_FANSCOMMENT    INFO_TYPE * 1000 + 18
 
-//获取明星服务列表
+//??取???欠????斜?
 #define R_GET_STAR_SERVICE    INFO_TYPE * 1000 + 19
 #define S_GET_STAR_SERVICE    INFO_TYPE * 1000 + 20
-//用户订购明星服务
+//?没????????欠???
 #define R_ORDER_STAR_SERVICE    INFO_TYPE * 1000 + 21
 #define S_ORDER_STAR_SERVICE    INFO_TYPE * 1000 + 22
 
-//获取用户订购明星数
+//??取?没???????????
 #define R_ORDER_STAR_NUM    INFO_TYPE * 1000 + 23
 #define S_ORDER_STAR_NUM    INFO_TYPE * 1000 + 24
 
-//获取用户明星时间
+//??取?没?????时??
 #define R_ORDER_STAR_TIME    INFO_TYPE * 1000 + 25
 #define S_ORDER_STAR_TIME    INFO_TYPE * 1000 + 26
-//获取明星时间
+//??取????时??
 #define R_STAR_TIME    INFO_TYPE * 1000 + 27
 #define S_STAR_TIME    INFO_TYPE * 1000 + 28
+//鑾峰彇鐢ㄦ埛绾﹁鏄庢槦璇︽儏
+#define R_USER_STAR_MEETINFO    INFO_TYPE * 1000 + 29
+#define S_USER_STAR_MEETINFO    INFO_TYPE * 1000 + 30
+//鑾峰彇鏌愪釜鏄庢槦淇℃伅锛屼笌鑾峰彇鏄庢槦缁忛獙閰嶅悎浣跨敤
+#define R_STAR_INFO    INFO_TYPE * 1000 + 31
+#define S_STAR_INFO    INFO_TYPE * 1000 + 32
 }
 #endif

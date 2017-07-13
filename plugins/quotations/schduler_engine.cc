@@ -32,6 +32,16 @@ QuotationsManager::~QuotationsManager() {
 
 void QuotationsManager::Init() {
     InitThreadrw(&lock_);
+
+    manager_schduler::SchdulerEngine* (*schduler_engine)(void);
+    std::string schduler_library = "./data_share.so";
+    std::string schduler_func = "GetManagerSchdulerEngine";
+    schduler_engine = (manager_schduler::SchdulerEngine* (*)(void))
+                      logic::SomeUtils::GetLibraryFunction(
+                          schduler_library, schduler_func);
+    manager_schduler_engine_ = (*schduler_engine)();
+    if (manager_schduler_engine_ == NULL)
+        assert(0);
 }
 
 void QuotationsManager::InitFoxreData() {
@@ -45,14 +55,19 @@ void QuotationsManager::InitGoodsData() {
 }
 
 void QuotationsManager::InitStarData() {
-    //InitRedisData("STAR:STAR")
-    quotations_db_->OnGetStarInfo(quotations_cache_->basic_info_map_);
-    BASIC_INFO_MAP::iterator it = quotations_cache_->basic_info_map_.begin();
-    for(; it != quotations_cache_->basic_info_map_.end(); it++) {
-        star_logic::StarInfo star = it->second;
-        std::string key = "star_index:" + star.weibo_index_id();
-        InitRedisData(key, STAR_TYPE);
-    }
+  //InitRedisData("STAR:STAR")
+  BASIC_INFO_MAP star_info_list;
+  quotations_db_->OnGetStarInfo(star_info_list);
+  BASIC_INFO_MAP::iterator it = star_info_list.begin();
+  for(; it != star_info_list.end(); ++it) {
+    star_logic::StarInfo& star = it->second;
+    std::string key = "star_index:" + star.weibo_index_id();
+    InitRedisData(key, STAR_TYPE);
+
+    manager_schduler_engine_->SetStarInfoSchduler(star.symbol(),
+                                &star);
+  }
+
 }
 
 
@@ -248,62 +263,125 @@ void QuotationsManager::TimeEvent(int opcode, int time) {
 void QuotationsManager::SendSymbolList(const int socket, const int64 session, const int32 reversed,
                                        const int32 atype, const int32 sort, const int32 pos,
                                        const int32 count) {
-    net_reply::SymbolList symobol_list;
-    std::list<star_logic::Quotations> list;
+  std::list<star_logic::StarInfo> starlist;
 
-    GetSortQuoationList(atype, list, pos, count, sort);
-    if (list.size() <= 0) {
-        send_error(socket, ERROR_TYPE, NO_HAVE_KCHART_DATA,session);
-        return;
+  //    GetSortQuoationList(atype, list, pos, count, sort);
+  manager_schduler_engine_->GetAllStarInfoSchduler(starlist);
+  if (starlist.size() <= 0) {
+      send_error(socket, ERROR_TYPE, NO_HAVE_KCHART_DATA,session);
+      return;
+  }
+
+  bool r = false;
+  if(sort == 0)//明星上线时间排序
+      starlist.sort(star_logic::StarInfo::sort_add_time);
+  else //热度排序
+      starlist.sort(star_logic::StarInfo::sort_hot_priority);
+
+  int32 t_count = 0, curpos = 0;
+  std::list<star_logic::StarInfo>::iterator iter = starlist.begin();
+  for(; iter != starlist.end(); ){
+      if(curpos++ < pos || t_count == count){
+          iter = starlist.erase(iter);
+          continue;
+      }
+      ++t_count;
+      ++iter;
+  }
+  LOG_DEBUG2("Get symbol list size:%d", starlist.size());
+  //发送行情列表
+  SendQuotationsList(socket, session, reversed, atype, starlist);
+}
+
+void QuotationsManager::SendHomeSymbolList(const int socket, const int64 session, const int32 reversed,
+                                       const int32 atype) {
+    
+  std::list<star_logic::StarInfo> starlist;
+  manager_schduler_engine_->GetAllStarInfoSchduler(starlist);
+  if (starlist.size() <= 0) {
+    send_error(socket, ERROR_TYPE, NO_HAVE_SYMBOL_DATA,session);
+    return;
+  }
+
+  std::list<star_logic::StarInfo>::iterator iter = starlist.begin();
+  for(; iter != starlist.end(); ){
+    if(1 != iter->display_on_home()){
+        iter = starlist.erase(iter);
+        continue;
     }
-
-    //发送行情列表
-    SendQuotationsList(socket, session, reversed, list);
+    ++iter;
+  }
+  LOG_DEBUG2("Get home symbol list size:%d", starlist.size());
+  //发送行情列表
+  SendQuotationsList(socket, session, reversed, atype, starlist);
 }
 
 
-void QuotationsManager::SendQuotationsList(const int socket, const int64 session, const int32 reversed,
-        std::list<star_logic::Quotations>& list) {
-    net_reply::SymbolList symbol_list;
-    bool r = false;
+void QuotationsManager::SendQuotationsList(const int socket, const int64 session, const int32 reversed, 
+        const int32 atype, std::list<star_logic::StarInfo>& starlist) {
+  net_reply::SymbolList symbol_list;
+  bool r = false;
 
-    {
-        base_logic::RLockGd lk(lock_);
-        while(list.size() > 0) {
-            star_logic::Quotations quotations = list.front();
-            list.pop_front();
-            star_logic::StarInfo star;
-            r = base::MapGet<BASIC_INFO_MAP,BASIC_INFO_MAP::iterator,std::string,star_logic::StarInfo>(quotations_cache_->basic_info_map_,
-                    quotations.symbol(),star);
-            if (!r)
-                continue;
-            net_reply::SymbolUnit* r_symbol_unit = new net_reply::SymbolUnit;
-            r_symbol_unit->set_wid(star.weibo_index_id());
-            r_symbol_unit->set_name(star.name());
-            r_symbol_unit->set_pic(star.pic());
-            r_symbol_unit->set_symbol(star.symbol());
-            r_symbol_unit->set_current_price(quotations.current_price());
-            r_symbol_unit->set_system_unix_time(time(NULL));
-            r_symbol_unit->set_current_unix_time(quotations.current_unix_time());
-            r_symbol_unit->set_change(quotations.change());
-            r_symbol_unit->set_pchg(quotations.pchg());
-            LOG_MSG2("current_unix_time %lld symbol %s current_price %f, change %f,pchg %f",
-                    quotations.current_unix_time(),star.symbol().c_str(), quotations.current_price(),
-                    quotations.change(),quotations.pchg());
-            symbol_list.set_unit(r_symbol_unit->get());
-        }
+  {
+    base_logic::RLockGd lk(lock_);
+    while(starlist.size() > 0) {
+      star_logic::StarInfo star = starlist.front();
+      starlist.pop_front();
+      
+      
+      LAST_QUOTATIONS_MAP last_exchange_quotations;
+      star_logic::Quotations temp_quotations;
+
+      std::string key;
+      key = "star_index:"+ star.symbol();
+      //读取上一分钟报价
+      r = base::MapGet<LAST_QUOTATIONS_ALL_MAP, LAST_QUOTATIONS_ALL_MAP::iterator,
+      int32, LAST_QUOTATIONS_MAP>(quotations_cache_->last_quotations_map_,
+                                  atype, last_exchange_quotations);
+      r = base::MapGet<LAST_QUOTATIONS_MAP, LAST_QUOTATIONS_MAP::iterator,
+      std::string, star_logic::Quotations>(last_exchange_quotations, key,
+                                           temp_quotations);
+
+
+      net_reply::SymbolUnit* r_symbol_unit = new net_reply::SymbolUnit;
+      r_symbol_unit->set_wid(star.weibo_index_id());
+      r_symbol_unit->set_name(star.name());
+      r_symbol_unit->set_star_type(star.type());
+      r_symbol_unit->set_pic(star.pic());
+      r_symbol_unit->set_home_pic(star.home_pic());
+      r_symbol_unit->set_symbol(star.symbol());
+      r_symbol_unit->set_system_unix_time(time(NULL));
+      if(r){
+        r_symbol_unit->set_current_price(temp_quotations.current_price());
+        r_symbol_unit->set_current_unix_time(temp_quotations.current_unix_time());
+        r_symbol_unit->set_change(temp_quotations.change());
+        r_symbol_unit->set_pchg(temp_quotations.pchg());
+        LOG_MSG2("current_unix_time %lld symbol %s current_price %f, change %f,pchg %f",
+                temp_quotations.current_unix_time(),star.symbol().c_str(), temp_quotations.current_price(),
+                temp_quotations.change(),temp_quotations.pchg());
+      }else{
+        r_symbol_unit->set_current_price(0);
+        r_symbol_unit->set_current_unix_time(time(NULL));
+        r_symbol_unit->set_change(0);
+        r_symbol_unit->set_pchg(0);
+      }
+      r_symbol_unit->set_pushlish_type(star.publish_type());
+      r_symbol_unit->set_home_button_pic(star.home_button_pic());
+      
+      symbol_list.set_unit(r_symbol_unit->get());
     }
+  }
 
 
-    if (symbol_list.Size() != 0) {
-        struct PacketControl packet_control;
-        MAKE_HEAD(packet_control, S_SYMBOL_LIST, QUOTATIONS_TYPE, 0,
-                  session, reversed);
-        packet_control.body_ = symbol_list.get();
-        send_message(socket, &packet_control);
-    }else {
-       send_error(socket, ERROR_TYPE, NO_HAVE_SYMBOL_DATA,session); 
-    }
+  if (symbol_list.Size() != 0) {
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_SYMBOL_LIST, QUOTATIONS_TYPE, 0,
+              session, reversed);
+    packet_control.body_ = symbol_list.get();
+    send_message(socket, &packet_control);
+  }else {
+     send_error(socket, ERROR_TYPE, NO_HAVE_SYMBOL_DATA,session); 
+  }
 }
 
 void QuotationsManager::SendKChartLine(const int socket, const int64 session,
@@ -430,6 +508,7 @@ void QuotationsManager::SendTimeLine(const int socket, const int64 session,
 void QuotationsManager::SendRealTime(const int socket, const int64 session,
                                      const int32 reversed,
                                      base_logic::ListValue* value) {
+    bool r;
     net_reply::RealTime net_reply_real_time;
     for (base_logic::ListValue::iterator it = value->begin(); it != value->end();
             it++) {
@@ -437,7 +516,11 @@ void QuotationsManager::SendRealTime(const int socket, const int64 session,
         base_logic::Value* value = (*it);
 
         net_request::RealTimeUnit real_time_unit;
-        real_time_unit.set_htt_packet((base_logic::DictionaryValue*) (value));
+        r = real_time_unit.set_htt_packet((base_logic::DictionaryValue*) (value));
+        if(!r){
+          LOG_DEBUG2("SendRealTime get fields error.[%d]", -1);
+          continue;
+        }
 
         //查找对应的行情数据
         std::string key = "star_index:" + real_time_unit.symbol();
@@ -531,6 +614,7 @@ void QuotationsManager::GetSortQuoationList(const int32 atype,std::list<star_log
         t_count++;
     }
 }
+
 
 void QuotationsManager::GetTimeLine(const int32 atype,
                                     const std::string& symbol,

@@ -58,7 +58,9 @@ class Infomationlogic {
   bool GetUserStarNum(struct server* srv,int socket ,struct PacketHead* packet);
   bool GetUserStarTime(struct server* srv,int socket ,struct PacketHead* packet);
   bool GetStarTime(struct server* srv,int socket ,struct PacketHead* packet);
- private:
+  bool GetUserStarMeetinfo(struct server* srv,int socket ,struct PacketHead* packet);
+  bool GetOneStarInfo(struct server* srv,int socket ,struct PacketHead* packet);
+private:
   bool Init();
   infomation_mysql::Infomation_Mysql* sqldb;
 };

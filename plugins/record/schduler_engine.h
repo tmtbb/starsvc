@@ -4,15 +4,18 @@
 #ifndef RECORD_SCHDULER_ENGINE_H__
 #define RECORD_SCHDULER_ENGINE_H__
 
+#include <map>
+#include <list>
+#include "logic/base_values.h"
+#include "thread/base_thread_handler.h"
+#include "thread/base_thread_lock.h"
 #include "logic/star_infos.h"
+#include "manager/data_share_mgr.h"
 #include "record/record_info.h"
 #include "record/record_db.h"
 #include "record/record_kafka.h"
-#include "thread/base_thread_handler.h"
-#include "thread/base_thread_lock.h"
-#include "logic/base_values.h"
-#include <map>
-#include <list>
+
+
 
 namespace record_logic {
  
@@ -145,6 +148,7 @@ private:
     record_logic::RecordDB* record_db_;
     record_logic::RecordKafka* record_kafka_;
     RecordCache *record_cache_;
+    manager_schduler::SchdulerEngine* manager_schduler_engine_;
     struct threadrw_t *lock_;
 };
 

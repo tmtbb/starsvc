@@ -2,13 +2,13 @@
 //  Created on: 2017年1月7日 Author: kerry
 
 #include "record/schduler_engine.h"
-#include "record/record_proto_buf.h"
-#include "record/operator_code.h"
-#include "record/errno.h"
+#include "basic/template.h"
 #include "net/comm_head.h"
 #include "net/packet_processing.h"
 #include "logic/logic_unit.h"
-#include "basic/template.h"
+#include "record/errno.h"
+#include "record/operator_code.h"
+#include "record/record_proto_buf.h"
 
 namespace record_logic {
 
@@ -27,6 +27,16 @@ RecordManager::~RecordManager() {
 
 void RecordManager::Init() {
     InitThreadrw(&lock_);
+
+    manager_schduler::SchdulerEngine* (*schduler_engine)(void);
+    std::string schduler_library = "./data_share.so";
+    std::string schduler_func = "GetManagerSchdulerEngine";
+    schduler_engine = (manager_schduler::SchdulerEngine* (*)(void))
+                      logic::SomeUtils::GetLibraryFunction(
+                          schduler_library, schduler_func);
+    manager_schduler_engine_ = (*schduler_engine)();
+    if (manager_schduler_engine_ == NULL)
+        assert(0);
 }
 
 void RecordManager::InitDB(record_logic::RecordDB* record_db) {
@@ -42,7 +52,7 @@ void RecordManager::InitData() {
     InitDataHisOrder();
     InitUserInfo();
     InitDataHisPosition();
-    InitStarInfo();
+//    InitStarInfo();
 }
 
 
@@ -558,8 +568,7 @@ void RecordManager::SetTradesPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
                        trades_position.symbol(), trades_position.amount());*/
     if (!init){
         star_logic::StarInfo star;
-        bool r = base::MapGet<STAR_INFO_MAP,STAR_INFO_MAP::iterator,std::string,star_logic::StarInfo>
-            (record_cache_->star_info_map_, trades_position.symbol(),star);
+        bool r = manager_schduler_engine_->GetStarInfoSchduler(trades_position.symbol(), &star);
         if (r) {
             if(trades_position.buy_sell() == SELL_TYPE)
                 record_kafka_->SetSellPosition(star.weibo_index_id(),
@@ -637,6 +646,15 @@ void RecordManager::SetTradesOrder(star_logic::TradesOrder& trades_order) {
                         (record_cache_->symbol_trades_order_,trades_order.symbol(),symbol_order_list);
             symbol_order_list.push_back(trades_order);
             record_cache_->symbol_trades_order_[trades_order.symbol()] = symbol_order_list;
+
+            star_logic::StarInfo star;
+            r = manager_schduler_engine_->GetStarInfoSchduler(trades_order.symbol(), &star);
+            if(r){
+                //更新热度
+                star.set_hot_priority1(star.hot_priority1() + 1);
+                star.set_hot_priority2(star.hot_priority2() + trades_order.open_price()*trades_order.amount());
+                manager_schduler_engine_->SetStarInfoSchduler(star.symbol(), &star);
+            }
         }
         return;
     }
@@ -664,8 +682,7 @@ void RecordManager::SetTradesOrder(star_logic::TradesOrder& trades_order) {
 
     record_cache_->trades_order_[trades_order.order_id()] = trades_order;
     star_logic::StarInfo star;
-    r = base::MapGet<STAR_INFO_MAP,STAR_INFO_MAP::iterator,std::string,star_logic::StarInfo>
-            (record_cache_->star_info_map_, trades_order.symbol(),star);
+    r = manager_schduler_engine_->GetStarInfoSchduler(trades_order.symbol(), &star);
     if (r)
         record_kafka_->SetVolume(star.weibo_index_id(),trades_order.open_price(),
             trades_order.open_position_time());

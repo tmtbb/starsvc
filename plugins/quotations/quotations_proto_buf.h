@@ -697,11 +697,15 @@ class SymbolUnit {
         : wid_(NULL)
 	, name_(NULL)
 	, pic_(NULL)
+  , home_pic_(NULL)
+  , home_button_pic_(NULL)
 	, symbol_(NULL)
 	, current_price_(NULL)
 	, system_unix_time_(NULL)
 	, current_unix_time_(NULL)
-	, change_(NULL) {}
+	, change_(NULL)
+  , pushlish_type_(NULL)
+  , star_type_(NULL) {}
 
   ~SymbolUnit() {
      if (value_) {delete value_; value_ = NULL;}
@@ -716,6 +720,13 @@ class SymbolUnit {
   
   void set_pic(const std::string& pic) {
     pic_ = new base_logic::StringValue(pic);
+  }
+
+  void set_home_pic(const std::string& pic) {
+    home_pic_ = new base_logic::StringValue(pic);
+  }
+  void set_home_button_pic(const std::string& pic) {
+    home_button_pic_ = new base_logic::StringValue(pic);
   }
 
   void set_symbol(const std::string& symbol) {
@@ -742,6 +753,13 @@ class SymbolUnit {
       pchg_ = new base_logic::FundamentalValue(pchg);
   }
 
+  void set_pushlish_type(const int32 pushlishType) {
+   pushlish_type_ = new base_logic::FundamentalValue(pushlishType);
+  }
+  void set_star_type(const int32 startype) {
+   star_type_ = new base_logic::FundamentalValue(startype);
+  }
+
   base_logic::DictionaryValue* get() {
     value_ = new base_logic::DictionaryValue();
     if (wid_ != NULL)
@@ -750,6 +768,10 @@ class SymbolUnit {
       value_->Set(L"name", name_);
     if (pic_ != NULL)
       value_->Set(L"pic", pic_);
+    if (home_pic_ != NULL)
+      value_->Set(L"home_pic", home_pic_);
+    if (home_button_pic_ != NULL)
+      value_->Set(L"home_button_pic", home_button_pic_);
     if (symbol_ != NULL)
       value_->Set(L"symbol", symbol_);
     if (current_price_ != NULL)
@@ -762,6 +784,10 @@ class SymbolUnit {
       value_->Set(L"change", change_);
     if (pchg_ != NULL)
         value_->Set(L"pchg", pchg_);
+    if (pushlish_type_ != NULL)
+        value_->Set(L"pushlish_type", pushlish_type_);
+    if (star_type_ != NULL)
+        value_->Set(L"star_type", star_type_);
     return value_;
   }
    
@@ -769,12 +795,16 @@ class SymbolUnit {
   base_logic::StringValue* wid_;
   base_logic::StringValue* name_;
   base_logic::StringValue* pic_;
+  base_logic::StringValue* home_button_pic_;
+  base_logic::StringValue* home_pic_;
   base_logic::StringValue* symbol_;
   base_logic::FundamentalValue*   current_price_;
   base_logic::FundamentalValue*   system_unix_time_;
   base_logic::FundamentalValue*   current_unix_time_;
   base_logic::FundamentalValue*   change_;
   base_logic::FundamentalValue*   pchg_;
+  base_logic::FundamentalValue*   pushlish_type_;
+  base_logic::FundamentalValue*   star_type_;
   base_logic::DictionaryValue* value_;
 };
 
