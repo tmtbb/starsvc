@@ -1,0 +1,38 @@
+//  Copyright (c) 2016-2017 The quotations Authors. All rights reserved.
+//  Created on: 2017年1月3日 Author: kerry
+
+#ifndef STAR_CIRCLE_OPERATOR_CODE_H_
+#define STAR_CIRCLE_OPERATOR_CODE_H_
+
+
+#include "net/comm_head.h"
+
+
+namespace circle_logic {
+
+
+#define R_GET_ALL_CIRCLE_INFO CIRCLE_TYPE * 1000 + 1
+#define S_GET_ALL_CIRCLE_INFO CIRCLE_TYPE * 1000 + 2
+
+#define R_GET_STAR_CIRCLE_INFO CIRCLE_TYPE * 1000 + 3
+#define S_GET_STAR_CIRCLE_INFO CIRCLE_TYPE * 1000 + 4
+
+#define R_STAR_ADD_CIRCLE CIRCLE_TYPE * 1000 + 5
+#define S_STAR_ADD_CIRCLE CIRCLE_TYPE * 1000 + 6
+
+#define R_STAR_DEL_CIRCLE CIRCLE_TYPE * 1000 + 7
+#define S_STAR_DEL_CIRCLE CIRCLE_TYPE * 1000 + 8
+
+#define R_USER_APPROVE_CIRCLE CIRCLE_TYPE * 1000 + 9
+#define S_USER_APPROVE_CIRCLE CIRCLE_TYPE * 1000 + 10
+
+#define R_USER_COMMENT_CIRCLE CIRCLE_TYPE * 1000 + 11
+#define S_USER_COMMENT_CIRCLE CIRCLE_TYPE * 1000 + 12
+
+#define R_STAR_REPLY_COMMENT CIRCLE_TYPE * 1000 + 13
+#define S_STAR_REPLY_COMMENT CIRCLE_TYPE * 1000 + 14
+
+
+}
+#endif 
+
