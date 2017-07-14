@@ -61,6 +61,8 @@ class Infomation_Mysql {
   //获取某个明星信息用于个人信息介绍
   bool OngetOnestarInfo(const std::string& starcode, DicValue* dic);
 
+  bool OngetSysParamValue(const std::string& paramcode, std::string& retstring);
+
   static void Callpublicback(void* param, base_logic::Value* value);
   
   static void Callgetinfo(void* param, base_logic::Value* value);
@@ -78,6 +80,7 @@ class Infomation_Mysql {
   static void Callgetstartime(void* param, base_logic::Value* value);
   static void CallgetUserStarMeetinfo(void* param, base_logic::Value* value);
   static void CallgetOnestarInfo(void* param, base_logic::Value* value);
+  static void CallgetSysParamValue(void* param, base_logic::Value* value);
   private:
   base_logic::DataEngine* mysql_engine_;
 };

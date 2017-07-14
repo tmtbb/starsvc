@@ -850,5 +850,50 @@ void Infomation_Mysql::CallgetOnestarInfo(void* param, base_logic::Value* value)
   dict->Remove(L"sql", &value);
 }
 
+bool Infomation_Mysql::OngetSysParamValue(const std::string& paramcode, std::string& retstring){
+	bool r = false;
+	DicValue* dic = new DicValue();
+	std::string sql = "call proc_GetSysParamVlue('"
+    + paramcode + "');";
+
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),CallgetSysParamValue);
+	if (!r) {
+	  return false;
+	}
+
+	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	bool r1 = dic->GetDictionary(L"resultvalue",&ret);
+	r = ret->GetString(L"param_value", &retstring);
+	if(!r1 || !r){
+	  return false;
+	}
+	
+	return r;
+}
+
+void Infomation_Mysql::CallgetSysParamValue(void* param, base_logic::Value* value){	
+	base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+	base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+	MYSQL_ROW rows;
+	base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+	int32 num = engine->RecordCount();
+	if (num > 0) {
+		while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+			if (rows[0] != NULL)
+				info_value->SetString(L"param_value", rows[0]);
+		
+		}
+    	dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+  	}
+	else {
+		LOG_ERROR ("proc_GetSysParamVlue count < 0");
+	}
+  
+	dict->Remove(L"sql", &value);
+}
+
 }
 
