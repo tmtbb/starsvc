@@ -12,6 +12,21 @@
 #include "basic/template.h"
 
 namespace trades_logic {
+
+void* ThreadDealTask(void* param){
+
+    while(true){
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+        trades_logic::TradesEngine::GetSchdulerManager()->AutoMatachOrder(param);
+        pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+        pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+        //pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+        pthread_testcancel();
+        sleep(2);
+    }
+}
+
+
 TradesManager* TradesEngine::schduler_mgr_ = NULL;
 TradesEngine* TradesEngine::schduler_engine_ = NULL;
 
@@ -21,6 +36,10 @@ TradesManager::TradesManager() {
 }
 
 TradesManager::~TradesManager() {
+    pthread_cancel(tidp);
+    if (pthread_join(tidp, NULL)){
+        LOG_ERROR2("pthread_join err! tidp[%d]", tidp);
+    }
     DeinitThreadrw(lock_);
     if (trades_cache_) {
         delete trades_cache_;
@@ -45,6 +64,15 @@ void TradesManager::InitData() {
     trades_db_->OnFetchPlatformStar(trades_cache_->trades_star_map_);
     LOG_MSG2("trades map %lld", trades_cache_->trades_star_map_.size());
     CreateTimeTask();
+
+    pthread_attr_t attr;
+    pthread_attr_init (&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    if ((pthread_create(&tidp, NULL, ThreadDealTask, NULL)) == -1){
+        LOG_ERROR2("create time thread err![%d]", -1);
+    }
+    pthread_attr_destroy (&attr);
+
 }
 
 void TradesManager::InitManagerSchduler(manager_schduler::SchdulerEngine* schduler_engine) {
@@ -59,23 +87,21 @@ void TradesManager::TimeStarEvent() {
         return;
 
     trades_cache_->trades_task_list_.sort(trades_logic::TimeTask::cmp);
-    while (trades_cache_->trades_task_list_.size() > 0) {
-        //达到任务时间，则执行任务
-        trades_logic::TimeTask time_task = trades_cache_->trades_task_list_.front();
-        LOG_MSG2("current_time %d, time_task %d", current_time, time_task.task_start_time());
-        if (current_time < time_task.task_start_time())
+    TIME_TASK_LIST::iterator iter = trades_cache_->trades_task_list_.begin();
+    for(; iter != trades_cache_->trades_task_list_.end(); ++iter){
+        LOG_MSG2("current_time %d, time_task %d", current_time, iter->task_start_time());
+        if (current_time < iter->task_start_time())
             break;
-        trades_cache_->trades_task_list_.pop_front();
+
         //修改状态
-        if(time_task.task_type() == TASK_START_TYPE) //开始交易时间任务
-            AlterTradesStarState(time_task.symbol(), true);
-        else if (time_task.task_type() == TASK_STOP_TYPE){//结束交易时间任务
-            AlterTradesStarState(time_task.symbol(), false);
-            ClearSymbolTrades(time_task.symbol());
+        if(iter->task_type() == TASK_START_TYPE) //开始交易时间任务
+            AlterTradesStarState(iter->symbol(), true);
+        else if (iter->task_type() == TASK_STOP_TYPE){//结束交易时间任务
+            AlterTradesStarState(iter->symbol(), false);
+            ClearSymbolTrades(iter->symbol());
         }
         LOG_MSG("NEXT STAT");
-        ProcessTimeTask(current_time, time_task);
-        trades_cache_->trades_task_list_.push_back(time_task);
+        ProcessTimeTask(current_time, *(iter));
     }
 
 }
@@ -83,7 +109,6 @@ void TradesManager::TimeStarEvent() {
 //取消订单
 void TradesManager::CancelOrder(const int socket, const int64 session, const int32 reserved,
                                 const int64 uid, const int64 order_id) {
-
     
     star_logic::TradesOrder  trades_order;
     bool r = false;
@@ -190,7 +215,7 @@ void TradesManager::CreateTradesPosition(const int socket, const int64 session, 
     send_message(socket, &packet_control);
 }
 
-void TradesManager::ConfirmOrder(const int socket, const int64 session, const int32 reserved,const int64 uid,const int64 order_id, const int64 position_id) {
+void TradesManager::ConfirmOrder(const int64 uid,const int64 order_id, const int64 position_id) {
     //查找订单是否存在，切状态是否正确
     bool r = false;
     int32 uid_type = 0;
@@ -201,12 +226,12 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
 
     if(!r || trades_order.handle_type() == NO_ORDER||
         trades_order.handle_type() == COMPLETE_ORDER){
-        send_error(socket, ERROR_TYPE,NO_HAVE_ORDER,session);
+        LOG_ERROR2("ConfirmOrder NO_HAVE_ORDER [%ld]", order_id);
         return;
     }
 
     if (trades_order.handle_type() == CANCEL_ORDER){//不存在，且已经不为匹配状态
-        send_error(socket, ERROR_TYPE, NO_CANCEL_ERROR, session);
+        LOG_ERROR2("ConfirmOrder NO_CANCEL_ERROR [%ld]", order_id);
         return;
     }
     //更新数据库
@@ -217,7 +242,7 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
     r = trades_db_->OnUpdateOrderState(trades_order.order_id(),uid,
                                        CONFIRM_ORDER,uid_type);
     if (!r){
-        send_error(socket, ERROR_TYPE, NO_UPDATE_DB_ERROR, session);
+        LOG_ERROR2("ConfirmOrder NO_UPDATE_DB_ERROR [%ld]", order_id);
         return;
     }
 
@@ -232,14 +257,19 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
         uid_type = SELL_TYPE;
     }else{
      //异常数据
-     send_error(socket, ERROR_TYPE, NO_EXCEPTION_DATA, session);
+     LOG_ERROR2("ConfirmOrder NO_EXCEPTION_DATA [%ld]", order_id);
      return;
     }
 
     //trades_kafka_->SetTradesOrder(trades_order);
     //通知确认
-    SendConfirmOrder(socket,session,reserved,uid,trades_order.order_id(),
-                    trades_order.handle_type());
+    {
+        trades_logic::net_reply::OrderConfirm order_confirm;
+        order_confirm.set_order_id(order_id);
+        order_confirm.set_uid(uid);
+        order_confirm.set_status(trades_order.handle_type());
+        SendNoiceMessage(uid, S_CONFIRM_ORDER, 0, order_confirm.get());
+    }
     //检测是否双方确认
     if(trades_order.is_complete()){
         //双方确认，开始扣费
@@ -264,9 +294,14 @@ void TradesManager::ConfirmOrder(const int socket, const int64 session, const in
             AlterTradesPositionState(trades_order.buy_position_id(),CANCEL_POSITION);
             AlterTradesPositionState(trades_order.sell_position_id(), CANCEL_POSITION);
         }
-        SendOrderResult(socket, session, reserved, trades_order.buy_uid(),
-                trades_order.sell_uid(), trades_order.handle_type(), trades_order.order_id());
+
+        trades_logic::net_reply::OrderResult order_result;
+        order_result.set_order_id(order_id);
+        order_result.set_result(result);
+        SendNoiceMessage(trades_order.buy_uid(), S_ORDER_RESULT, 0, order_result.get());
+        SendNoiceMessage(trades_order.sell_uid(), S_ORDER_RESULT, 0, order_result.get());
         trades_kafka_->SetTradesOrder(trades_order);
+        
         //删除symbol_trades_order_ 中的订单
         TRADES_ORDER_LIST trades_order_list;
         base::MapGet<KEY_ORDER_MAP,KEY_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
@@ -345,10 +380,6 @@ int32 TradesManager::MatchTrades(const int socket, const int64 session, const in
             {
                 SetTradesOrder(op_trades,trades, trades_order);
                 LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
-                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
-                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
-                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
-                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
                 LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
                 AlterTradesPositionState(trades_order.buy_position_id(),COMPLETE_HANDLE);
             }
@@ -356,10 +387,6 @@ int32 TradesManager::MatchTrades(const int socket, const int64 session, const in
             {
                 SetTradesOrder(trades,op_trades,trades_order);
                 LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
-                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
-                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.buy_position_id(), COMPLETE_HANDLE);
-                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
-                LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
                 LOG_DEBUG2("position ________________________________________%ld, %d", trades_order.sell_position_id(), COMPLETE_HANDLE);
                 AlterTradesPositionState(trades_order.sell_position_id(),COMPLETE_HANDLE);
             }
@@ -453,7 +480,7 @@ void TradesManager::ProcessTimeTask(const time_t current_time, trades_logic::Tim
         }
     } else if (current_time > laestset_unix_time) {//今天的任务时间范围已经执行完毕，需要调整到明天
         task.set_task_start_time(earliest_unix_time + 60 * 60 * 24);
-        task.set_task_start_time(TASK_START_TYPE);
+        task.set_task_type(TASK_START_TYPE);
     }
 
     base::Time p_time = base::Time::FromTimeT(task.task_start_time());
@@ -543,6 +570,7 @@ void TradesManager::SetTradesOrder(star_logic::TradesPosition& buy_position,
 
     trades_cache_->all_trades_order_[trades_order.order_id()] = trades_order;
 
+    base_logic::WLockGd lk(lock_);
     TRADES_ORDER_LIST trades_order_list;
     r = base::MapGet<KEY_ORDER_MAP,KEY_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
         (trades_cache_->symbol_trades_order_,sell_position.symbol(),trades_order_list);
@@ -581,11 +609,7 @@ void TradesManager::ClearTradesPosition(TRADES_POSITION_MAP& trades_position_map
     bool r = base::MapGet<TRADES_POSITION_MAP,TRADES_POSITION_MAP::iterator,
             std::string,TRADES_POSITION_LIST>(trades_position_map,symbol,
                                               trades_position_list);
-   /* TRADES_POSITION_LIST::iterator it = buy_trades_position_list.begin();
-    for(; it != buy_trades_position_list.end(); it++) {
-        star_logic::TradesPosition position = (*it);
-        position.set_handle(CANCEL_POSITION);
-    }*/
+
     star_logic::TradesOrder  trades_order;
     while(trades_position_list.size() > 0) {
         star_logic::TradesPosition position = trades_position_list.front();
@@ -644,5 +668,26 @@ void TradesManager::SendNoiceMessage(const int64 uid, const int32 operator_code,
     send_message(user.socket_fd(), &packet_control);
 
 }
+
+void TradesManager::AutoMatachOrder(void* param) {
+    time_t current_time = time(NULL);
+    base_logic::WLockGd lk(lock_);
+
+    KEY_ORDER_MAP::iterator iter = trades_cache_->symbol_trades_order_.begin();
+    for(; iter != trades_cache_->symbol_trades_order_.end(); ++iter){
+        TRADES_ORDER_LIST& orderlist = iter->second;
+        TRADES_ORDER_LIST::iterator it = orderlist.begin();
+        for(; it != orderlist.end(); ++it){
+            if(current_time >= it->open_position_time()){
+                //自动匹配交易
+                LOG_DEBUG2("AutoMatachOrder matched, current_time[%d],order_id[%ld]", current_time, it->order_id());
+                ConfirmOrder(it->buy_uid(), it->order_id(), it->buy_position_id());
+                ConfirmOrder(it->sell_uid(), it->order_id(), it->sell_position_id());
+            }
+        }
+    }
+
+}
+  
 
 }

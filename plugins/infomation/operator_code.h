@@ -61,5 +61,8 @@ namespace infomation_logic {
 //获取某个明星信息，与获取明星经验配合使用
 #define R_STAR_INFO    INFO_TYPE * 1000 + 31
 #define S_STAR_INFO    INFO_TYPE * 1000 + 32
+//获取系统配置值，取单值时使用
+#define R_GET_SYS_PARAM_VALUE    INFO_TYPE * 1000 + 33
+#define S_GET_SYS_PARAM_VALUE    INFO_TYPE * 1000 + 34
 }
 #endif
