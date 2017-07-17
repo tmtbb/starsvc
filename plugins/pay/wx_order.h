@@ -23,7 +23,7 @@ const std::string MP_TRADE_TYPE = "JSAPI";
 const std::string WX_URL = "https://api.mch.weixin.qq.com/pay/unifiedorder";
 const std::string WX_PACKAGE = "Sign=WXPay";
 const std::string NOTIFY_URL =
-    "http://139.224.34.22/cgi-bin/flight/pay/v1/wx_callback.fcgi";
+    "http://122.144.169.214/cgi-bin/star/pay/v1/wx_callback.fcgi";
 
 /*
  *命名规则为微信文档命名方式

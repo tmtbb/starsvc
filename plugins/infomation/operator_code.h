@@ -64,5 +64,8 @@ namespace infomation_logic {
 //获取系统配置值，取单值时使用
 #define R_GET_SYS_PARAM_VALUE    INFO_TYPE * 1000 + 33
 #define S_GET_SYS_PARAM_VALUE    INFO_TYPE * 1000 + 34
+//获取弹幕信息
+#define R_GET_BARRAGE_INFO    INFO_TYPE * 1000 + 35
+#define S_GET_BARRAGE_INFO    INFO_TYPE * 1000 + 36
 }
 #endif

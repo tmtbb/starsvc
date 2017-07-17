@@ -61,6 +61,7 @@ class Infomationlogic {
   bool GetUserStarMeetinfo(struct server* srv,int socket ,struct PacketHead* packet);
   bool GetOneStarInfo(struct server* srv,int socket ,struct PacketHead* packet);
   bool GetSysParamValue(struct server* srv,int socket ,struct PacketHead* packet);
+  bool GetBarrageInfo(struct server* srv,int socket ,struct PacketHead* packet);
 private:
   bool Init();
   infomation_mysql::Infomation_Mysql* sqldb;

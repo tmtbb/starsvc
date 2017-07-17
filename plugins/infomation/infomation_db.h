@@ -63,6 +63,8 @@ class Infomation_Mysql {
 
   bool OngetSysParamValue(const std::string& paramcode, std::string& retstring);
 
+  bool getbarragedata(int64& startnum,int64& endnum,base_logic::ListValue*& listvalue);
+
   static void Callpublicback(void* param, base_logic::Value* value);
   
   static void Callgetinfo(void* param, base_logic::Value* value);
@@ -81,6 +83,7 @@ class Infomation_Mysql {
   static void CallgetUserStarMeetinfo(void* param, base_logic::Value* value);
   static void CallgetOnestarInfo(void* param, base_logic::Value* value);
   static void CallgetSysParamValue(void* param, base_logic::Value* value);
+  static void Callgetbarragedata(void* param, base_logic::Value* value);
   private:
   base_logic::DataEngine* mysql_engine_;
 };

@@ -28,10 +28,16 @@ public:
 
   bool OnDeleteCircle(const int64 circleid);
 
-  bool OnUpdateCircle(circle_logic::Circle& circle_info);
+  bool OnUpdateCircle(int64 uid, circle_logic::Circle& circle_info, int64& result);
+
+  bool OnGetUserName(const int64 uid, base_logic::DictionaryValue*& dict);
 
 private:
 	static void CallGetAllCircleInfo(void* param, base_logic::Value* value);
+
+	static void CallGetUserName(void* param, base_logic::Value* value);
+
+  static void CallOnUpdateCircle(void* param, base_logic::Value* value);
 private:
   base_logic::DataEngine* mysql_engine_;
 };

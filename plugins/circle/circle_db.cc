@@ -4,6 +4,7 @@
 #include "circle_db.h"
 #include "logic/logic_unit.h"
 #include "basic/basic_util.h"
+#include "errno.h"
 
 namespace circle_logic {
 
@@ -135,7 +136,29 @@ bool CircleDB::OnDeleteCircle(const int64 circleid) {
   return true;
 }
 
-bool CircleDB::OnUpdateCircle(circle_logic::Circle& circle_info) {
+void CircleDB::CallOnUpdateCircle(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_logic::ListValue *list = new base_logic::ListValue();
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+
+      if (rows[0] != NULL)
+        dict->SetBigInteger(L"resultvalue", atoi(rows[0]));
+
+    }
+  }
+  else{
+    LOG_ERROR ("proc_UpdateCircleInfo count < 0");
+  }
+  dict->Remove(L"sql", &value);
+}
+
+bool CircleDB::OnUpdateCircle(int64 uid, circle_logic::Circle& circle_info, 
+                      int64& result) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   std::string t_sapprove, t_scomments;
@@ -157,16 +180,65 @@ bool CircleDB::OnUpdateCircle(circle_logic::Circle& circle_info) {
       + "','" + base::BasicUtil::StringUtil::Int64ToString(circle_info.GetStatus())
       + "','" + t_sapprove
       + "','" + t_scomments
+      + "','" + base::BasicUtil::StringUtil::Int64ToString(uid)
       +"');";
   dict->SetString(L"sql", sql);
-  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallOnUpdateCircle);
   if (!r)
       return false;
+
+  dict->GetBigInteger(L"resultvalue", &result);
+  switch (result)
+  {
+  case -1:
+    result = NO_CIRCLE_NO_ERR;
+    break;
+  case -2:
+    result = NO_USER_NO_TIME_ERR;
+    break;
+  case -3:
+    result = NO_USER_NO_BUY_STAR_TIME;
+    break;
+  default:
+    result = 1;
+  }
 
   if (dict) {
       delete dict;
       dict = NULL;
   }
+  return true;
+}
+
+void CircleDB::CallGetUserName(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+
+      if (rows[0] != NULL)
+          dict->SetString(L"user_name", rows[0]);
+    
+    }
+  }
+  else{
+    LOG_ERROR ("proc_GetUserName count < 0");
+  }
+  dict->Remove(L"sql", &value);
+}
+
+bool CircleDB::OnGetUserName(const int64 uid, base_logic::DictionaryValue*& dict) {
+
+  bool r = false;
+  std::string sql = "call proc_GetUserName();";
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetUserName);
+  if (!r)
+      return false;
+  
   return true;
 }
 
