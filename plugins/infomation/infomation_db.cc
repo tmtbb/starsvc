@@ -895,5 +895,58 @@ void Infomation_Mysql::CallgetSysParamValue(void* param, base_logic::Value* valu
 	dict->Remove(L"sql", &value);
 }
 
+void Infomation_Mysql::Callgetbarragedata(void* param, base_logic::Value* value){
+	DicValue* dict = reinterpret_cast<DicValue*>(value);
+	base_storage::DBStorageEngine* engine =
+	  (base_storage::DBStorageEngine*) (param);
+	MYSQL_ROW rows;
+	int32 num = engine->RecordCount();
+	base_logic::ListValue *list = new base_logic::ListValue();
+	
+	if (num > 0) {
+		while (rows = (*(MYSQL_ROW*) (engine->FetchRows()->proc))) {
+		  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+		  if (rows[0] != NULL)
+				info_value->SetString(L"user_name", rows[0]);
+			
+		  if (rows[1] != NULL)
+				info_value->SetString(L"head_url", rows[1]);
+			
+		  if (rows[2] != NULL)
+				info_value->SetInteger(L"order_type", atoi(rows[2]));
+			
+		  if (rows[3] != NULL)
+				info_value->SetInteger(L"order_num", atoi(rows[3]));
+
+			if (rows[4] != NULL)
+				info_value->SetReal(L"order_price", atof(rows[4]));
+			
+			list->Append((base_logic::Value *) (info_value));
+		}
+		dict->Set(L"resultvalue", (base_logic::Value *) (list));
+	}
+	else {
+		LOG_ERROR ("getbarragedata count < 0");
+	}
+	dict->Remove(L"sql", &value);
+}
+bool Infomation_Mysql::getbarragedata(int64& startnum,int64& endnum,base_logic::ListValue*& listvalue){
+	bool r = false;
+	DicValue* dic = new DicValue();
+	std::string sql = "select a.user_name,a.head_url,a.order_type,a.order_num,a.order_price from star_barragedata a order by create_time limit "
+	+ base::BasicUtil::StringUtil::Int64ToString(startnum) +", "
+	+ base::BasicUtil::StringUtil::Int64ToString(endnum) +";";
+	
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetbarragedata);
+	if (!r) {
+	  return false;
+	}
+	
+	dic->GetList(L"resultvalue",&listvalue);
+	return true;
+}
+
 }
 

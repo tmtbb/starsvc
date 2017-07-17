@@ -171,13 +171,14 @@ bool CircleManager::ApprovalCircle(const int socket, const int64 session, const 
   }
 
   t_circle->AddApproveId(uid);
-  if(circle_db_->OnUpdateCircle(*t_circle)){ //可优化
+  int64 result;
+  if(circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     return false;
   }
 
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
-  base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(1);
+  base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(result);
   dic->Set("result", ret);
   struct PacketControl packet_control;
   MAKE_HEAD(packet_control, S_USER_APPROVE_CIRCLE, CIRCLE_TYPE, 0, session, reserved);
@@ -212,13 +213,14 @@ bool CircleManager::UserCommentCircle(const int socket, const int64 session, con
   scomment.priority = lastpriority;
   t_circle->AddComment(scomment);
 
-  if(circle_db_->OnUpdateCircle(*t_circle)){ //可优化
+  int64 result;
+  if(circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     return false;
   }
 
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
-  base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(1);
+  base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(result);
   dic->Set("result", ret);
   struct PacketControl packet_control;
   MAKE_HEAD(packet_control, S_USER_COMMENT_CIRCLE, CIRCLE_TYPE, 0, session, reserved);
@@ -259,13 +261,14 @@ bool CircleManager::StarReplyCircle(const int socket, const int64 session, const
   scomment.priority = lastpriority;
   t_circle->AddComment(scomment);
 
-  if(circle_db_->OnUpdateCircle(*t_circle)){ //可优化
+  int64 result;
+  if(circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     return false;
   }
 
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
-  base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(1);
+  base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(result);
   dic->Set("result", ret);
   struct PacketControl packet_control;
   MAKE_HEAD(packet_control, S_STAR_REPLY_COMMENT, CIRCLE_TYPE, 0, session, reserved);
@@ -445,7 +448,17 @@ std::string CircleManager::GetUserName(int64 uid){
     return tuserinfo.nickname();
   }
 
-  return "";
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  circle_db_->OnGetUserName(uid, dict);
+  std::string username("");
+  dict->GetString(L"user_name", &username);
+
+  if(dict){
+    delete dict;
+    dict = NULL;
+  }
+
+  return username;
 }
 
 
