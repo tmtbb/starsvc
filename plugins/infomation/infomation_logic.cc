@@ -142,10 +142,81 @@ bool Infomationlogic::OnInfomationMessage(struct server *srv, const int socket,
     GetOneStarInfo(srv,socket,packet);
     break;
   }
+  case R_GET_SYS_PARAM_VALUE:{
+    GetSysParamValue(srv,socket,packet);
+    break;
+  }
+  case R_GET_BARRAGE_INFO:{
+    GetBarrageInfo(srv,socket,packet);
+    break;
+  }
   default:
       break;
   }
 
+  return true;
+}
+
+bool Infomationlogic::GetBarrageInfo(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+  send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+  return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  int64 begin,end;
+  bool r1 = packet_recv->body_->GetBigInteger(L"pos",&begin);
+  bool r2 = packet_recv->body_->GetBigInteger(L"count",&end);
+  if(!r1 || !r2){
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  base_logic::ListValue* ret_list;
+  end += begin;
+  if(!sqldb->getbarragedata(begin,end,ret_list)){
+    send_error(socket, ERROR_TYPE, NO_BARRAGE_DATA, packet->session_id);
+    return false;
+  }
+  
+  base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
+  dic->Set(L"barrage_info", ret_list);
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_GET_BARRAGE_INFO, INFO_TYPE, 0,packet->session_id, 0);
+  packet_reply.body_ = dic;
+  send_message(socket,&packet_reply);
+
+  return true;
+}
+
+bool Infomationlogic::GetSysParamValue(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+
+  std::string paramcode, paramvalue("");
+  bool r = packet_recv->body_->GetString(L"param_code",&paramcode);
+  if(!r){
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  if(!sqldb->OngetSysParamValue(paramcode, paramvalue)){
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+    return false;
+  }
+  
+  base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
+  base_logic::StringValue* ret = new base_logic::StringValue(paramvalue);
+  dic->Set("param_value", ret);
+
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_GET_SYS_PARAM_VALUE, INFO_TYPE, 0, packet->session_id, 0);
+  packet_reply.body_ = dic;
+  send_message(socket,&packet_reply);
   return true;
 }
 

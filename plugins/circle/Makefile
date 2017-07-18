@@ -20,23 +20,9 @@ CUSTOM_THIRD_PATH = $(LIB_DIR)/mylib/third_party
 
 LINK_PATHS = -L./ -L/usr/local/libmemcached-1.0.7/lib/  -L/usr/lib64/mysql
 
-# Flags passed to the preprocessor.
-#CPPFLAGS += -isystem -shared -fPIC -D_DB_POOL_ -D_DEBUG -DUSR_LOG_MSG\
-#	-D_DIC_POOL_ -D_REENTRANT -D_GNU_SOURCE -DUSR_LOG_ERROR -DUSR_LOG_MSG\
-#	-DNET_WORK -DHEAD_SHORT -Wall
-	
-#CPPFLAGS += -isystem -shared -fPIC -D_DB_POOL_\
-#	-D_DIC_POOL_ -D_REENTRANT -D_GNU_SOURCE -DUSR_LOG_ERROR -DUSR_LOG_MSG\
-#	-DNET_WORK -DHEAD_SHORT
-
-# Flags passed to the C++ compiler.
-#CXXFLAGS += -g  -Wextra -pthread -shared -fPIC
-#CXXFLAGS += -Wextra -pthread -shared -fPIC
-
-# All tests produced by this Makefile.  Remember to add new tests you
-# created to the list.
 PLUGIN = $(SO_DIR)/circle/circle.so
-                
+PLUGIN_TYPE="LIB"
+
 INCLUDE_PATHS = -I../\
 				-I/usr/local/libmemcached-1.0.7/include \
 				-I$(LIB_DIR)/BasicCore \
@@ -111,7 +97,7 @@ $(PLUGIN) : circle_init.o  circle_logic.o circle_db.o circle_info.o schduler_eng
 	star_infos.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a \
 	$(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient \
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -liconv -lmysqlclient \
 	$^ -o $@
 
-include $(STAR_PATH)/base.mk
+include ../base.mk

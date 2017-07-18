@@ -60,7 +60,7 @@ const std::string KEY_SIGN             = "sign";
 const std::string KEY_TIMESTAMP        = "timestamp";
 const std::string KEY_VERSION          = "version";
 const std::string KEY_BIZ_CONTENT      = "biz_content";
-const std::string NOTIFY_URL           = "http://139.224.34.22/cgi-bin/flight/pay/v1/alipay_callback.fcgi";
+const std::string NOTIFY_URL           = "http://122.144.169.214/cgi-bin/star/pay/v1/alipay_callback.fcgi";
 //static std::string method = "alipay.trade.create";
 static std::string method = "alipay.trade.app.pay";
 ApliPayOrder::ApliPayOrder() {
@@ -139,7 +139,7 @@ std::string ApliPayOrder::PlaceOrderSign(std::string &content) {
     requestPairs.insert(StringMap::value_type(KEY_APP_ID, appId));
     requestPairs.insert(StringMap::value_type(KEY_BIZ_CONTENT, content));
     requestPairs.insert(StringMap::value_type(KEY_CHARSET, default_charset));
-    //requestPairs.insert(StringMap::value_type("notify_url", "http://139.224.34.22/cgi-bin/flight/router/v1/get_server.fcgi"));
+    //requestPairs.insert(StringMap::value_type("notify_url", "http://122.144.169.214/cgi-bin/star/router/v1/get_server.fcgi"));
     requestPairs.insert(StringMap::value_type("notify_url", NOTIFY_URL));
 //    requestPairs.insert(StringMap::value_type(KEY_PARTNERID, "2088421752335044"));
     requestPairs.insert(StringMap::value_type(KEY_METHOD, method));

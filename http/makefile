@@ -51,12 +51,12 @@ POBJ =  mig_log.o core_interface.o http_formate.o fcgimodule.o  packet_processin
 	$(LIB_DIR)/mylib/base/lib/mybase.a\
 	/usr/local/lib/lib/libiconv.a
 
-OUTPUT_FILE = /var/www/cgi-bin/flight
+OUTPUT_FILE = /var/www/cgi-bin/star
 #############################################################################################################################
 ##all: clean proc delete-temp-file
 all: proc 
 
-proc: historyproc quotationsproc tradesproc payproc usersproc bankproc imcouldproc
+proc: historyproc quotationsproc tradesproc payproc usersproc bankproc imcouldproc flashsale
 
 ######################bankproc###############################################
 BANKNAME = bank_
@@ -370,6 +370,34 @@ $(IMCOULDPROC_PATH)/getcloudtoken.fcgi: $(IMCOULD_OBJECT_PATH)/$(IMCOULDNAME)get
 ### 编译
 $(IMCOULD_OBJECT_PATH)/$(IMCOULDNAME)getcloudtoken.o:
 	$(COMPILE) .$(IMCOULDPROC_PATH)$(OTJERPROC_VERSION)/getcloudtoken/getcloudtoken.cc
+
+
+######################flashsale###############################################
+FLASHNAME = flashsale_
+FLASHPROC_PATH = /flashsale
+FLASH_OBJECT_PATH = ./obj$(NEWSPROC_PATH)
+#OTJERPROC_VERSION = /v1 
+flashsale:$(FLASHPROC_PATH)/remaintime.fcgi $(FLASHPROC_PATH)/pubstarinfo.fcgi $(FLASHPROC_PATH)/confirmorder.fcgi 
+
+$(FLASHPROC_PATH)/remaintime.fcgi: $(FLASH_OBJECT_PATH)/$(FLASHNAME)remaintime.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(FLASHPROC_PATH)$(OTJERPROC_VERSION)/remaintime.fcgi
+
+$(FLASHPROC_PATH)/pubstarinfo.fcgi: $(FLASH_OBJECT_PATH)/$(FLASHNAME)pubstarinfo.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(FLASHPROC_PATH)$(OTJERPROC_VERSION)/pubstarinfo.fcgi
+
+$(FLASHPROC_PATH)/confirmorder.fcgi: $(FLASH_OBJECT_PATH)/$(FLASHNAME)confirmorder.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(FLASHPROC_PATH)$(OTJERPROC_VERSION)/confirmorder.fcgi
+
+### 编译
+$(FLASH_OBJECT_PATH)/$(FLASHNAME)remaintime.o:
+	$(COMPILE) .$(FLASHPROC_PATH)$(OTJERPROC_VERSION)/remaintime/remaintime.cc
+
+$(FLASH_OBJECT_PATH)/$(FLASHNAME)pubstarinfo.o:
+	$(COMPILE) .$(FLASHPROC_PATH)$(OTJERPROC_VERSION)/pubstarinfo/pubstarinfo.cc
+
+$(FLASH_OBJECT_PATH)/$(FLASHNAME)confirmorder.o:
+	$(COMPILE) .$(FLASHPROC_PATH)$(OTJERPROC_VERSION)/confirmorder/confirmorder.cc
+
 
 
 

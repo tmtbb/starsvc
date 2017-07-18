@@ -127,7 +127,7 @@ bool Tradeslogic::OnTradesMessage(struct server *srv, const int socket,
     }
 
     case R_CONFIRM_ORDER:{
-        OnConfirmOrder(srv, socket, packet);
+        //OnConfirmOrder(srv, socket, packet);
         break;
     }
 
@@ -137,6 +137,11 @@ bool Tradeslogic::OnTradesMessage(struct server *srv, const int socket,
     }
     default:
         break;
+    }
+
+    if(packet){
+        delete packet;
+        packet = NULL;
     }
     return true;
 }
@@ -249,9 +254,9 @@ bool Tradeslogic::OnConfirmOrder(struct server* srv, int socket, struct PacketHe
         return false;
     }
 
-    trades_logic::TradesEngine::GetSchdulerManager()->ConfirmOrder(socket,
-            packet->session_id, packet->reserved,confirm_order.id(),
-            confirm_order.order_id(),confirm_order.position_id());
+//    trades_logic::TradesEngine::GetSchdulerManager()->ConfirmOrder(socket,
+//            packet->session_id, packet->reserved,confirm_order.id(),
+//            confirm_order.order_id(),confirm_order.position_id());
     return true;
 
 }
