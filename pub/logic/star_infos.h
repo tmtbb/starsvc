@@ -542,6 +542,12 @@ public:
     const std::string id_card() const {
         return data_->id_card_;
     }
+    const std::string starcode() const {
+        return data_->starcode_;
+    }
+    const std::string channel() const {
+        return data_->channel_;
+    }
 
     void set_type(const int32 type) {
         data_->type_ = type;
@@ -575,6 +581,12 @@ public:
     }
     void set_id_card(const std::string& value) {
         data_->id_card_ = value;
+    }
+    void set_channel(const std::string& value) {
+        data_->channel_ = value;
+    }
+    void set_starcode(const std::string& value) {
+        data_->starcode_ = value;
     }
 
     void set_balance(const double balance) {
@@ -621,6 +633,8 @@ public:
               send_error_count_(0) {
             real_name_ = "";
             id_card_ = "";
+            channel_ = "";
+            starcode_ = "";
         }
 
     public:
@@ -641,6 +655,8 @@ public:
         std::string head_url_;
         std::string real_name_;
         std::string id_card_;
+        std::string channel_;
+        std::string starcode_;
         double market_capitalization_;
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);
