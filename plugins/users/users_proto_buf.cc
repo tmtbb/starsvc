@@ -112,6 +112,11 @@ bool RegisterAccount::set_http_packet(base_logic::DictionaryValue* value) {
     set_device_id(tmp);
   else
     return false;
+  r = value->GetString(L"channel", &tmp);
+  if (r)
+    set_channel(tmp);
+  else
+    return false;
   //end 
   return true;
 }
@@ -303,6 +308,11 @@ bool WXBindAccount::set_http_packet(base_logic::DictionaryValue* value) {
   r = value->GetString(L"sub_agentId", &tmp);
   if (r)
     set_sub_agentid(tmp);
+  else
+    return false;
+  r = value->GetString(L"channel", &tmp);
+  if (r)
+    set_channel(tmp);
   else
     return false;
   //end 

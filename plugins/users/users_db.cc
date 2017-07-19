@@ -47,20 +47,21 @@ bool UsersDB::WXBindAccount(const std::string& phone_num,
 			      const std::string &nick_name, const std::string &head_url,
 			      const std::string &agent_id, const std::string &recommend,
 			      const std::string &device_id, const std::string &member_id,
-                  const std::string &sub_agentId) {
+                  const std::string &sub_agentId, const std::string &channel) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
   std::string sql;
   int64 big_type = type;
-  //call actuals.proc_RegisterAccount('18668169052','1234124123')
   sql = "call proc_WXBindAccount('" + phone_num + "','" + passwd + "',"
       + base::BasicUtil::StringUtil::Int64ToString(big_type)  + ",'"
       + member_id  + "','"
       + head_url + "','" + nick_name + "','" + openid 
       + "','" + agent_id + "','" + recommend
       + "','" + device_id 
-      + "','" + sub_agentId + "');";
+      + "','" + sub_agentId 
+      + "','" + channel 
+      + "');";
 
   LOG_ERROR2("sql [%s]",sql.c_str());
   base_logic::ListValue *listvalue;
@@ -102,7 +103,7 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
 
   dict->GetDictionary(L"resultvalue", &info_value);
 
-  std::string phone, agentName, avatar_Large;
+  std::string phone, agentName, avatar_Large, channel, starcode;
   int64 type,uid;
   if(info_value->GetString(L"phone",&phone))
       user.set_phone_num(phone);
@@ -111,6 +112,10 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
   if(info_value->GetString(L"head_url",&avatar_Large))
       user.set_head_url(avatar_Large);
   info_value->GetString(L"passwd", &pwd);
+  if(info_value->GetString(L"starcode",&starcode))
+      user.set_starcode(starcode);
+  if(info_value->GetString(L"channel",&channel))
+      user.set_channel(channel);
 
   if(!info_value->GetBigInteger(L"type",&type))
     return false;
@@ -156,6 +161,10 @@ void UsersDB::CallLoginwxAccount(void* param, base_logic::Value* value) {
         info_value->SetString(L"head_url", (rows[4]));
       if (rows[5] != NULL && strlen(rows[5]) > 0)
         info_value->SetString(L"passwd", (rows[5]));
+      if (rows[6] != NULL && strlen(rows[6]) > 0)
+        info_value->SetString(L"channel", (rows[6]));
+      if (rows[7] != NULL && strlen(rows[7]) > 0)
+        info_value->SetString(L"starcode", (rows[7]));
     }
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
@@ -204,7 +213,9 @@ bool UsersDB::RegisterAccount(const std::string& phone_num,
                               const std::string& agentid, 
                               const std::string& recommend, 
                               const std::string& memberid,
-                              const std::string& sub_agentId) {
+                              const std::string& sub_agentId,
+                              const std::string& channel
+                              ) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue *info_value = NULL;
@@ -214,7 +225,9 @@ bool UsersDB::RegisterAccount(const std::string& phone_num,
   sql = "call proc_RegisterAccount('" + phone_num + "','" + passwd + "',"
       + base::BasicUtil::StringUtil::Int64ToString(big_type)  + ",'"
       + memberid + "','" + agentid + "','" + recommend + "'," + "''"
-      + ",'" + sub_agentId + "');";
+      + ",'" + sub_agentId 
+      + "','" + channel 
+      + "');";
   LOG_ERROR2("sqlcommand = %s",sql.c_str());
   base_logic::ListValue *listvalue;
   dict->SetString(L"sql", sql);
@@ -291,7 +304,7 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
 
   int64 uid;
   int32 type;
-  std::string phone,nickname,head_url;
+  std::string phone,nickname,head_url, channel, starcode;
   if(info_value->GetBigInteger(L"uid", &uid)){
     if(uid <= 0)
       return false;
@@ -309,6 +322,10 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
   		user.set_nickname(nickname);
   if(info_value->GetString(L"head_url",&head_url))
   		user.set_head_url(head_url);
+  if(info_value->GetString(L"channel",&channel))
+  		user.set_channel(channel);
+  if(info_value->GetString(L"starcode",&starcode))
+  		user.set_starcode(starcode);
   
   if (dict) {
     delete dict;
@@ -399,6 +416,12 @@ void UsersDB::CallLoginAccount(void* param, base_logic::Value* value) {
     }
     if (rows[5] != NULL && strlen(rows[5]) > 0){
       info_value->SetString(L"passwd", (rows[5]));
+    }
+    if (rows[6] != NULL && strlen(rows[6]) > 0){
+      info_value->SetString(L"channel", (rows[6]));
+    }
+    if (rows[7] != NULL && strlen(rows[7]) > 0){
+      info_value->SetString(L"starcode", (rows[7]));
     }
   }
   }

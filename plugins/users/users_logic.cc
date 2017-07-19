@@ -122,6 +122,13 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
         send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
         return false;
     }
+    
+#ifdef _DEBUG
+  struct timeval t_start,t_end;
+  gettimeofday(&t_start, NULL);
+  LOG_DEBUG2("recive operator[%d], star time[%ld]", packet->operate_code, t_start.tv_usec);
+#endif
+  
     try
     {
         switch (packet->operate_code) {
@@ -199,6 +206,11 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
     default:
       break;
   }
+#ifdef _DEBUG
+  gettimeofday(&t_end, NULL);
+  LOG_DEBUG2("recive operator[%d], star time[%ld]", packet->operate_code, t_end.tv_usec);
+  LOG_DEBUG2("operator[%d], Cost time[%ld]", packet->operate_code, t_end.tv_usec - t_start.tv_usec);
+#endif
 
   if(packet){
       delete packet;
@@ -209,6 +221,8 @@ catch(...)
 {
   LOG_ERROR2("catch : operator[%d]", packet->operate_code);
 }
+
+  
   return true;
 }
 
@@ -321,7 +335,26 @@ bool Userslogic::OnWXBindAccount(struct server* srv, int socket,
                                 wx_bind_account.recommend(),
                                 wx_bind_account.device_id(),
                                 wx_bind_account.member_id(),
-                                wx_bind_account.sub_agentid());
+                                wx_bind_account.sub_agentid(),
+                                wx_bind_account.channel()
+                                );
+
+    if (!r && result == -1) {  //agenid 不存在
+        send_error(socket, ERROR_TYPE, NO_AGENTID, packet->session_id);
+        return false;
+    }
+    if (!r && result == -2) {  //member 不存在
+        send_error(socket, ERROR_TYPE, NO_MEMBERID, packet->session_id);
+        return false;
+    }
+    if (!r && result == -3) {  //sub_agent 不存在
+        send_error(socket, ERROR_TYPE, NO_SUB_AGENTID, packet->session_id);
+        return false;
+    }
+    if (!r && result == -4) {  //channel不存在
+        send_error(socket, ERROR_TYPE, NO_CHANNEL, packet->session_id);
+        return false;
+    }
     //
     if (!r || result == 0) {  //用户已经存在
         send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
@@ -404,14 +437,16 @@ bool Userslogic::OnRegisterAccount(struct server* srv, int socket,
     std::string sub_agentId;
     std::string memberId;
     std::string recommend;
+    std::string channel;
     bool r1 = packet_control->body_->GetString(L"pwd", &passwd);
     bool r2 = packet_control->body_->GetString(L"phone", &phonenum);
     bool r3 = packet_control->body_->GetString(L"agentId", &agentId);
     bool r4 = packet_control->body_->GetString(L"recommend", &recommend);
     bool r5 = packet_control->body_->GetString(L"memberId", &memberId);
     bool r6 = packet_control->body_->GetString(L"sub_agentId", &sub_agentId);
+    bool r7 = packet_control->body_->GetString(L"channel", &channel);
     LOG_ERROR2("---------------------%d,%d,%d,%d,%d",r1,r2,r3,r4,r5);
-    bool r = (r1 && r2 && r3 && r4 && r5 && r6);
+    bool r = (r1 && r2 && r3 && r4 && r5 && r6 && r7);
     if (!r) {
         LOG_DEBUG2("packet_length %d",packet->packet_length);
         send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
@@ -425,7 +460,24 @@ bool Userslogic::OnRegisterAccount(struct server* srv, int socket,
     r = user_db_->RegisterAccount(phonenum,
                                   passwd, 0,
                                   uid, result,agentId,
-                                  recommend,memberId,sub_agentId);
+                                  recommend,memberId,sub_agentId, channel);
+    if (!r && result == -1) {  //agenid 不存在
+        send_error(socket, ERROR_TYPE, NO_AGENTID, packet->session_id);
+        return false;
+    }
+    if (!r && result == -2) {  //member 不存在
+        send_error(socket, ERROR_TYPE, NO_MEMBERID, packet->session_id);
+        return false;
+    }
+    if (!r && result == -3) {  //sub_agent 不存在
+        send_error(socket, ERROR_TYPE, NO_SUB_AGENTID, packet->session_id);
+        return false;
+    }
+    if (!r && result == -4) {  //channel不存在
+        send_error(socket, ERROR_TYPE, NO_CHANNEL, packet->session_id);
+        return false;
+    }
+
     if (!r) {  //用户已经存在
         send_error(socket, ERROR_TYPE, NO_USER_EXIST, packet->session_id);
         return false;
@@ -679,7 +731,6 @@ bool Userslogic::OnUserCheckToken(struct server* srv, int socket,
 }
 bool Userslogic::OnResetPasswd(struct server* srv, int socket,
                                       struct PacketHead *packet) {
-  users_logic::net_request::RegisterAccount register_account;
   if (packet->packet_length <= PACKET_HEAD_LENGTH) {
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
@@ -817,6 +868,8 @@ bool Userslogic::SendUserInfo(const int socket, const int64 session,
     net_userinfo.set_type(userinfo.type());
     net_userinfo.set_agent_name(userinfo.nickname());
     net_userinfo.set_avatar_large(userinfo.head_url());
+    net_userinfo.set_channel(userinfo.channel());
+    net_userinfo.set_starcode(userinfo.starcode());
     net_login_account.set_userinfo(net_userinfo.get());
     net_login_account.set_token(userinfo.token());
     net_login_account.set_token_time(userinfo.token_time());
