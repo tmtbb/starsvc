@@ -74,9 +74,9 @@ bool CircleDB::OnFetchAllCircleInfo(base_logic::ListValue*& ret_list) {
   if (!r)
       return false;
   
-  dict->GetList(L"resultvalue", &ret_list);
+  r = dict->GetList(L"resultvalue", &ret_list);
 
-  return true;
+  return r;
 }
 
 bool CircleDB::OnCreateCircleOrder(circle_logic::Circle& circle_info) {
@@ -182,6 +182,7 @@ bool CircleDB::OnUpdateCircle(int64 uid, circle_logic::Circle& circle_info,
       + "','" + t_scomments
       + "','" + base::BasicUtil::StringUtil::Int64ToString(uid)
       +"');";
+  LOG_DEBUG2("sql:%s",sql.c_str()); 
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallOnUpdateCircle);
   if (!r)
@@ -233,7 +234,9 @@ void CircleDB::CallGetUserName(void* param, base_logic::Value* value) {
 bool CircleDB::OnGetUserName(const int64 uid, base_logic::DictionaryValue*& dict) {
 
   bool r = false;
-  std::string sql = "call proc_GetUserName();";
+  std::string sql = "call proc_GetUserName('"
+    + base::BasicUtil::StringUtil::Int64ToString(uid)
+    + "');";
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetUserName);
   if (!r)
