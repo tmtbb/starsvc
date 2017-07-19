@@ -1,0 +1,18 @@
+//  Copyright (c) 2017-2018 The SWP Authors. All rights reserved.
+//  Created on: 2017年2月12日 Author: kerry
+
+#ifndef SWP_STARSIDE_ERRNO_H_
+#define SWP_STARSIDE_ERRNO_H_
+
+enum HISERRNO {
+  NO_HAVE_HISTROY_DATA = -651,
+  NO_HAVE_HADNLE_DATA = -652,
+  NO_HAVE_BALANCE = -653,
+  NO_HAVE_USERS = -654,
+  NO_HAVE_BANK_INFO = -655,
+  NO_HAVE_HISTROY_DATA_DRAWLS = -656,
+  NO_HAVE_HISTROY_DATA_RECHARGE = -657,
+  NO_HAVE_HISTROY_DATA_OWNSTAR = -658
+};
+
+#endif
