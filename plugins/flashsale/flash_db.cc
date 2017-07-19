@@ -87,8 +87,8 @@ bool FlashDB::OnFetchPublishStar(std::map<std::string, flash_logic::PulishStar>&
   if (!r)
       return false;
   
-  dict->GetList(L"resultvalue", &listvalue);
-  while (listvalue->GetSize()) {
+  r = dict->GetList(L"resultvalue", &listvalue);
+  while (r && listvalue->GetSize()) {
       flash_logic::PulishStar pubstar;
       base_logic::Value *result_value;
       listvalue->Remove(0, &result_value);
@@ -105,7 +105,7 @@ bool FlashDB::OnFetchPublishStar(std::map<std::string, flash_logic::PulishStar>&
       dict = NULL;
   }
 
-  return true;
+  return r;
 }
 
 bool FlashDB::OnCreateFlashOrder(star_logic::TradesOrder& flash_trades_order) {
