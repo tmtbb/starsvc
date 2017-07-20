@@ -54,6 +54,7 @@ bool StarSidelogic::Init() {
   starside_logic::StarSideEngine::GetSchdulerManager()->InitStarMeetRelList();
   starside_logic::StarSideEngine::GetSchdulerManager()->InitServiceItem();
   starside_logic::StarSideEngine::GetSchdulerManager()->InitStarOwnService();
+  starside_logic::StarSideEngine::GetSchdulerManager()->InitOwnStarUser();
   std::string schduler_library = "./data_share.so";
   std::string schduler_func = "GetManagerSchdulerEngine";
   schduler_engine = (manager_schduler::SchdulerEngine* (*)(void))
@@ -142,6 +143,11 @@ bool StarSidelogic::OnStarSideMessage(struct server *srv, const int socket,
         OnUpdStarMeetRel(srv, socket, packet); //明星同意预约
         break;
     }
+    case R_STARSIDE_GETOWNSTARUSER :
+    {
+        OnGetOwnStarUser(srv, socket, packet);
+        break;
+    }
 
     /*
     case R_STARSIDE_RECHARGE: {
@@ -151,12 +157,13 @@ bool StarSidelogic::OnStarSideMessage(struct server *srv, const int socket,
 
     */
 
-    /*
+   /* 
     case R_STARSIDE_OWNSTAR: {
       OnStarSideOwnStar(srv, socket, packet);
       break;
     }
-    */ 
+    */
+     
 
 
     default:
@@ -205,6 +212,7 @@ bool StarSidelogic::OnTimeout(struct server *srv, char *id, int opcode,
     //  starside_logic::StarSideEngine::GetSchdulerManager()->InitStarMeetRelList();
       starside_logic::StarSideEngine::GetSchdulerManager()->InitServiceItem();
       starside_logic::StarSideEngine::GetSchdulerManager()->InitStarOwnService();
+      starside_logic::StarSideEngine::GetSchdulerManager()->InitOwnStarUser();
       break;
     }
     default:
@@ -247,14 +255,26 @@ bool StarSidelogic::OnGetStarMeetRel(struct server* srv, int socket,
   struct PacketControl* packet_control = (struct PacketControl*) (packet);
 
   std::string starcode = "";
+  int64 start = 0;
+  int64 count = 0;
   if (!packet_control->body_->GetString(L"starcode", &starcode))
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  if (!packet_control->body_->GetBigInteger(L"starPos", &start))
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  if (!packet_control->body_->GetBigInteger(L"count", &count))
   {
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
 
   starside_logic::StarSideEngine::GetSchdulerManager()->SendStarMeetRel(
-      socket, packet->session_id, starcode);
+      socket, packet->session_id, starcode, start, count);
 
   return true;
 }
@@ -413,6 +433,42 @@ bool StarSidelogic::OnUpdStarMeetRel(struct server* srv, int socket,
   return true;
 }
 
+bool StarSidelogic::OnGetOwnStarUser(struct server* srv, int socket,
+                                     struct PacketHead *packet) {
+  
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  std::string starcode = "";
+  int64 start = 0;
+  int64 count = 0;
+  
+  if (!packet_control->body_->GetString(L"starcode", &starcode))
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  
+  if (!packet_control->body_->GetBigInteger(L"starPos", &start))
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  if (!packet_control->body_->GetBigInteger(L"count", &count))
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  starside_logic::StarSideEngine::GetSchdulerManager()->GetOwnStarUser(
+      socket, packet->session_id, starcode, start, count);
+  
+  
+  return true;
+}
 bool StarSidelogic::OnUpdStarService(struct server* srv, int socket,
                                      struct PacketHead *packet) {
   
