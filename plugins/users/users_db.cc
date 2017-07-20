@@ -300,7 +300,9 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
   if (!r)
     return false;
 
-  dict->GetDictionary(L"resultvalue", &info_value);
+  if(!dict->GetDictionary(L"resultvalue", &info_value)){
+    return false;
+  }
 
   int64 uid;
   int32 type;
@@ -314,6 +316,7 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
   {
     return false;
   }
+  
   if(info_value->GetInteger(L"type", &type))
   		user.set_type(type);
   if(info_value->GetString(L"phone",&phone))
@@ -395,9 +398,9 @@ void UsersDB::CallLoginAccount(void* param, base_logic::Value* value) {
   base_storage::DBStorageEngine *engine =
       (base_storage::DBStorageEngine *) (param);
   MYSQL_ROW rows;
-  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
   int32 num = engine->RecordCount();
   if (num > 0) {
+    base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
     while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
     if (rows[0] != NULL){
         info_value->SetBigInteger(L"uid", atoll(rows[0]));
@@ -424,8 +427,9 @@ void UsersDB::CallLoginAccount(void* param, base_logic::Value* value) {
       info_value->SetString(L"starcode", (rows[7]));
     }
   }
-  }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+  }
+  
 }
 
 void UsersDB::CallRegisterAccount(void* param, base_logic::Value* value) {
