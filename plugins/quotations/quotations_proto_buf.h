@@ -814,7 +814,8 @@ class SymbolList {
   SymbolList()
       : symbol_info_(NULL),
         stype_(NULL),
-        value_(NULL) {
+        value_(NULL),
+        home_last_pic_(NULL) {
     symbol_info_ = new base_logic::ListValue;
   }
 
@@ -833,6 +834,10 @@ class SymbolList {
     stype_ = new base_logic::FundamentalValue(stype);
   }
 
+  void set_home_last_pic(const std::string& pic) {
+    home_last_pic_ = new base_logic::StringValue(pic);
+  }
+
   base_logic::DictionaryValue* get() {
     value_ =  new base_logic::DictionaryValue();
     if (!symbol_info_->empty()) {
@@ -843,6 +848,8 @@ class SymbolList {
     }
     if (stype_ != NULL)
       value_->Set(L"chartType", stype_);
+    if(home_last_pic_ != NULL)
+      value_->Set(L"home_last_pic", home_last_pic_);
     return value_;
   }
 
@@ -861,6 +868,7 @@ class SymbolList {
  private:
   base_logic::ListValue* symbol_info_;
   base_logic::FundamentalValue* stype_;
+  base_logic::StringValue* home_last_pic_;
   base_logic::DictionaryValue* value_;
 };
 

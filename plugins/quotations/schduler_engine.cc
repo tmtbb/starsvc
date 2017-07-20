@@ -68,6 +68,8 @@ void QuotationsManager::InitStarData() {
                                 &star);
   }
 
+  quotations_db_->OngetSysParamValue(quotations_cache_->sys_param_map_);
+  LOG_MSG2("Get sys param size [%d]", quotations_cache_->sys_param_map_.size());
 }
 
 
@@ -372,6 +374,10 @@ void QuotationsManager::SendQuotationsList(const int socket, const int64 session
     }
   }
 
+  std::map<std::string, std::string>::iterator iter
+    = quotations_cache_->sys_param_map_.find("HOME_LAST_PIC");
+  if(iter != quotations_cache_->sys_param_map_.end())
+    symbol_list.set_home_last_pic(iter->second);
 
   if (symbol_list.Size() != 0) {
     struct PacketControl packet_control;

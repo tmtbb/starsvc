@@ -943,8 +943,8 @@ bool Infomation_Mysql::getbarragedata(int64& startnum,int64& endnum,base_logic::
 	  return false;
 	}
 	
-	dic->GetList(L"resultvalue",&listvalue);
-	return true;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	return r;
 }
 
 }

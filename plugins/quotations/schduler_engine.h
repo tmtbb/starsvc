@@ -54,6 +54,7 @@ public:
     LAST_SORT_ALL_MAP           filer_quotations_map_;
     K_ALL_QUOTATIONS_MAP current_k_all_map_;
     K_ALL_HIS_QUOTATIONS_MAP k_history_all_map_;
+    std::map<std::string, std::string> sys_param_map_;
 };
 
 typedef std::map<std::string, QUOTATIONS_LIST> QUOTATIONS_MAP; /*标的ID，行情*/
