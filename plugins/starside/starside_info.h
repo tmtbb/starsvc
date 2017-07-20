@@ -510,6 +510,97 @@ class StarOwnService {
   Data* data_;
 };
 
+
+class TOwnStarUser {
+public:
+    TOwnStarUser();
+    TOwnStarUser(const TOwnStarUser& starinfo);
+    TOwnStarUser& operator =(const TOwnStarUser& starinfo);
+
+    ~TOwnStarUser() {
+        if (data_ != NULL) {
+            data_->Release();
+        }
+    }
+    const int64 uid() const {
+        return data_->uid_;
+    }
+    const int64 ownseconds() const {
+        return data_->ownseconds_;
+    }
+    const int32 appoint() const {
+        return data_->appoint_;
+    }
+
+    const std::string& user_nickname() const {
+        return data_->user_nickname_ ;
+    }
+    const std::string& starcode() const {
+        return data_->starcode_;
+    }
+    const std::string& faccid() const {
+        return data_->faccid_;
+    }
+    const std::string& headurl() const {
+        return data_->head_url_;
+    }
+//----
+    void set_uid(const int64 value) {
+        data_->uid_ = value;
+    }
+    void set_ownseconds(const int64 value) {
+        data_->ownseconds_ = value;
+    }
+    void set_appoint(const int32 value) {
+        data_->appoint_ = value;
+    }
+
+    void set_starcode(const std::string& code) {
+        data_->starcode_ = code;
+    }
+    void set_user_nickname(const std::string& value) {
+        data_->user_nickname_ = value;
+    }
+    void set_faccid(const std::string& value) {
+        data_->faccid_ = value;
+    }
+    void set_headurl(const std::string& value) {
+        data_->head_url_ = value;
+    }
+
+    void ValueSerialization(base_logic::DictionaryValue* dict);
+
+    class Data {
+    public:
+        Data()
+            : uid_(1),
+              ownseconds_(0),
+              appoint_(0),
+              refcount_(1) {
+        }
+
+    public:
+        int64 uid_;
+        int64 ownseconds_;
+        int32 appoint_; //预约
+        std::string starcode_; //明星代码
+        std::string user_nickname_; //用户昵称
+        std::string faccid_;
+        std::string head_url_;//用户头像
+        void AddRef() {
+            __sync_fetch_and_add(&refcount_, 1);
+        }
+        void Release() {
+            __sync_fetch_and_sub(&refcount_, 1);
+            if (!refcount_)
+                delete this;
+        }
+    private:
+        int refcount_;
+    };
+
+    Data* data_;
+};
 }  // namespace starside_logic
 
 #endif /* SWP_STARSIDE_INFOS_H_ */

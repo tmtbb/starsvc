@@ -30,6 +30,7 @@ class StarSideDB {
   bool OnHistroyTransStatis(std::list<starside_logic::TranscationStatistics>* list);
   bool OnHistroyStarMeetRel(std::list<starside_logic::StarMeetRelForFan>* list); 
   bool OnHistroyStarOwnService(std::list<starside_logic::StarOwnService>* list); 
+  bool OnGetOwnStarUser(std::list<starside_logic::TOwnStarUser>* list); 
 
   bool OnUpdStarMeetRel(const int64 meet_id, const int64 meet_type);
   bool OnUpdStarService(const std::string &starcode, const int64 mid, const int64 type);
@@ -52,6 +53,7 @@ class StarSideDB {
   static void CallProfitDetail(void* param, base_logic::Value* value);
 
   static void CallServiceDef(void* param, base_logic::Value* value); 
+  static void CallOwnStarUser(void* param, base_logic::Value* value); 
  private:
   base_logic::DataEngine* mysql_engine_;
 };

@@ -39,6 +39,41 @@ void StarSideManager::InitSchdulerEngine(
     manager_schduler::SchdulerEngine* schduler_engine) {
   schduler_engine_ = schduler_engine;
 }
+void StarSideManager::InitOwnStarUser()
+{
+
+  base_logic::WLockGd lk(lock_);
+  std::list<starside_logic::TOwnStarUser> list;
+  starside_db_->OnGetOwnStarUser(&list);
+
+  std::list<starside_logic::TOwnStarUser> temp;
+  std::string str;
+  while (list.size() > 0)
+  {
+    starside_logic::TOwnStarUser item = list.front();
+    list.pop_front();
+    if (str.length() > 0) //
+    {
+        if (!strcmp(str.c_str(), item.starcode().c_str())) // code相等
+            temp.push_back(item);
+        else //不等
+        {
+            starside_cache_->all_ownstaruser_[str] = temp;
+            str = item.starcode();
+            temp.clear();
+            temp.push_back(item);
+        }
+    }
+    else
+    {
+        str = item.starcode();
+        temp.push_back(item);
+    }
+  }
+  if (str.length() > 0 && temp.size() > 0)
+    starside_cache_->all_ownstaruser_[str] = temp;
+  LOG_DEBUG2("all_ownstaruser_ list.size[%d]____________________________________________",list.size() );
+}
 
 void StarSideManager::InitStarOwnService() {
   base_logic::WLockGd lk(lock_);
@@ -194,6 +229,75 @@ MAKE_HEAD(packet_control, S_STARSIDE_DETAIL, 1, 0, session, 0);
 packet_control.body_ = rep_profitdetail.get();
 send_message(socket, &packet_control);
 
+}
+void StarSideManager::GetOwnStarUser(const int socket, const int64 session, 
+                   const std::string &starcode, int64 startpos, int64 count)
+{
+
+  std::list<starside_logic::TOwnStarUser> list;
+  {
+    base_logic::RLockGd lk(lock_);  //
+    GetOwnStarUserNoLock(starcode, list);
+  }
+
+  //没有对应的历史记录
+  if (list.size() <= 0) {
+    send_error(socket, ERROR_TYPE, NO_HAVE_HISTROY_DATA_OWNSTAR, session);
+    return;
+  }
+/*
+    LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
+*/
+
+  int32 base_num = 10;
+//  int32 count = 10;
+  base_num = base_num < count ? base_num : count;
+
+  int32 t_start = 0;
+  int32 t_count = 0;
+
+  starside_logic::net_reply::AllTransStatis all_net_ownstaruser;
+  //list.sort(star_logic::Recharge::close_after);
+  while (list.size() > 0 && t_count < count) {
+      
+      
+    starside_logic::TOwnStarUser item = list.front();
+    list.pop_front();
+    t_start++;
+    if (t_start < startpos)
+        continue;
+
+    net_reply::TOwnStarUser* net_item = new net_reply::TOwnStarUser;
+
+    net_item->set_uid(item.uid());
+    net_item->set_ownseconds(item.ownseconds());
+    net_item->set_appoint(item.appoint());
+    net_item->set_starcode(item.starcode());
+    net_item->set_starname(item.user_nickname());
+    net_item->set_faccid(item.faccid());
+    net_item->set_headurl(item.headurl());
+
+
+    all_net_ownstaruser.set_unit(net_item->get());
+    t_count++;
+    if (all_net_ownstaruser.Size() % base_num == 0
+        && all_net_ownstaruser.Size() != 0) {
+      struct PacketControl packet_control;
+      MAKE_HEAD(packet_control, S_STARSIDE_GETOWNSTARUSER, 1, 0, session, 0);
+      packet_control.body_ = all_net_ownstaruser.get();
+      send_message(socket, &packet_control);
+      all_net_ownstaruser.Reset();
+    }
+    
+  }
+
+  if (all_net_ownstaruser.Size() > 0) {
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_STARSIDE_GETOWNSTARUSER, 1, 0, session, 0);
+    packet_control.body_ = all_net_ownstaruser.get();
+    send_message(socket, &packet_control);
+  }
+  
 }
 
 void StarSideManager::UpdStarMeetRel(const int socket, 
@@ -406,6 +510,7 @@ void StarSideManager::SendStarSideTransStatis(const int socket,
     starside_logic::TranscationStatistics transstatis = transstatis_list.front();
     transstatis_list.pop_front();
     t_start++;
+
     if (transstatis.open_position_time() < stardate)
       continue;
     if (transstatis.open_position_time() > enddate)
@@ -452,7 +557,8 @@ void StarSideManager::SendStarSideTransStatis(const int socket,
 
 void StarSideManager::SendStarMeetRel(const int socket, 
                                     const int64 session,
-                                    const std::string &starcode) {
+                                    const std::string &starcode,
+                                    const int64 startpos, const int64 count) {
   std::list<starside_logic::StarMeetRelForFan> list;
   {
     base_logic::RLockGd lk(lock_);  //
@@ -469,7 +575,7 @@ void StarSideManager::SendStarMeetRel(const int socket,
 */
 
   int32 base_num = 10;
-  int32 count = 10;
+  //int32 count = 10;
   base_num = base_num < count ? base_num : count;
 
   int32 t_start = 0;
@@ -483,6 +589,8 @@ void StarSideManager::SendStarMeetRel(const int socket,
     starside_logic::StarMeetRelForFan item = list.front();
     list.pop_front();
     t_start++;
+    if (t_start < startpos)
+        continue;
 
     net_reply::StarMeetRel* net_item = new net_reply::StarMeetRel;
 
@@ -581,6 +689,14 @@ void StarSideManager::GetStarMeetRelNoLock(
 
 }
 
+void StarSideManager::GetOwnStarUserNoLock(
+    const std::string &starcode, 
+    std::list<starside_logic::TOwnStarUser>& list) {
+
+  base::MapGet<ALL_OWNSTARUSERLIST, ALL_OWNSTARUSERLIST::iterator, std::string, OWNSTARUSERLIST>(
+      starside_cache_->all_ownstaruser_, starcode, list);
+
+}
 
 void StarSideManager::GetStarOwnServiceNoLock(
     const std::string &starcode, 
@@ -628,8 +744,8 @@ void StarSideManager::ServiceDefInfo(const int socket,
     LOG_DEBUG2("packet_length %d____________________________________________",ownstar_list.size() );
 */
 
-  int32 base_num = 10;
-  int32 count = 10;
+  int32 base_num = 20;
+  int32 count = 20;
   base_num = base_num < count ? base_num : count;
 
   int32 t_start = 0;
@@ -688,8 +804,8 @@ void StarSideManager::SendStarOwnService(const int socket,
     return;
   }
 
-  int32 base_num = 10;
-  int32 count = 10;
+  int32 base_num = 15;
+  int32 count = 15;
   base_num = base_num < count ? base_num : count;
 
   int32 t_start = 0;

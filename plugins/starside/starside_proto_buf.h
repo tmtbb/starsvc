@@ -1051,7 +1051,7 @@ class OwnStar{
     if (starcode_ != NULL)
       value_->Set(L"starcode", starcode_);
     if (starname_ != NULL)
-      value_->Set(L"starname", starname_);
+      value_->Set(L"nickname", starname_);
     if (faccid_ != NULL)
       value_->Set(L"faccid", faccid_);
     if (headurl_ != NULL)
@@ -1070,6 +1070,7 @@ class OwnStar{
 
   base_logic::DictionaryValue* value_;
 };
+typedef OwnStar TOwnStarUser;
 class WithDrawals {
  public:
   WithDrawals()

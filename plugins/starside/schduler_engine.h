@@ -31,6 +31,9 @@ typedef std::list<starside_logic::ServiceItem> ALL_SERVICEITEM;
 //____________________________________________________________
 typedef std::list<starside_logic::StarOwnService> STAROWNSERVICE;
 typedef std::map<std::string, STAROWNSERVICE> ALL_STAROWNSERVICE;
+//拥有明星时间的用户列表
+typedef std::list<starside_logic::TOwnStarUser> OWNSTARUSERLIST;
+typedef std::map<std::string, OWNSTARUSERLIST> ALL_OWNSTARUSERLIST; //明星code
 //-----------------------------------------------
 
 class StarSideCache {
@@ -42,6 +45,7 @@ class StarSideCache {
   ALL_STARMEETRELFORFAN_MAP all_starmeetrel_map_; //明星粉丝预约列表
   ALL_SERVICEITEM all_serviceitem;
   ALL_STAROWNSERVICE all_starownservice_; //所有明星活动类型
+  ALL_OWNSTARUSERLIST all_ownstaruser_; //
 };
 
 class StarSideManager {
@@ -56,6 +60,7 @@ class StarSideManager {
   void InitStarMeetRelList();
   void InitServiceItem(); 
   void InitStarOwnService(); 
+  void InitOwnStarUser(); 
 
   void InitSchdulerEngine(manager_schduler::SchdulerEngine* schduler_engine);
 
@@ -84,7 +89,8 @@ class StarSideManager {
   void SendStarOwnService(const int socket, const int64 session,
                                 const std::string &starcode); 
   void SendStarMeetRel(const int socket, const int64 session,
-                                const std::string &starcode); 
+                                const std::string &starcode,
+                                const int64 startpos, const int64 count); 
   void ServiceDefInfo(const int socket, const int64 session); 
 
   void ProfitDetail(const int socket, const int64 session, 
@@ -96,6 +102,8 @@ class StarSideManager {
                     const std::string &starcode, const int64 mid, 
                     const int64 type); 
   //modify
+  void GetOwnStarUser(const int socket, const int64 session, 
+                   const std::string &starcode,int64 start, int64 count); 
   
   void ModifyStarMeetRelLock(const std::string &starcode, const int64 id,
                 const int64 type);
@@ -124,6 +132,9 @@ class StarSideManager {
   void GetStarMeetRelNoLock(
     const std::string &starcode, 
     std::list<starside_logic::StarMeetRelForFan>& list); 
+  void GetOwnStarUserNoLock(
+    const std::string &starcode, 
+    std::list<starside_logic::TOwnStarUser>& list); 
  private:
   starside_logic::StarSideDB* starside_db_;
   StarSideCache *starside_cache_;

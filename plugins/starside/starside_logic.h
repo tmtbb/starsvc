@@ -70,6 +70,8 @@ class StarSidelogic {
 
   bool OnUpdStarService(struct server* srv, int socket,
                          struct PacketHead *packet);
+  bool OnGetOwnStarUser(struct server* srv, int socket,
+                        struct PacketHead *packet) ;
  private:
   bool Init();
   starside_logic::StarSideDB* starside_db_;

@@ -180,5 +180,44 @@ void StarOwnService::ValueSerialization(base_logic::DictionaryValue* dict) {
   
   dict->GetString(L"starcode", &data_->starcode_); //
 }
+//TOwnStarUser
+
+
+
+TOwnStarUser::TOwnStarUser() {
+    data_ = new Data();
+}
+
+TOwnStarUser::TOwnStarUser(const TOwnStarUser& item)
+    : data_(item.data_) {
+    if (data_ != NULL) {
+        data_->AddRef();
+    }
+}
+
+TOwnStarUser& TOwnStarUser::operator =(const TOwnStarUser& item) {
+    if (item.data_ != NULL) {
+        item.data_->AddRef();
+    }
+
+    if (data_ != NULL) {
+        data_->Release();
+    }
+
+    data_ = item.data_;
+    return (*this);
+}
+
+
+void TOwnStarUser::ValueSerialization(base_logic::DictionaryValue* dict) {
+
+    dict->GetBigInteger(L"uid", &data_->uid_);
+    dict->GetBigInteger(L"ownseconds", &data_->ownseconds_);
+    dict->GetInteger(L"appoint", &data_->appoint_);
+    dict->GetString(L"user_nickname", &data_->user_nickname_);
+    dict->GetString(L"starcode", &data_->starcode_);
+    dict->GetString(L"faccid", &data_->faccid_);
+    dict->GetString(L"head_url", &data_->head_url_);
+}
 
 }  // namespace trades_logic
