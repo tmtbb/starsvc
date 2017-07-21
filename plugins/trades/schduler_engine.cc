@@ -41,6 +41,7 @@ TradesManager::~TradesManager() {
         LOG_ERROR2("pthread_join err! tidp[%d]", tidp);
     }
     DeinitThreadrw(lock_);
+    DeinitThreadrw(auto_lock_);
     if (trades_cache_) {
         delete trades_cache_;
         trades_cache_ = NULL;
@@ -58,6 +59,7 @@ void TradesManager::InitKafka(trades_logic::TradesKafka* trades_kafka) {
 
 void TradesManager::Init() {
     InitThreadrw(&lock_);
+    InitThreadrw(&auto_lock_);
 }
 
 void TradesManager::InitData() {
@@ -219,7 +221,7 @@ void TradesManager::ConfirmOrder(const int64 uid,const int64 order_id, const int
     //查找订单是否存在，切状态是否正确
     bool r = false;
     int32 uid_type = 0;
-    base_logic::WLockGd lk(lock_);
+    //base_logic::WLockGd lk(auto_lock_);
     star_logic::TradesOrder  trades_order;
     r = base::MapGet<TRADES_ORDER_MAP,TRADES_ORDER_MAP::iterator,int64,star_logic::TradesOrder>
                 (trades_cache_->all_trades_order_,order_id,trades_order);
@@ -302,17 +304,26 @@ void TradesManager::ConfirmOrder(const int64 uid,const int64 order_id, const int
         SendNoiceMessage(trades_order.sell_uid(), S_ORDER_RESULT, 0, order_result.get());
         trades_kafka_->SetTradesOrder(trades_order);
         
-        //删除symbol_trades_order_ 中的订单
+        //删除symbol_trades_order_ 中成功的订单
         TRADES_ORDER_LIST trades_order_list;
-        base::MapGet<KEY_ORDER_MAP,KEY_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
+        r = base::MapGet<KEY_ORDER_MAP,KEY_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
                 (trades_cache_->symbol_trades_order_,trades_order.symbol(),trades_order_list);
-        TRADES_ORDER_LIST::iterator it = trades_order_list.begin();
-        for(; it != trades_order_list.end(); ++it){
-            if(it->order_id() == trades_order.order_id()){
-                it = trades_order_list.erase(it);
-                --it;
+        if(r){
+            TRADES_ORDER_LIST::iterator it = trades_order_list.begin();
+            for(; it != trades_order_list.end(); ++it){
+                if(it->order_id() == trades_order.order_id()){
+                    it = trades_order_list.erase(it);
+                    --it;
+                }
+            }
+            if(trades_order_list.size() > 0){
+                trades_cache_->symbol_trades_order_[trades_order.symbol()] = trades_order_list;
+            }else{
+                base::MapDel<KEY_ORDER_MAP, KEY_ORDER_MAP::iterator, std::string>(
+                    trades_cache_->symbol_trades_order_, trades_order.symbol());
             }
         }
+
     }else {
         trades_kafka_->SetTradesOrder(trades_order);
     }
@@ -570,7 +581,7 @@ void TradesManager::SetTradesOrder(star_logic::TradesPosition& buy_position,
 
     trades_cache_->all_trades_order_[trades_order.order_id()] = trades_order;
 
-    base_logic::WLockGd lk(lock_);
+    base_logic::WLockGd lk(auto_lock_);
     TRADES_ORDER_LIST trades_order_list;
     r = base::MapGet<KEY_ORDER_MAP,KEY_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
         (trades_cache_->symbol_trades_order_,sell_position.symbol(),trades_order_list);
@@ -671,10 +682,11 @@ void TradesManager::SendNoiceMessage(const int64 uid, const int32 operator_code,
 
 void TradesManager::AutoMatachOrder(void* param) {
     time_t current_time = time(NULL);
-    base_logic::WLockGd lk(lock_);
+    base_logic::WLockGd lk(auto_lock_);
 
     KEY_ORDER_MAP::iterator iter = trades_cache_->symbol_trades_order_.begin();
     for(; iter != trades_cache_->symbol_trades_order_.end(); ++iter){
+        LOG_DEBUG2("AutoMatachOrder symbol[%s]", iter->first.c_str());
         TRADES_ORDER_LIST& orderlist = iter->second;
         TRADES_ORDER_LIST::iterator it = orderlist.begin();
         for(; it != orderlist.end(); ++it){

@@ -144,6 +144,7 @@ private:
     trades_logic::TradesDB* trades_db_;
     trades_logic::TradesKafka*  trades_kafka_;
     struct threadrw_t *lock_;
+    struct threadrw_t *auto_lock_;
     pthread_t tidp;
 };
 

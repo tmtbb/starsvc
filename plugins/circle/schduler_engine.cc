@@ -172,11 +172,18 @@ bool CircleManager::ApprovalCircle(const int socket, const int64 session, const 
   }
 
   t_circle->AddApproveId(uid);
-  int64 result;
+  int64 result = 1;
   if(!circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
+    t_circle->DelApprovId();
     return false;
   }
+  if( result < 0 ) {
+    send_error(socket, ERROR_TYPE, result, session);
+    t_circle->DelApprovId();
+    return false;
+  }
+  
 
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
   base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(result);
@@ -214,11 +221,19 @@ bool CircleManager::UserCommentCircle(const int socket, const int64 session, con
   scomment.priority = lastpriority;
   t_circle->AddComment(scomment);
 
-  int64 result;
+  int64 result = 1;
   if(!circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
+    t_circle->DelComment();
     return false;
   }
+
+  if( result < 0 ) {
+    send_error(socket, ERROR_TYPE, result, session);
+    t_circle->DelComment();
+    return false;
+  }
+
 
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
   base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(result);
@@ -262,9 +277,15 @@ bool CircleManager::StarReplyCircle(const int socket, const int64 session, const
   scomment.priority = lastpriority;
   t_circle->AddComment(scomment);
 
-  int64 result;
+  int64 result = 1;
   if(!circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
+    t_circle->DelComment();
+    return false;
+  }
+  if( result < 0 ) {
+    send_error(socket, ERROR_TYPE, result, session);
+    t_circle->DelComment();
     return false;
   }
 
