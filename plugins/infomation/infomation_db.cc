@@ -699,9 +699,8 @@ bool Infomation_Mysql::getUserStarMeetinfo(const int64 uid,const int64 pos,const
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
-	int32 t_listSize = listvalue->GetSize();
 
-	if(r && t_listSize>0){
+	if(r && listvalue->GetSize()>0){
 	  int32 t_start = 0;
 	  int32 t_count = 0;
 	  int32 ipos = pos;
@@ -724,7 +723,7 @@ bool Infomation_Mysql::getUserStarMeetinfo(const int64 uid,const int64 pos,const
 	  	++t_start;
 	  }
 	  LOG_DEBUG2("get size %d,return size %d, pos %ld, count %ld.", 
-	  				t_listSize,templistvalue->GetSize(),pos,count);
+	  				listvalue->GetSize(),templistvalue->GetSize(),pos,count);
 
 		ret_result.Set("list",(base_logic::Value*)templistvalue);
 
@@ -944,8 +943,8 @@ bool Infomation_Mysql::getbarragedata(int64& startnum,int64& endnum,base_logic::
 	  return false;
 	}
 	
-	dic->GetList(L"resultvalue",&listvalue);
-	return true;
+	r = dic->GetList(L"resultvalue",&listvalue);
+	return r;
 }
 
 }

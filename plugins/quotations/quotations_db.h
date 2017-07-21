@@ -21,9 +21,12 @@ class QuotationsDB {
   ~QuotationsDB();
    
   bool OnGetStarInfo(std::map<std::string,star_logic::StarInfo>& map);
+  bool OngetSysParamValue(std::map<std::string,std::string>& parammap);
 
 private: 
   static void CallGetStarInfo(void* param, base_logic::Value* value);
+
+  static void CallgetSysParamValue(void* param, base_logic::Value* value);
 private:
   base_logic::DataEngine* mysql_engine_;
 };

@@ -646,11 +646,11 @@ bool Userslogic::OnLoginAccount(struct server* srv, int socket,
     star_logic::UserInfo userinfo;
     r = user_db_->LoginAccount(login_account.phone_num(), login_account.passwd(),
                                ip, userinfo);
-    CheckUserIsLogin(userinfo);
     if (!r) {
         send_error(socket, ERROR_TYPE, NO_PASSWORD_ERRNOR, packet->session_id);
         return false;
     }
+    CheckUserIsLogin(userinfo);
 
     //token 计算
     std::string token;
@@ -875,8 +875,8 @@ bool Userslogic::SendUserInfo(const int socket, const int64 session,
     net_login_account.set_token_time(userinfo.token_time());
     schduler_engine_->SetUserInfoSchduler(userinfo.uid(), &userinfo);
 
-    star_logic::UserInfo tuserinfo;
-    schduler_engine_->GetUserInfoSchduler(userinfo.uid(), &tuserinfo);
+    //star_logic::UserInfo tuserinfo;
+    //schduler_engine_->GetUserInfoSchduler(userinfo.uid(), &tuserinfo);
     
     struct PacketControl net_packet_control;
     MAKE_HEAD(net_packet_control, opcode, 1, 0, session, 0);

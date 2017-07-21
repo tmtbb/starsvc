@@ -109,5 +109,67 @@ void QuotationsDB::CallGetStarInfo(void* param, base_logic::Value* value) {
   dict->Set(L"resultvalue", (base_logic::Value *) (list));
 }
 
+bool QuotationsDB::OngetSysParamValue(std::map<std::string,std::string>& parammap){
+  bool r = false;
+  DicValue* dic = new DicValue();
+  std::string sql = "call proc_GetSysParamVlue();";
+
+  dic->SetString(L"sql", sql);
+  LOG_DEBUG2("%s", sql.c_str());
+  r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),CallgetSysParamValue);
+  if (!r) {
+    return false;
+  }
+
+  std::string key,value;
+  base_logic::ListValue *listvalue;
+  base_logic::DictionaryValue *info_value;
+  r = dic->GetList(L"resultvalue", &listvalue);
+  while (r && listvalue->GetSize()) {
+    base_logic::Value *result_value;
+    listvalue->Remove(0, &result_value);
+    info_value = static_cast<base_logic::DictionaryValue*>(result_value);
+    if(info_value->GetString(L"param_code", &key) && info_value->GetString(L"param_value", &value))
+      parammap[key] = value;
+
+    delete info_value;
+    info_value = NULL;
+  }
+
+  if(dic){
+    delete dic;
+    dic = NULL;
+  }
+  
+  return r;
+}
+
+void QuotationsDB::CallgetSysParamValue(void* param, base_logic::Value* value){ 
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  base_logic::ListValue *list = new base_logic::ListValue();
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+      if (rows[0] != NULL)
+        info_value->SetString(L"param_code", rows[0]);
+
+      if (rows[1] != NULL)
+        info_value->SetString(L"param_value", rows[1]);
+    
+      list->Append((base_logic::Value *) (info_value));
+    }
+    dict->Set(L"resultvalue", (base_logic::Value *) (list));
+  }
+  else {
+    LOG_ERROR ("proc_GetSysParamVlue count < 0");
+  }
+  
+  dict->Remove(L"sql", &value);
+}
+
 }  // namespace quotations_logic
 

@@ -40,7 +40,8 @@ void CircleManager::InitData() {
   bool r = false;
   base_logic::ListValue *listvalue;
   
-  circle_db_->OnFetchAllCircleInfo(listvalue);
+  if(!circle_db_->OnFetchAllCircleInfo(listvalue))
+    return;
 
   while (listvalue->GetSize()) {
     circle_logic::Circle* circle = new circle_logic::Circle();
@@ -97,11 +98,11 @@ bool CircleManager::CreateCircle(const int socket, const int64 session, const in
   bool r = base::MapGet<STAR_CIRCLE_MAP,STAR_CIRCLE_MAP::iterator, std::string, CIRCLE_MAP>
         (star_circle_map_, circle->GetSymbol(), t_circle_map);
 
+
+  circle_list_.push_back(circle);
   t_circle_map[current_max_circle_id] = circle;
-  if(!r){
-    star_circle_map_[symbol] = t_circle_map;
-    circle_list_.push_back(circle);
-  }
+  star_circle_map_[symbol] = t_circle_map;
+  
 
   if(circle_db_->OnCreateCircleOrder(*circle)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
@@ -172,7 +173,7 @@ bool CircleManager::ApprovalCircle(const int socket, const int64 session, const 
 
   t_circle->AddApproveId(uid);
   int64 result;
-  if(circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
+  if(!circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     return false;
   }
@@ -214,7 +215,7 @@ bool CircleManager::UserCommentCircle(const int socket, const int64 session, con
   t_circle->AddComment(scomment);
 
   int64 result;
-  if(circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
+  if(!circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     return false;
   }
@@ -262,7 +263,7 @@ bool CircleManager::StarReplyCircle(const int socket, const int64 session, const
   t_circle->AddComment(scomment);
 
   int64 result;
-  if(circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
+  if(!circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     return false;
   }
@@ -292,8 +293,8 @@ bool CircleManager::GetSymbolAllCircle(const int socket, const int64 session, co
 
   int32 posnum = 0;
   int32 startnum = 0;
-  CIRCLE_MAP::iterator it = t_circle_map.begin();
-  for(; it != t_circle_map.end() && startnum<count; ++it){
+  CIRCLE_MAP::reverse_iterator it = t_circle_map.rbegin();
+  for(; it != t_circle_map.rend() && startnum<count; ++it){
     Circle*& circle = it->second;
     if(circle->GetStatus() == CIRCLE_DEL_STATUS)
       continue;
@@ -323,7 +324,8 @@ bool CircleManager::GetSymbolAllCircle(const int socket, const int64 session, co
     }
   }
 
-  LOG_DEBUG2("Get symbol[%s] circle list size:%d", symbol.c_str(), circlereplylist.Size());
+  LOG_DEBUG2("Get symbol[%s] circle list size:%d, pos[%ld], count[%ld]", 
+          symbol.c_str(), circlereplylist.Size(), pos, count);
   if (circlereplylist.Size() != 0) {
     struct PacketControl packet_control;
     MAKE_HEAD(packet_control, S_GET_STAR_CIRCLE_INFO, CIRCLE_TYPE, 0,
@@ -346,8 +348,8 @@ bool CircleManager::GetAllCircle(const int socket, const int64 session, const in
   int32 startnum = 0;
 
   base_logic::RLockGd lk(lock_);
-  CIRCLE_LIST::iterator iter = circle_list_.begin();
-  for(; iter != circle_list_.end() && startnum<count; ++iter){
+  CIRCLE_LIST::reverse_iterator iter = circle_list_.rbegin();
+  for(; iter != circle_list_.rend() && startnum<count; ++iter){
     if((*iter)->GetStatus() == CIRCLE_DEL_STATUS)
       continue;
     
@@ -382,7 +384,6 @@ bool CircleManager::GetAllCircle(const int socket, const int64 session, const in
       base_logic::ValueSerializer* engine = base_logic::ValueSerializer::Create(
         0, &tempstring);
       engine->Serialize(*((base_logic::Value*) circlereplylist.get()));
-      LOG_DEBUG2("-------tempstring [%s]", tempstring.c_str());
     }
 
     struct PacketControl packet_control;
