@@ -80,6 +80,14 @@ public:
     data_->m_lastPriority = sc.priority;
   }
 
+  void DelApprovId(){
+    m_approveList.pop_back();
+  }
+
+  void DelComment(){
+    return m_commentList.pop_back();
+  }
+
 
   const std::string& GetSymbol() const {
     return data_->m_symbol;

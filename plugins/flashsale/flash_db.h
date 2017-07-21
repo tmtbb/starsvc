@@ -23,7 +23,7 @@ public:
 
 public:
     bool OnFetchPublishStar(std::map<std::string, flash_logic::PulishStar>& map);
-    bool OnCreateFlashOrder(star_logic::TradesOrder& flash_order);
+    bool OnCreateFlashOrder(star_logic::TradesOrder& flash_order, int64& result);
     bool OnUpdateFlashsaleResult(const int64 uid,const std::string& symbol,
                 const int64 amount,const double totlePrice);
     bool OnUpdatePublishStarInfo(const std::string& symbol,const int64 publishtype,
@@ -31,6 +31,7 @@ public:
 
 private:
     static void CallGetPublishRule(void* param, base_logic::Value* value);
+    static void CallCreateFlashOrder(void* param, base_logic::Value* value);
 private:
     base_logic::DataEngine* mysql_engine_;
 };

@@ -108,12 +108,31 @@ bool FlashDB::OnFetchPublishStar(std::map<std::string, flash_logic::PulishStar>&
   return r;
 }
 
-bool FlashDB::OnCreateFlashOrder(star_logic::TradesOrder& flash_trades_order) {
+void FlashDB::CallCreateFlashOrder(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        dict->SetBigInteger(L"resultvalue", atoi(rows[0]));
+    }
+  }
+  else{
+    LOG_ERROR ("proc_CreateFlashOrder count < 0");
+  }
+  dict->Remove(L"sql", &value);
+}
+
+bool FlashDB::OnCreateFlashOrder(star_logic::TradesOrder& flash_trades_order, int64& result) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
 
   std::string sql;
-  sql = "call proc_CreateTradesOrder(" + base::BasicUtil::StringUtil::Int64ToString(flash_trades_order.order_id())
+  sql = "call proc_CreateFlashOrder(" + base::BasicUtil::StringUtil::Int64ToString(flash_trades_order.order_id())
       + "," + base::BasicUtil::StringUtil::Int64ToString(flash_trades_order.buy_position_id())
       + "," + base::BasicUtil::StringUtil::Int64ToString(flash_trades_order.sell_position_id())
       + "," + base::BasicUtil::StringUtil::Int64ToString(flash_trades_order.buy_uid())
@@ -127,10 +146,12 @@ bool FlashDB::OnCreateFlashOrder(star_logic::TradesOrder& flash_trades_order) {
       + ",0," + base::BasicUtil::StringUtil::DoubleToString(flash_trades_order.open_price())
       + ",0.0,'" + flash_trades_order.symbol()+"');";
   dict->SetString(L"sql", sql);
-  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
+  LOG_MSG2("sql [%s]", sql.c_str());
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallCreateFlashOrder);
   if (!r)
       return false;
 
+  dict->GetBigInteger(L"resultvalue", &result);
   if (dict) {
       delete dict;
       dict = NULL;

@@ -280,6 +280,7 @@ void QuotationsManager::SendSymbolList(const int socket, const int64 session, co
   else //热度排序
       starlist.sort(star_logic::StarInfo::sort_hot_priority);
 
+  LOG_DEBUG2("Get symbol list size before:%d", starlist.size());
   int32 t_count = 0, curpos = 0;
   std::list<star_logic::StarInfo>::iterator iter = starlist.begin();
   for(; iter != starlist.end(); ){
@@ -290,7 +291,7 @@ void QuotationsManager::SendSymbolList(const int socket, const int64 session, co
       ++t_count;
       ++iter;
   }
-  LOG_DEBUG2("Get symbol list size:%d", starlist.size());
+  LOG_DEBUG2("Get symbol list size after:%d", starlist.size());
   //发送行情列表
   SendQuotationsList(socket, session, reversed, atype, starlist);
 }
@@ -530,7 +531,9 @@ void QuotationsManager::SendRealTime(const int socket, const int64 session,
 
         //查找对应的行情数据
         std::string key = "star_index:" + real_time_unit.symbol();
+        LOG_DEBUG2("====9999 star_index:[%s]", key.c_str());
         GetRealTime(real_time_unit.atype(), key, &quotations);
+        LOG_DEBUG2("====8888 quotations.current_unix_time[%d]", quotations.current_unix_time());
         if (quotations.current_unix_time() <= 0)
             continue;
         net_reply::RealTimeUnit* r_real_time_unit = new net_reply::RealTimeUnit;

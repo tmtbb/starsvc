@@ -101,12 +101,17 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
   if (!r)
     return false;
 
-  dict->GetDictionary(L"resultvalue", &info_value);
+  r = dict->GetDictionary(L"resultvalue", &info_value);
+  if(!r)
+    return false;
 
   std::string phone, agentName, avatar_Large, channel, starcode;
   int64 type,uid;
   if(info_value->GetString(L"phone",&phone))
       user.set_phone_num(phone);
+  r = (r && phone.length() > 1) ? true : false;
+  if (!r)
+    return false;
   if(info_value->GetString(L"nickname",&agentName))
       user.set_nickname(agentName);
   if(info_value->GetString(L"head_url",&avatar_Large))
@@ -120,9 +125,7 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
   if(!info_value->GetBigInteger(L"type",&type))
     return false;
   user.set_type(type);
-  r = (r && phone.length() > 1) ? true : false;
-  if (!r)
-    return false;
+  
 
   if(info_value->GetBigInteger(L"id", &uid)){
     if(uid <= 0)
@@ -149,8 +152,11 @@ void UsersDB::CallLoginwxAccount(void* param, base_logic::Value* value) {
   int32 num = engine->RecordCount();
   if (num > 0) {
     while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
-      if (rows[0] != NULL)
+      if (rows[0] != NULL) {
+        if(strcmp(rows[0],"0") == 0)
+          break;
         info_value->SetString(L"phone", rows[0]);
+      }
       if (rows[1] != NULL)
         info_value->SetBigInteger(L"type", atoi(rows[1]));
       if (rows[2] != NULL)
@@ -166,8 +172,9 @@ void UsersDB::CallLoginwxAccount(void* param, base_logic::Value* value) {
       if (rows[7] != NULL && strlen(rows[7]) > 0)
         info_value->SetString(L"starcode", (rows[7]));
     }
+    dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
   }
-  dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+  
 }
 
 bool UsersDB::UserChangePasswd(const std::string& phone_num,const std::string& oldpasswd,
@@ -269,7 +276,8 @@ bool UsersDB::GetUserInfo(const int64 uid, const std::string& ip,
   if (!r)
     return false;
 
-  dict->GetDictionary(L"resultvalue", &info_value);
+  if(!dict->GetDictionary(L"resultvalue", &info_value))
+    return false;
   userinfo.ValueSerialization(info_value);
   info_value->GetString(L"passwd",&pwd);
 

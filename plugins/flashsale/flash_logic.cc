@@ -234,7 +234,7 @@ bool Flashlogic::OnFlashSaleConfirmOrder(struct server* srv, int socket, struct 
   }
   struct PacketControl* packet_control = (struct PacketControl*) (packet);
 
-  int64 uid, amount;
+  int64 uid, amount, lprice;
   std::string token, symbol;
   double price=0.0;
   bool r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
@@ -242,11 +242,17 @@ bool Flashlogic::OnFlashSaleConfirmOrder(struct server* srv, int socket, struct 
   bool r3 = packet_control->body_->GetString(L"symbol", &symbol);
   bool r4 = packet_control->body_->GetBigInteger(L"amount", &amount);
   bool r5 = packet_control->body_->GetReal(L"price", &price);
+  if(!r5){
+    r5 = packet_control->body_->GetBigInteger(L"price", &lprice);
+    price = lprice;
+  }
   if (!r1 || !r2 || !r3 || !r4 || !r5)
   {
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
+  
+  LOG_MSG2("price:%.2f", price);
 
   flash_logic::FlashEngine::GetSchdulerManager()->ConfirmOrder(socket,
           packet->session_id, packet->reserved,uid,symbol,amount,price);

@@ -205,40 +205,30 @@ void FlashManager::ConfirmOrder(const int socket, const int64 session, const int
     return ;
   }
 
-  //校验用户余额, 扣款
-  star_logic::UserInfo userinfo;
-  r = manager_schduler_engine_->GetUserInfoSchduler(uid, &userinfo);
+  star_logic::TradesOrder  flash_trades_order;
+  SetFlashOrder(uid,symbol,amount,price,flash_trades_order);
+  int64 result = 0;
+  flash_db_->OnCreateFlashOrder(flash_trades_order, result);
   if(!r){
-    send_error(socket, ERROR_TYPE, NO_USER_NO_EXIST_ERR, session);
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     return ;
   }
-
-  double totlePrice = amount * price;
-  if((userinfo.balance() - totlePrice) < 0.00005){
+  if(result == -1){
+    //用户余额不足
     send_error(socket, ERROR_TYPE, NO_USER_BALANCE_ERR, session);
     return ;
   }
+  double totlePrice = amount * price;
   //更新明星剩余时间
-  userinfo.set_balance(userinfo.balance() - totlePrice);
   pubstar.set_publish_last_time(pubstar.publish_last_time() - amount);
-
-  star_logic::TradesOrder  flash_trades_order;
-  SetFlashOrder(uid,symbol,amount,price,flash_trades_order);
-  flash_db_->OnCreateFlashOrder(flash_trades_order);
-  if(!r){
-    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
-    //返还用户余额，回退处理
-    userinfo.set_balance(userinfo.balance() + totlePrice);
-    pubstar.set_publish_last_time(pubstar.publish_last_time() + amount);
-    return ;
-  }
+  LOG_MSG2("pubstar.publish_last_time[%d]",pubstar.publish_last_time());
 
   //通知确认
   SendNoiceMessage(uid, flash_trades_order.order_id(), flash_trades_order.handle_type(), session);
   //发送kafka
   flash_kafka_->SetFlashOrder(flash_trades_order);
   //更新用户余额，更新明星时间
-  flash_db_->OnUpdateFlashsaleResult(uid,symbol,amount,totlePrice);
+  //flash_db_->OnUpdateFlashsaleResult(uid,symbol,amount,totlePrice);
 
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
   base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(1);
