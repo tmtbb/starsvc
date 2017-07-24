@@ -123,11 +123,6 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
         return false;
     }
     
-#ifdef _DEBUG
-  struct timeval t_start,t_end;
-  gettimeofday(&t_start, NULL);
-  LOG_DEBUG2("recive operator[%d], star time[%ld]", packet->operate_code, t_start.tv_usec);
-#endif
   
     try
     {
@@ -206,11 +201,6 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
     default:
       break;
   }
-#ifdef _DEBUG
-  gettimeofday(&t_end, NULL);
-  LOG_DEBUG2("recive operator[%d], star time[%ld]", packet->operate_code, t_end.tv_usec);
-  LOG_DEBUG2("operator[%d], Cost time[%ld]", packet->operate_code, t_end.tv_usec - t_start.tv_usec);
-#endif
 
   if(packet){
       delete packet;

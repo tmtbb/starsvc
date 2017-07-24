@@ -86,7 +86,7 @@ public:
                               const int64 uid, const std::string& symbol, const std::string& wid,
                               const int64 buy_sell, const int64 amount, const double price);
 
-    void ConfirmOrder(const int64 uid, const int64 order_id, const int64 position_id);
+    int32 ConfirmOrder(const int64 uid, const int64 order_id, const int64 position_id);
     
     void TradesSymbolInfo(const int socket, const int64 session, const int32 reserved,
                         const std::string& symbol);
@@ -94,7 +94,7 @@ public:
     void CancelOrder(const int socket, const int64 session, const int32 reserved,
                         const int64 uid, const int64 order_id);
 
-    void AutoMatachOrder(void* param);
+    void AutoMatachOrder(time_t& time);
 private:
     void Init();
     //创建时间任务
@@ -144,7 +144,7 @@ private:
     trades_logic::TradesDB* trades_db_;
     trades_logic::TradesKafka*  trades_kafka_;
     struct threadrw_t *lock_;
-    pthread_t tidp;
+    struct threadrw_t *auto_lock_;
 };
 
 class TradesEngine {

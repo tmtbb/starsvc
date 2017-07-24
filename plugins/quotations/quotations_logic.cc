@@ -290,9 +290,9 @@ bool Quotationslogic::OnQutations(struct server* srv, int socket,
     return false;
   }
 
-//  LOG_MSG2("time %lld symbol %s current price %f change %f pchg %f",
-//           real_time.current_unix_time(),real_time.symbol().c_str(),real_time.current_price(),
-//            real_time.change(),real_time.pchg());
+  LOG_MSG2("time %lld symbol %s current price %f change %f pchg %f",
+           real_time.current_unix_time(),real_time.symbol().c_str(),real_time.current_price(),
+            real_time.change(),real_time.pchg());
   quotations.set_change(real_time.change());
   //quotations.set_closed_yesterday_price(real_time.closed_yesterday_price());
   quotations.set_current_price(real_time.current_price());
