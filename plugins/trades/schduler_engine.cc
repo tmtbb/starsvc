@@ -686,11 +686,10 @@ void TradesManager::AutoMatachOrder(void* param) {
 
     KEY_ORDER_MAP::iterator iter = trades_cache_->symbol_trades_order_.begin();
     for(; iter != trades_cache_->symbol_trades_order_.end(); ++iter){
-        LOG_DEBUG2("AutoMatachOrder symbol[%s]", iter->first.c_str());
         TRADES_ORDER_LIST& orderlist = iter->second;
         TRADES_ORDER_LIST::iterator it = orderlist.begin();
         for(; it != orderlist.end(); ++it){
-            if(current_time >= it->open_position_time()){
+            if(current_time >= (it->open_position_time()+10)){
                 //自动匹配交易
                 LOG_DEBUG2("AutoMatachOrder matched, current_time[%d],order_id[%ld]", current_time, it->order_id());
                 ConfirmOrder(it->buy_uid(), it->order_id(), it->buy_position_id());
