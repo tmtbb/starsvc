@@ -21,5 +21,8 @@ namespace quatations_logic {
 #define S_SYMBOL_LIST                  QUOTATIONS_TYPE * 1000 + 8
 #define R_HOME_SYMBOL_LIST             QUOTATIONS_TYPE * 1000 + 9
 #define S_HOME_SYMBOL_LIST             QUOTATIONS_TYPE * 1000 + 10
+
+#define R_SYMBOL_ONLY                  QUOTATIONS_TYPE * 1000 + 11
+#define S_SYMBOL_ONLY                  QUOTATIONS_TYPE * 1000 + 12
 }
 #endif
