@@ -55,6 +55,8 @@ private:
     bool OnHisOrder(struct server* srv, int socket, struct PacketHead* packet);
     bool OnFansPosition(struct server* srv, int socket, struct PacketHead* packet);
     bool OnFansOrder(struct server* srv, int socket, struct PacketHead* packet);
+    bool OnGetStarPosition(struct server* srv, int socket, struct PacketHead* packet);
+    bool OnGetAllStarPosition(struct server* srv, int socket, struct PacketHead* packet);
 private:
     bool Init();
     record_logic::RecordDB* record_db_;

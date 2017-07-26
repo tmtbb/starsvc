@@ -120,6 +120,12 @@ bool Recordlogic::OnRecordMessage(struct server *srv, const int socket,
     case R_POSITION_COUNT: {
         OnPositionCount(srv, socket, packet);
     }
+    case R_STAR_POSITION: {
+        OnGetStarPosition(srv, socket, packet);
+    }
+    case R_ALL_POSITION: {
+        OnGetAllStarPosition(srv, socket, packet);
+    }
     default:
         break;
     }
@@ -301,6 +307,46 @@ bool Recordlogic::OnPositionCount(struct server* srv, int socket, struct PacketH
 
     record_logic::RecordEngine::GetSchdulerManager()->SendPositionCount(socket,
         packet->session_id, packet->reserved,position_count.symbol());
+    return true;
+}
+
+bool Recordlogic::OnGetStarPosition(struct server* srv, int socket, struct PacketHead* packet) {
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+    int64 count;
+    std::string starcode;
+    bool r1 = packet_control->body_->GetString(L"star_code", &starcode);
+    bool r2 = packet_control->body_->GetBigInteger(L"count", &count);
+    if (!r1 || !r2) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+
+    record_logic::RecordEngine::GetSchdulerManager()->GetStarPosition(socket,
+        packet->session_id, packet->reserved, starcode, count);
+    return true;
+}
+
+bool Recordlogic::OnGetAllStarPosition(struct server* srv, int socket, struct PacketHead* packet) {
+    if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+    struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+    int64 count;
+    bool r = packet_control->body_->GetBigInteger(L"count", &count);
+    if (!r) {
+        send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+        return false;
+    }
+
+    record_logic::RecordEngine::GetSchdulerManager()->GetAllPosition(socket,
+        packet->session_id, packet->reserved, count);
     return true;
 }
 }  // namespace trades_logic

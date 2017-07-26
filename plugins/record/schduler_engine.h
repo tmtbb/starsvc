@@ -91,6 +91,14 @@ public:
 
     void SendPositionCount(const int socket, const int64 session, const int32 reserved,
                     const std::string& symbol);
+
+    //获取明星委托
+    void GetStarPosition(const int socket, const int64 session, const int32 reserved,
+                                const std::string& symbol, const int32 count);
+
+    //获取所有明星委托，用于弹幕
+    void GetAllPosition(const int socket, const int64 session, const int32 reserved,
+                                const int32 count);
 private:
     void InitDataHisOrder();
     void InitDataHisPosition();
