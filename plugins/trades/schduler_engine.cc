@@ -281,28 +281,6 @@ int32 TradesManager::ConfirmOrder(const int64 uid,const int64 order_id, const in
         SendNoiceMessage(trades_order.sell_uid(), S_ORDER_RESULT, 0, order_result.get());
         trades_kafka_->SetTradesOrder(trades_order);
         
-        //删除symbol_trades_order_ 中成功的订单
-        if (result == 0){
-            TRADES_ORDER_LIST trades_order_list;
-            r = base::MapGet<KEY_ORDER_MAP,KEY_ORDER_MAP::iterator,std::string,TRADES_ORDER_LIST>
-                    (trades_cache_->symbol_trades_order_,trades_order.symbol(),trades_order_list);
-            if(r){
-                TRADES_ORDER_LIST::iterator it = trades_order_list.begin();
-                for(; it != trades_order_list.end(); ++it){
-                    if(it->order_id() == trades_order.order_id()){
-                        it = trades_order_list.erase(it);
-                        --it;
-                    }
-                }
-                if(trades_order_list.size() > 0){
-                    trades_cache_->symbol_trades_order_[trades_order.symbol()] = trades_order_list;
-                }else{
-                    base::MapDel<KEY_ORDER_MAP, KEY_ORDER_MAP::iterator, std::string>(
-                        trades_cache_->symbol_trades_order_, trades_order.symbol());
-                }
-            }
-        }
-
     }else {
         trades_kafka_->SetTradesOrder(trades_order);
     }
@@ -662,21 +640,22 @@ void TradesManager::SendNoiceMessage(const int64 uid, const int32 operator_code,
 
 void TradesManager::AutoMatachOrder(time_t& current_time) {
     base_logic::WLockGd lk(auto_lock_);
+    int32 ret = -1;
     KEY_ORDER_MAP::iterator iter = trades_cache_->symbol_trades_order_.begin();
     for(; iter != trades_cache_->symbol_trades_order_.end(); ++iter){
         TRADES_ORDER_LIST& orderlist = iter->second;
         TRADES_ORDER_LIST::iterator it = orderlist.begin();
         for(; it != orderlist.end(); ){
-            int32 ret = -1;
+            ret = -1;
             if(current_time >= (it->open_position_time()+10)){
                 //自动匹配交易
                 LOG_DEBUG2("AutoMatachOrder matched, current_time[%d],order_id[%ld]", current_time, it->order_id());
                 ConfirmOrder(it->buy_uid(), it->order_id(), it->buy_position_id());
                 ret = ConfirmOrder(it->sell_uid(), it->order_id(), it->sell_position_id());
-                
             }
             if(ret == 0){
-                it = orderlist.begin();
+                //删除成功的订单
+                it = orderlist.erase(it);
             }else{
                 ++it;
             }
