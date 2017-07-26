@@ -109,6 +109,10 @@ bool Quotationslogic::OnQuotationsMessage(struct server *srv, const int socket,
         OnHomeSymbolList(srv, socket ,packet);
         break;
       }
+      case R_SYMBOL_ONLY : {
+        OnSymbolOne(srv, socket ,packet);
+        break;
+      }
       default:
         break;
     }
@@ -213,6 +217,35 @@ bool Quotationslogic::OnSymbolList(struct server* srv, int socket,
   );
 }
 
+bool Quotationslogic::OnSymbolOne(struct server* srv, int socket,
+                                       struct PacketHead* packet) {
+
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  std::string starcode ; 
+  int32 atype = 0;
+  int64 tmp = 0;
+  
+  if (!packet_control->body_->GetString(L"starcode", &starcode))
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  if (!packet_control->body_->GetBigInteger(L"aType", &tmp))
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  atype = tmp;
+  
+  quotations_logic::QuotationsEngine::GetSchdulerManager()->SendSymbolOne(
+	socket, packet->session_id,packet->reserved, starcode, atype);
+
+}
 bool Quotationslogic::OnKChartTimeLine(struct server* srv, int socket,
                                        struct PacketHead *packet) {
   quotations_logic::net_request::KChartTimeLine kchart_time;

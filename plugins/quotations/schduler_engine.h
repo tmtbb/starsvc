@@ -91,8 +91,12 @@ public:
                         const int32 atype,
                         const int32 sort, const int32 pos, const int32 count);
 
-    void SendHomeSymbolList(const int socket, const int64 session, const int32 reversed,
-                        const int32 atype);
+    void SendSymbolOne(const int socket, const int64 session, 
+                        const int32 reversed, 
+                        const std::string &starcode, const int32 atype);
+
+    void SendHomeSymbolList(const int socket, const int64 session, 
+                const int32 reversed, const int32 atype);
 
     void TimeEvent(int opcode, int time);
 

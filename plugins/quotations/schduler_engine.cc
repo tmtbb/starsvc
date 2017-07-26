@@ -296,6 +296,73 @@ void QuotationsManager::SendSymbolList(const int socket, const int64 session, co
   SendQuotationsList(socket, session, reversed, atype, starlist);
 }
 
+void QuotationsManager::SendSymbolOne(const int socket, 
+                const int64 session, const int32 reversed,
+                const std::string &starcode, const int32 atype) {
+  //std::list<star_logic::StarInfo> starlist;
+  star_logic::StarInfo star;
+
+  //manager_schduler_engine_->GetAllStarInfoSchduler(starlist);
+  manager_schduler_engine_->GetStarInfoSchduler(starcode, &star);//获取单个明星信息
+  /*
+  if (starlist.size() <= 0) {
+      send_error(socket, ERROR_TYPE, NO_HAVE_KCHART_DATA,session);
+      return;
+  }
+  */
+
+//  LOG_DEBUG2("Get symbol list size after:%d", starlist.size());
+  //发送行情列表
+ // SendQuotationsList(socket, session, reversed, atype, starlist);
+
+      
+      LAST_QUOTATIONS_MAP last_exchange_quotations;
+      star_logic::Quotations temp_quotations;
+
+      std::string key;
+      key = "star_index:"+ star.symbol();
+      //读取上一分钟报价
+      bool r = base::MapGet<LAST_QUOTATIONS_ALL_MAP, LAST_QUOTATIONS_ALL_MAP::iterator,
+      int32, LAST_QUOTATIONS_MAP>(quotations_cache_->last_quotations_map_,
+                                  atype, last_exchange_quotations);
+      r = base::MapGet<LAST_QUOTATIONS_MAP, LAST_QUOTATIONS_MAP::iterator,
+      std::string, star_logic::Quotations>(last_exchange_quotations, key,
+                                           temp_quotations);
+
+
+      net_reply::SymbolUnit* r_symbol_unit = new net_reply::SymbolUnit;
+      r_symbol_unit->set_wid(star.weibo_index_id());
+      r_symbol_unit->set_name(star.name());
+      r_symbol_unit->set_star_type(star.type());
+      r_symbol_unit->set_pic(star.pic());
+      r_symbol_unit->set_home_pic(star.home_pic());
+      r_symbol_unit->set_symbol(star.symbol());
+      r_symbol_unit->set_system_unix_time(time(NULL));
+      if(r){
+        r_symbol_unit->set_current_price(temp_quotations.current_price());
+        r_symbol_unit->set_current_unix_time(temp_quotations.current_unix_time());
+        r_symbol_unit->set_change(temp_quotations.change());
+        r_symbol_unit->set_pchg(temp_quotations.pchg());
+        LOG_MSG2("current_unix_time %lld symbol %s current_price %f, change %f,pchg %f",
+                temp_quotations.current_unix_time(),star.symbol().c_str(), temp_quotations.current_price(),
+                temp_quotations.change(),temp_quotations.pchg());
+      }else{
+        r_symbol_unit->set_current_price(0);
+        r_symbol_unit->set_current_unix_time(time(NULL));
+        r_symbol_unit->set_change(0);
+        r_symbol_unit->set_pchg(0);
+      }
+      r_symbol_unit->set_pushlish_type(star.publish_type());
+      r_symbol_unit->set_home_button_pic(star.home_button_pic());
+      
+      //symbol_list.set_unit(r_symbol_unit->get());
+      
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_SYMBOL_ONLY, QUOTATIONS_TYPE, 0,
+              session, reversed);
+    packet_control.body_ = r_symbol_unit->get();
+    send_message(socket, &packet_control);
+}
 void QuotationsManager::SendHomeSymbolList(const int socket, const int64 session, const int32 reversed,
                                        const int32 atype) {
     
