@@ -64,6 +64,9 @@ void FlashDB::CallGetPublishRule(void* param, base_logic::Value* value) {
       if (rows[10] != NULL)
           info_value->SetReal(L"publish_price", atof(rows[10]));
 
+      if (rows[11] != NULL)
+          info_value->SetString(L"work", rows[11]);
+
       list->Append((base_logic::Value *) (info_value));
     }
     dict->Set(L"resultvalue", (base_logic::Value *) (list));
@@ -188,7 +191,7 @@ bool FlashDB::OnUpdatePublishStarInfo(const std::string& symbol,const int64 publ
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
 
   std::string sql;
-  sql = "call proc_UpdateFlashsaleResult('" 
+  sql = "call proc_UpdatePublishStarInfo('" 
       + symbol 
       + "','" + base::BasicUtil::StringUtil::Int64ToString(publishtype) 
       + "','" + base::BasicUtil::StringUtil::DoubleToString(publasttime)

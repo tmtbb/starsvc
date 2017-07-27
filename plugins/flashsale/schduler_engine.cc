@@ -22,6 +22,10 @@ FlashManager::FlashManager() {
 
 FlashManager::~FlashManager() {
     DeinitThreadrw(lock_);
+    if(!share_memory_){
+      delete share_memory_;
+      share_memory_ = NULL;
+    }
 }
 
 void FlashManager::InitDB(flash_logic::FlashDB* flash_db) {
@@ -41,8 +45,16 @@ void FlashManager::InitManagerSchduler(manager_schduler::SchdulerEngine* schdule
 }
 
 void FlashManager::InitData() {
+  share_memory_ = new CShareMemory();
+  if(share_memory_ == NULL)
+    LOG_MSG("Create share memory failure.");
   flash_db_->OnFetchPublishStar(publish_star_map_);
   LOG_MSG2("flash map %lld", publish_star_map_.size());
+  if(!share_memory_->AttachMemry(0)){
+    LOG_MSG("Attach memory failure.");
+    return ;
+  }
+  share_memory_->SetStarToShareMemory(publish_star_map_);
   CreateTimeTask();
 }
 
@@ -61,7 +73,7 @@ void FlashManager::CreateTimeTask() {
         ProcessTimeTask(time(NULL), time_task);
         flash_task_list_.push_back(time_task);
         flash_task_map_[starpub.symbol()] = time_task;
-
+        
     }
 }
 
@@ -105,9 +117,11 @@ void FlashManager::TimeStarEvent() {
     flash_task_list_.push_back(time_task);
 
     flash_logic::PulishStar pubstar;
-    bool r = base::MapGet<PUBLISH_STAR_MAP,PUBLISH_STAR_MAP::iterator,std::string,flash_logic::PulishStar>
-              (publish_star_map_,time_task.symbol(),pubstar);
-    flash_db_->OnUpdatePublishStarInfo(time_task.symbol(),pubstar.publish_type(),
+    bool r = share_memory_->GetStarfromShareMemory(time_task.symbol(), pubstar);
+    if (!r) {
+      continue;
+    }
+    flash_db_->OnUpdatePublishStarInfo(time_task.symbol(),time_task.task_type(),
                           pubstar.publish_last_time(),pubstar.publish_begin_time());
   }
 
@@ -144,12 +158,9 @@ void FlashManager::FlashSymbolStatus(const int socket, const int64 session, cons
 //发行明星信息
 void FlashManager::SymbolInfo(const int socket, const int64 session, const int32 reserved,
     const std::string& symbol){
-  //flash_db_->OnFetchPublishStar(publish_star_map_);
-  //LOG_MSG2("flash map %lld", publish_star_map_.size());
-
   flash_logic::PulishStar pubstar;
-  bool r = base::MapGet<PUBLISH_STAR_MAP,PUBLISH_STAR_MAP::iterator,std::string,flash_logic::PulishStar>
-        (publish_star_map_,symbol,pubstar);
+  bool r = false;
+  r = share_memory_->GetStarfromShareMemory(symbol, pubstar);
   if (!r) {
     send_error(socket, ERROR_TYPE, NO_HAVE_FLASH_STAR, session);
     return ;
@@ -191,16 +202,8 @@ void FlashManager::ConfirmOrder(const int socket, const int64 session, const int
             const int64 uid,const std::string& symbol,const int64 amount, const double price) {
   //检查明星剩余时间
   bool r = false;
-  base_logic::WLockGd lk(lock_);
-  flash_logic::PulishStar pubstar;
-  r = base::MapGet<PUBLISH_STAR_MAP,PUBLISH_STAR_MAP::iterator,std::string,flash_logic::PulishStar>
-        (publish_star_map_,symbol,pubstar);
-  if (!r) {
-    send_error(socket, ERROR_TYPE, NO_HAVE_FLASH_STAR, session);
-    return ;
-  }
-
-  if(amount > pubstar.publish_last_time()){
+  if(!share_memory_->StarLastTimeIsEnough(symbol, amount)){
+    share_memory_->JudgeStarLastTimeFinish(symbol);
     send_error(socket, ERROR_TYPE, NO_PUB_STAR_NO_TIME_ERR, session);
     return ;
   }
@@ -208,26 +211,35 @@ void FlashManager::ConfirmOrder(const int socket, const int64 session, const int
   star_logic::TradesOrder  flash_trades_order;
   SetFlashOrder(uid,symbol,amount,price,flash_trades_order);
   int64 result = 0;
-  flash_db_->OnCreateFlashOrder(flash_trades_order, result);
+  r = flash_db_->OnCreateFlashOrder(flash_trades_order, result);
   if(!r){
+    share_memory_->JudgeStarLastTimeFinish(symbol);
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     return ;
   }
   if(result == -1){
+    share_memory_->JudgeStarLastTimeFinish(symbol);
     //用户余额不足
     send_error(socket, ERROR_TYPE, NO_USER_BALANCE_ERR, session);
     return ;
   }
-  double totlePrice = amount * price;
+  
   //更新明星剩余时间
-  pubstar.set_publish_last_time(pubstar.publish_last_time() - amount);
-  LOG_MSG2("pubstar.publish_last_time[%d]",pubstar.publish_last_time());
+  int64 t_last_time = share_memory_->DeductStarLastTime(symbol, amount);
+  if(-1 == t_last_time){
+    //找不到明星，应该不会出现
+    send_error(socket, ERROR_TYPE, NO_HAVE_FLASH_STAR, session);
+    return ;
+  }
+  LOG_MSG2("star publish_last_time[%d]", t_last_time);
+  
 
   //通知确认
   SendNoiceMessage(uid, flash_trades_order.order_id(), flash_trades_order.handle_type(), session);
   //发送kafka
   flash_kafka_->SetFlashOrder(flash_trades_order);
   //更新用户余额，更新明星时间
+  //double totlePrice = amount * price;
   //flash_db_->OnUpdateFlashsaleResult(uid,symbol,amount,totlePrice);
 
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();

@@ -83,6 +83,9 @@ flash_logic.o : ./flash_logic.cc ./flash_logic.h
 flash_db.o : ./flash_db.cc ./flash_db.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./flash_db.cc $(INCLUDE_PATHS)
 
+share_memory.o : ./share_memory.cc ./share_memory.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./share_memory.cc $(INCLUDE_PATHS)
+
 flash_info.o : ./flash_info.cc ./flash_info.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./flash_info.cc $(INCLUDE_PATHS)
 
@@ -122,7 +125,7 @@ redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool
 time.o :  $(USER_DIR)/logic/time.cc $(USER_DIR)/logic/time.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/time.cc $(INCLUDE_PATHS)
 
-$(PLUGIN) : flash_init.o  flash_logic.o flash_db.o flash_info.o flash_kafka.o schduler_engine.o \
+$(PLUGIN) : flash_init.o  flash_logic.o flash_db.o share_memory.o flash_info.o flash_kafka.o schduler_engine.o \
 	star_infos.o time.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient \

@@ -12,6 +12,7 @@
 #include "flashsale/flash_db.h"
 #include "flashsale/flash_info.h"
 #include "flashsale/flash_kafka.h"
+#include "flashsale/share_memory.h"
 
 namespace flash_logic {
 
@@ -57,6 +58,7 @@ private:
     flash_logic::FlashDB* flash_db_;
     flash_logic::FlashKafka*  flash_kafka_;
     struct threadrw_t *lock_;
+    CShareMemory* share_memory_;
 
     PUBLISH_STAR_MAP    publish_star_map_;
     TIME_TASK_LIST  flash_task_list_;
