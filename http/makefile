@@ -399,6 +399,46 @@ $(FLASH_OBJECT_PATH)/$(FLASHNAME)confirmorder.o:
 	$(COMPILE) .$(FLASHPROC_PATH)$(OTJERPROC_VERSION)/confirmorder/confirmorder.cc
 
 
+######################netflashsale###############################################
+NETFLASHNAME = netflashsale_
+NETFLASHPROC_PATH = /netflashsale
+NETFLASH_OBJECT_PATH = ./obj$(NEWSPROC_PATH)
+#OTJERPROC_VERSION = /v1 
+netflashsale:$(NETFLASHPROC_PATH)/remaintime.fcgi $(NETFLASHPROC_PATH)/pubstarinfo.fcgi \
+	$(NETFLASHPROC_PATH)/confirmorder.fcgi $(NETFLASHPROC_PATH)/pubstarlist.fcgi $(NETFLASHPROC_PATH)/pubstarexpr.fcgi 
+
+$(NETFLASHPROC_PATH)/remaintime.fcgi: $(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)remaintime.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/remaintime.fcgi
+
+$(NETFLASHPROC_PATH)/pubstarinfo.fcgi: $(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)pubstarinfo.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/pubstarinfo.fcgi
+
+$(NETFLASHPROC_PATH)/confirmorder.fcgi: $(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)confirmorder.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/confirmorder.fcgi
+
+$(NETFLASHPROC_PATH)/pubstarlist.fcgi: $(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)pubstarlist.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/pubstarlist.fcgi
+
+$(NETFLASHPROC_PATH)/pubstarexpr.fcgi: $(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)pubstarexpr.o $(POBJ)
+	$(LINKALL) -o $(OUTPUT_FILE)$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/pubstarexpr.fcgi
+
+### 编译
+$(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)remaintime.o:
+	$(COMPILE) .$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/remaintime/remaintime.cc
+
+$(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)pubstarinfo.o:
+	$(COMPILE) .$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/pubstarinfo/pubstarinfo.cc
+
+$(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)confirmorder.o:
+	$(COMPILE) .$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/confirmorder/confirmorder.cc
+
+$(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)pubstarlist.o:
+	$(COMPILE) .$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/pubstarlist/pubstarlist.cc
+
+$(NETFLASH_OBJECT_PATH)/$(NETFLASHNAME)pubstarexpr.o:
+	$(COMPILE) .$(NETFLASHPROC_PATH)$(OTJERPROC_VERSION)/pubstarexpr/pubstarexpr.cc
+
+
 
 
 clean:
