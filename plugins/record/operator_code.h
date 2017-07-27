@@ -36,7 +36,7 @@ namespace record_logic {
 #define R_STAR_POSITION     HISTORY_TYPE * 1000 + 21
 #define S_STAR_POSITION     HISTORY_TYPE * 1000 + 22
 //获取所有明星委托，用于弹幕
-#define R_ALL_POSITION     HISTORY_TYPE * 1000 + 22
-#define S_ALL_POSITION     HISTORY_TYPE * 1000 + 23
+#define R_ALL_POSITION     HISTORY_TYPE * 1000 + 23
+#define S_ALL_POSITION     HISTORY_TYPE * 1000 + 24
 }
 #endif
