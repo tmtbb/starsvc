@@ -481,6 +481,15 @@ void Infomation_Mysql::Callgetstarservicelist(void* param, base_logic::Value* va
 		  if (rows[4] != NULL){
 				ret->SetString(L"price", rows[4]);
 			}
+		  if (rows[5] != NULL){
+				ret->SetString(L"meet_city", rows[5]);
+			}
+		  if (rows[6] != NULL){
+				ret->SetString(L"startdate", rows[6]);
+			}
+		  if (rows[7] != NULL){
+				ret->SetString(L"enddate", rows[7]);
+			}
 			list->Append((base_logic::Value *) (ret));
 		}
 		dict->Set(L"resultvalue", (base_logic::Value *) (list));
