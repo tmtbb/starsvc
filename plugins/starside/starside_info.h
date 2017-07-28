@@ -471,6 +471,15 @@ class StarOwnService {
   const std::string& starcode() const {
     return data_->starcode_;
   }
+  const std::string& meet_city() const {
+    return data_->meet_city_;
+  }
+  const std::string& stardate() const {
+    return data_->stardate_;
+  }
+  const std::string& enddate() const {
+    return data_->enddate_;
+  }
 
  private:
   class Data {
@@ -494,6 +503,9 @@ class StarOwnService {
     std::string name_;
     double price_;
     std::string starcode_;
+    std::string meet_city_;
+    std::string stardate_;
+    std::string enddate_;
 
     void AddRef() {
       __sync_fetch_and_add(&refcount_, 1);

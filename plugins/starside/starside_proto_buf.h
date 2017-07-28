@@ -1787,6 +1787,15 @@ class StarOwnService{
     price_ = new base_logic::FundamentalValue(price);
   }
 
+  void set_meet_city(const std::string& value) {
+    meet_city_ = new base_logic::StringValue(value);
+  }
+  void set_stardate(const std::string& value) {
+    stardate_ = new base_logic::StringValue(value);
+  }
+  void set_enddate(const std::string& value) {
+    enddate_ = new base_logic::StringValue(value);
+  }
   base_logic::DictionaryValue* get() {
     value_ = new base_logic::DictionaryValue();
     if (starcode_ != NULL)
@@ -1797,6 +1806,12 @@ class StarOwnService{
       value_->Set(L"price", price_);
     if (name_ != NULL)
       value_->Set(L"name", name_);
+    if (meet_city_ != NULL)
+      value_->Set(L"meet_city", meet_city_);
+    if (stardate_!= NULL)
+      value_->Set(L"startdate", stardate_);
+    if (enddate_ != NULL)
+      value_->Set(L"enddate", enddate_);
     return value_;
   }
 
@@ -1806,6 +1821,9 @@ class StarOwnService{
 
   base_logic::StringValue* starcode_;           //
   base_logic::StringValue* name_;           //
+  base_logic::StringValue* meet_city_;           //
+  base_logic::StringValue* stardate_;           //
+  base_logic::StringValue* enddate_;           //
 
 
   base_logic::DictionaryValue* value_;

@@ -34,6 +34,9 @@ class StarSideDB {
 
   bool OnUpdStarMeetRel(const int64 meet_id, const int64 meet_type);
   bool OnUpdStarService(const std::string &starcode, const int64 mid, const int64 type);
+  bool OnUpdStarMeetDate(const std::string &starcode,
+        const std::string &meet_city, const std::string &stardate,
+        const std::string &enddate);
 
   bool OnProfitDetail(const int socket, const int64 session,
            const std::string &starcode, const int64 orderdate,

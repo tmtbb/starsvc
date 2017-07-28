@@ -101,6 +101,10 @@ class StarSideManager {
   void UpdStarService(const int socket, const int64 session, 
                     const std::string &starcode, const int64 mid, 
                     const int64 type); 
+  void UpdStarMeetDate(const int socket, 
+                    const int64 session, const std::string &starcode, 
+                    const std::string &meet_city, const std::string &stardate,
+                    const std::string &enddate); 
   //modify
   void GetOwnStarUser(const int socket, const int64 session, 
                    const std::string &starcode,int64 start, int64 count); 
