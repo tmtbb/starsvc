@@ -157,7 +157,7 @@ void CircleDB::CallOnUpdateCircle(void* param, base_logic::Value* value) {
   dict->Remove(L"sql", &value);
 }
 
-bool CircleDB::OnUpdateCircle(int64 uid, circle_logic::Circle& circle_info, 
+bool CircleDB::OnUpdateCircle(int64 uid, circle_logic::Circle& circle_info, int32 dec_time,
                       int64& result) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
@@ -181,6 +181,7 @@ bool CircleDB::OnUpdateCircle(int64 uid, circle_logic::Circle& circle_info,
       + "','" + t_sapprove
       + "','" + t_scomments
       + "','" + base::BasicUtil::StringUtil::Int64ToString(uid)
+      + "','" + base::BasicUtil::StringUtil::Int64ToString(dec_time)
       +"');";
   LOG_DEBUG2("sql:%s",sql.c_str()); 
   dict->SetString(L"sql", sql);

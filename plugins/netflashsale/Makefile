@@ -20,7 +20,7 @@ CUSTOM_THIRD_PATH = $(LIB_DIR)/mylib/third_party
 
 LINK_PATHS = -L./ -L/usr/local/libmemcached-1.0.7/lib/  -L/usr/lib64/mysql
 
-PLUGIN = $(SO_DIR)/flash/flash.so
+PLUGIN = $(SO_DIR)/netflash/netflash.so
 PLUGIN_TYPE = "LIB"
                 
 INCLUDE_PATHS = -I/usr/local/libmemcached-1.0.7/include \
@@ -74,26 +74,26 @@ clean :
 # function.
 
 
-flash_init.o : ./flash_init.cc ./flash_init.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./flash_init.cc $(INCLUDE_PATHS)
+netflash_init.o : ./netflash_init.cc ./netflash_init.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./netflash_init.cc $(INCLUDE_PATHS)
 
-flash_logic.o : ./flash_logic.cc ./flash_logic.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./flash_logic.cc $(INCLUDE_PATHS)
+netflash_logic.o : ./netflash_logic.cc ./netflash_logic.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./netflash_logic.cc $(INCLUDE_PATHS)
 
-flash_db.o : ./flash_db.cc ./flash_db.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./flash_db.cc $(INCLUDE_PATHS)
+netflash_db.o : ./netflash_db.cc ./netflash_db.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./netflash_db.cc $(INCLUDE_PATHS)
 
-share_memory.o : ./share_memory.cc ./share_memory.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./share_memory.cc $(INCLUDE_PATHS)
+flash_info.o : ../flashsale/flash_info.cc ../flashsale/flash_info.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ../flashsale/flash_info.cc $(INCLUDE_PATHS)
 
-flash_info.o : ./flash_info.cc ./flash_info.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./flash_info.cc $(INCLUDE_PATHS)
+share_memory.o : ../flashsale/share_memory.cc ../flashsale/share_memory.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ../flashsale/share_memory.cc $(INCLUDE_PATHS)
 
-flash_kafka.o : ./flash_kafka.cc ./flash_kafka.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./flash_kafka.cc $(INCLUDE_PATHS)
+netflash_kafka.o : ./netflash_kafka.cc ./netflash_kafka.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./netflash_kafka.cc $(INCLUDE_PATHS)
 
-schduler_engine.o : ./schduler_engine.cc ./schduler_engine.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./schduler_engine.cc $(INCLUDE_PATHS)
+netflash_schduler_engine.o : ./netflash_schduler_engine.cc ./netflash_schduler_engine.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./netflash_schduler_engine.cc $(INCLUDE_PATHS)
 
 trades_proto_buf.o : ./trades_proto_buf.cc ./trades_proto_buf.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./trades_proto_buf.cc $(INCLUDE_PATHS)
@@ -125,7 +125,7 @@ redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool
 time.o :  $(USER_DIR)/logic/time.cc $(USER_DIR)/logic/time.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/time.cc $(INCLUDE_PATHS)
 
-$(PLUGIN) : flash_init.o  flash_logic.o flash_db.o share_memory.o flash_info.o flash_kafka.o schduler_engine.o \
+$(PLUGIN) : netflash_init.o  netflash_logic.o netflash_db.o share_memory.o flash_info.o netflash_kafka.o netflash_schduler_engine.o \
 	star_infos.o time.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient \

@@ -140,7 +140,7 @@ private:
     Data* data_;
 };
 
-/*class PulishStar {
+class PulishStar {
 
 public:
     PulishStar();
@@ -170,10 +170,6 @@ public:
         data_->back_pic_ = pic;
     }
 
-    void set_work(const std::string& work) {
-        data_->work_ = work;
-    }
-
     void set_star_type(const int32 startype) {
         data_->star_type_ = startype;
     }
@@ -196,11 +192,11 @@ public:
     void set_publish_end_time(const int64 publishendtime) {
         data_->publish_end_time_ = publishendtime;
     }
-    void set_publish_price(const double publishprice) {
+    void set_publish_price_(const double publishprice) {
         data_->publish_price_ = publishprice;
     }
 
-    const std::string symbol() const {
+    const std::string& symbol() const {
         return data_->symbol_;
     }
 
@@ -214,10 +210,6 @@ public:
 
     const std::string& back_pic() const {
         return data_->back_pic_;
-    }
-
-    const std::string& work() const {
-        return data_->work_;
     }
 
     const int32 star_type() const {
@@ -258,7 +250,6 @@ private:
         std::string  name_;
         std::string  pic_;
         std::string  back_pic_;
-        std::string  work_;
         int32 star_type_;
         int32 publish_type_;
         int64 publish_time_;
@@ -281,128 +272,6 @@ private:
     };
 
     Data* data_;
-};
-*/
-
-class PulishStar {
-
-public:
-    PulishStar();
-
-    void Depcopy(const PulishStar& pulishstar);
-
-    ~PulishStar() {
-    }
-
-    void ValueSerialization(base_logic::DictionaryValue* dict);
-    void set_symbol(const char* symbol) {
-        strcpy(symbol_, symbol);
-    }
-
-    void set_name(const char* name) {
-        strcpy(name_, name);
-    }
-
-    void set_pic(const char* pic) {
-        strcpy(pic_, pic);
-    }
-
-    void set_home_pic(const char* pic) {
-        strcpy(back_pic_, pic);
-    }
-
-    void set_work(const char* work) {
-        strcpy(work_, work);
-    }
-
-    void set_star_type(const int32 startype) {
-        star_type_ = startype;
-    }
-
-    void set_publish_type(const int32 publishtype) {
-        publish_type_ = publishtype;
-    }
-
-    void set_publish_time(const int64 publishtime) {
-        publish_time_ = publishtime;
-    }
-
-    void set_publish_last_time(const int64 publishlasttime) {
-        publish_last_time_ = publishlasttime;
-    }
-
-    void set_publish_begin_time(const int64 publishbegintime) {
-        publish_begin_time_ = publishbegintime;
-    }
-    void set_publish_end_time(const int64 publishendtime) {
-        publish_end_time_ = publishendtime;
-    }
-    void set_publish_price(const double publishprice) {
-        publish_price_ = publishprice;
-    }
-
-    const char* symbol() const {
-        return symbol_;
-    }
-
-    const char* name() const {
-        return name_;
-    }
-
-    const char* pic() const {
-        return pic_;
-    }
-
-    const char* back_pic() const {
-        return back_pic_;
-    }
-
-    const char* work() const {
-        return work_;
-    }
-
-    const int32 star_type() const {
-        return star_type_;
-    }
-
-    const int32 publish_type() const {
-        return publish_type_;
-    }
-
-    const int64  publish_time() const {
-        return publish_time_;
-    }
-
-    const int64 publish_last_time() const {
-        return publish_last_time_;
-    }
-
-    const int64 publish_begin_time() const {
-        return publish_begin_time_;
-    }
-
-    const int64 publish_end_time() const {
-        return publish_end_time_;
-    }
-
-    const double publish_price() const {
-        return publish_price_;
-    }
-
-private:
-    char  symbol_[64];
-    char  name_[64];
-    char  pic_[128];
-    char  back_pic_[128];
-    char  work_[64];
-    int32 star_type_;
-    int32 publish_type_;
-    int64 publish_time_;
-    int64 publish_last_time_;
-    int64 publish_begin_time_;
-    int64 publish_end_time_;
-    double publish_price_;
-
 };
 
 

@@ -1,0 +1,17 @@
+//  Copyright (c) 2017-2018 The SWP Authors. All rights reserved.
+//  Created on: 2017年2月12日 Author: kerry
+//
+
+#ifndef STAR_NET_FLASH_ERRNO_H_
+#define STAR_NET_FLASH_ERRNO_H_
+
+enum NETFLASHSALEERRNO {
+	NO_DATABASE_ERR = -1700,
+	NO_HAVE_FLASH_STAR = -1701,
+	NO_PUB_STAR_NO_TIME_ERR = -1702,
+	NO_USER_NO_EXIST_ERR = -1703,
+	NO_USER_BALANCE_ERR = -1704,
+	NO_GET_STAR_EXPERIENCE = -1705
+};
+
+#endif

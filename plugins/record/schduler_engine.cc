@@ -844,6 +844,60 @@ void RecordManager::GetUserPosition(const int64 uid, const int64 start_pan,
     }
 
 }
+//获取明星委托
+void RecordManager::GetStarPosition(const int socket, const int64 session, const int32 reserved,
+                                const std::string& symbol, const int32 count) {
+    bool r = false;
+    int32 t_count = 0;
+    std::list<star_logic::TradesPosition> trades_position_list;
+    {
+        base_logic::RLockGd lk(lock_);
+        t_count = 0;
+        TRADES_POSITION_LIST position_list;
+        r = base::MapGet<SYMBOL_TRADES_POSITION_MAP,SYMBOL_TRADES_POSITION_MAP::iterator, std::string, TRADES_POSITION_LIST>
+            (record_cache_->symbol_sell_trades_position_, symbol, position_list);
+        TRADES_POSITION_LIST::iterator it = position_list.begin();
+        for(; it != position_list.end() && t_count < count; ++it) {
+            trades_position_list.push_back(*it);
+            t_count++;
+        }
+
+        t_count = 0;
+        TRADES_POSITION_LIST buy_position_list;
+        r = base::MapGet<SYMBOL_TRADES_POSITION_MAP,SYMBOL_TRADES_POSITION_MAP::iterator, std::string, TRADES_POSITION_LIST>
+            (record_cache_->symbol_buy_trades_position_, symbol, buy_position_list);
+        it = buy_position_list.begin();
+        for(; it != buy_position_list.end() && t_count < count; ++it) {
+            trades_position_list.push_back(*it);
+            t_count++;
+        }
+    }
+
+    trades_position_list.sort(star_logic::TradesPosition::price_after);
+    if (trades_position_list.size() <= 0) {
+        send_error(socket, ERROR_TYPE,NO_HAVE_POSITION_DATA,session);
+        return;
+    }
+
+    SendFansPosition(socket, session, reserved, 0, count,
+                    trades_position_list);
+
+}
+
+//获取所有明星委托，用于弹幕
+void RecordManager::GetAllPosition(const int socket, const int64 session, const int32 reserved,
+                                const int32 count) {
+    int32 t_count = 0;
+    std::list<star_logic::TradesPosition> trades_position_list;
+    TRADES_POSITION_MAP::iterator it = record_cache_->trades_positions_.begin();
+    for(; it != record_cache_->trades_positions_.end() && t_count < count; ++it){
+        trades_position_list.push_back(it->second);
+        t_count++;
+    }
+
+    SendFansPosition(socket, session, reserved, 0, count,
+                    trades_position_list);
+}
 
 
 void RecordManager::DistributionRecord() {
