@@ -148,6 +148,11 @@ bool StarSidelogic::OnStarSideMessage(struct server *srv, const int socket,
         OnGetOwnStarUser(srv, socket, packet);
         break;
     }
+    case R_STARSIDE_UPDSTARMEETDATE: //修改明星约见日期
+    {
+        OnUpdStarMeetDate(srv, socket, packet);
+        break;
+    }
 
     /*
     case R_STARSIDE_RECHARGE: {
@@ -481,7 +486,7 @@ bool StarSidelogic::OnUpdStarService(struct server* srv, int socket,
   std::string starcode ; 
   int64 mid = 4; //4同意
   
-  if (!packet_control->body_->GetString(L"starcode", &starcode))
+  if (!packet_control->body_->GetString(L"starcode", &starcode) )
   {
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
@@ -505,4 +510,45 @@ bool StarSidelogic::OnUpdStarService(struct server* srv, int socket,
   
   return true;
 }
+
+bool StarSidelogic::OnUpdStarMeetDate(struct server* srv, int socket,
+                                     struct PacketHead *packet) {
+  
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  std::string starcode , meet_city, stardate, enddate; 
+  
+  if (!packet_control->body_->GetString(L"starcode", &starcode) )
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  if (!packet_control->body_->GetString(L"enddate", &enddate))
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  if (!packet_control->body_->GetString(L"startdate", &stardate) )
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  if (!packet_control->body_->GetString(L"meet_city", &meet_city) )
+  {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  starside_logic::StarSideEngine::GetSchdulerManager()->UpdStarMeetDate(
+      socket, packet->session_id, starcode, meet_city, stardate, enddate);
+  
+  
+  return true;
+}
+
 }  // namespace trades_logic

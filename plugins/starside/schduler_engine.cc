@@ -337,6 +337,26 @@ void StarSideManager::UpdStarService(const int socket,
 
 }
 
+void StarSideManager::UpdStarMeetDate(const int socket, 
+                    const int64 session, const std::string &starcode, 
+                    const std::string &meet_city, const std::string &stardate,
+                    const std::string &enddate) {
+    
+   
+  bool r = starside_db_->OnUpdStarMeetDate(starcode, meet_city, stardate, enddate);
+
+  struct PacketControl packet_control;
+  MAKE_HEAD(packet_control, S_STARSIDE_UPDSTARMEETDATE , 1, 0, session, 0);
+  base_logic::DictionaryValue* ret = new base_logic::DictionaryValue();
+  base_logic::FundamentalValue* result = new base_logic::FundamentalValue(1);
+  ret->Set(L"result",result);
+  packet_control.body_ = ret;
+
+  send_message(socket, &packet_control);
+  
+
+}
+
 void StarSideManager::SendStarSideRecharge(const int socket, const int64 session,
                                          const int32 revered, const int64 uid,
                                          const int32 status, const int64 pos,
@@ -827,6 +847,9 @@ void StarSideManager::SendStarOwnService(const int socket,
     net_item->set_starcode(item.starcode());
     net_item->set_mid(item.mid());
     net_item->set_name(item.name());
+    net_item->set_meet_city(item.meet_city());
+    net_item->set_stardate(item.stardate());
+    net_item->set_enddate(item.enddate());
     
 
     all_net_starownservice.set_unit(net_item->get());

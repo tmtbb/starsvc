@@ -90,6 +90,43 @@ bool StarSideDB::OnUpdStarService(const std::string &starcode,
   
   return true;
 }
+
+bool StarSideDB::OnUpdStarMeetDate(const std::string &starcode,
+        const std::string &meet_city, const std::string &stardate,
+        const std::string &enddate)
+{ 
+    
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  //base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+  sql = "call proc_UpdStarServiceMeetDate('"
+      + starcode + "','" + meet_city
+      + "','" + stardate + "','" + enddate 
+      + "');";
+  dict->SetString(L"sql", sql);
+  //r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+   //                           CallProfitDetail);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
+  if (!r)
+    return false;
+
+  {
+      /*
+    dict->GetDictionary(L"resultvalue", &info_value);
+    info_value->GetReal(L"yeslast_price", &lastprice);
+    info_value->GetReal(L"price", &dayprice);
+    info_value->GetReal(L"profit", &profit);
+    */
+
+  }
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  
+  return true;
+}
 bool StarSideDB::OnUpdStarMeetRel(const int64 meet_id, const int64 meet_type)
 { 
     
@@ -645,6 +682,15 @@ void StarSideDB::CallHistorStarOwnService(void* param, base_logic::Value* value)
 
       if (rows[2] != NULL)
         info_value->SetString(L"name", (rows[2]));
+
+      if (rows[3] != NULL)
+        info_value->SetString(L"meet_city", (rows[3]));
+
+      if (rows[4] != NULL)
+        info_value->SetString(L"stardate", (rows[4]));
+
+      if (rows[5] != NULL)
+        info_value->SetString(L"enddate", (rows[5]));
 
       list->Append((base_logic::Value *) (info_value));
     }

@@ -179,6 +179,9 @@ void StarOwnService::ValueSerialization(base_logic::DictionaryValue* dict) {
   dict->GetString(L"name", &data_->name_); //
   
   dict->GetString(L"starcode", &data_->starcode_); //
+  dict->GetString(L"meet_city", &data_->meet_city_); //
+  dict->GetString(L"stardate", &data_->stardate_); //
+  dict->GetString(L"enddate", &data_->enddate_); //
 }
 //TOwnStarUser
 
