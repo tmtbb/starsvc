@@ -175,6 +175,8 @@ public:
               , m_picUrl(NULL)
               , m_approveList(NULL)
               , m_commentList(NULL)
+              , m_approveDecTime(NULL)
+              , m_commentDecTime(NULL)
               {}
 
   ~CircleReply() {
@@ -187,6 +189,14 @@ public:
 
   void SetHeadUrl(const std::string& picurl) {
     m_headUrl = new base_logic::StringValue(picurl);
+  }
+
+  void SetApproveDecTime(const int32 i) {
+    m_approveDecTime = new base_logic::FundamentalValue(i);
+  }
+
+  void SetCommentDecTime(const int32 i) {
+    m_commentDecTime = new base_logic::FundamentalValue(i);
   }
 
   void SetApproveList(base_logic::ListValue* dic) {
@@ -225,6 +235,10 @@ public:
       m_value->Set(L"symbol_name", m_name);
     if(m_headUrl != NULL)
       m_value->Set(L"head_url", m_headUrl);
+    if(m_approveDecTime != NULL)
+      m_value->Set(L"approve_dec_time", m_approveDecTime);
+    if(m_commentDecTime != NULL)
+      m_value->Set(L"comment_dec_time", m_commentDecTime);
 
     return m_value;
   }
@@ -240,6 +254,8 @@ private:
   base_logic::StringValue* m_picUrl;
   base_logic::ListValue* m_approveList;
   base_logic::ListValue* m_commentList;
+  base_logic::FundamentalValue* m_approveDecTime;
+  base_logic::FundamentalValue* m_commentDecTime;
   base_logic::DictionaryValue* m_value;
 
 };

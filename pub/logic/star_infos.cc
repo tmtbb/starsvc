@@ -509,6 +509,8 @@ void StarInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
     dict->GetString(L"home_button_pic", &data_->home_button_pic_);
     dict->GetBigInteger(L"add_time", &data_->add_time_);
     dict->GetInteger(L"publish_type", &data_->publish_type_);
+    dict->GetInteger(L"approval_time", &data_->approval_dec_time_);
+    dict->GetInteger(L"comment_time", &data_->comment_dec_time_);
 }
 ///TOwnStar
 
