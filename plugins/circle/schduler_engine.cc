@@ -171,9 +171,16 @@ bool CircleManager::ApprovalCircle(const int socket, const int64 session, const 
     return false;
   }
 
+  star_logic::StarInfo star;
+  r = manager_schduler_engine_->GetStarInfoSchduler(symbol, &star);
+  if(!r){
+    send_error(socket, ERROR_TYPE, NO_STAR_NO_EXIST, session);
+    return false;
+  }
+
   t_circle->AddApproveId(uid);
   int64 result = 1;
-  if(!circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
+  if(!circle_db_->OnUpdateCircle(uid, *t_circle, star.approval_dec_time(), result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     t_circle->DelApprovId();
     return false;
@@ -213,6 +220,13 @@ bool CircleManager::UserCommentCircle(const int socket, const int64 session, con
     return false;
   }
 
+  star_logic::StarInfo star;
+  r = manager_schduler_engine_->GetStarInfoSchduler(symbol, &star);
+  if(!r){
+    send_error(socket, ERROR_TYPE, NO_STAR_NO_EXIST, session);
+    return false;
+  }
+
   int64 lastpriority = 1 + t_circle->GetLastPriority();
   circle_logic::Scomment scomment;
   scomment.uid = uid;
@@ -222,7 +236,7 @@ bool CircleManager::UserCommentCircle(const int socket, const int64 session, con
   t_circle->AddComment(scomment);
 
   int64 result = 1;
-  if(!circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
+  if(!circle_db_->OnUpdateCircle(uid, *t_circle, star.comment_dec_time(), result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     t_circle->DelComment();
     return false;
@@ -269,6 +283,13 @@ bool CircleManager::StarReplyCircle(const int socket, const int64 session, const
     return false;
   }*/
 
+  star_logic::StarInfo star;
+  r = manager_schduler_engine_->GetStarInfoSchduler(symbol, &star);
+  if(!r){
+    send_error(socket, ERROR_TYPE, NO_STAR_NO_EXIST, session);
+    return false;
+  }
+
   int64 lastpriority = 1 + t_circle->GetLastPriority();
   circle_logic::Scomment scomment;
   scomment.uid = uid;
@@ -278,7 +299,7 @@ bool CircleManager::StarReplyCircle(const int socket, const int64 session, const
   t_circle->AddComment(scomment);
 
   int64 result = 1;
-  if(!circle_db_->OnUpdateCircle(uid, *t_circle, result)){ //可优化
+  if(!circle_db_->OnUpdateCircle(uid, *t_circle, star.comment_dec_time(), result)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
     t_circle->DelComment();
     return false;
@@ -334,10 +355,14 @@ bool CircleManager::GetSymbolAllCircle(const int socket, const int64 session, co
       if (!r) {
         circlereply->SetName("");
         circlereply->SetHeadUrl("");
+        circlereply->SetApproveDecTime(1);
+        circlereply->SetCommentDecTime(1);
       }
       else{
         circlereply->SetName(star.name());
         circlereply->SetHeadUrl(star.pic());
+        circlereply->SetApproveDecTime(star.approval_dec_time());
+        circlereply->SetCommentDecTime(star.comment_dec_time());
       }
       
       
@@ -387,10 +412,14 @@ bool CircleManager::GetAllCircle(const int socket, const int64 session, const in
       if (!r) {
         circlereply->SetName("");
         circlereply->SetHeadUrl("");
+        circlereply->SetApproveDecTime(1);
+        circlereply->SetCommentDecTime(1);
       }
       else{
         circlereply->SetName(star.name());
         circlereply->SetHeadUrl(star.pic());
+        circlereply->SetApproveDecTime(star.approval_dec_time());
+        circlereply->SetCommentDecTime(star.comment_dec_time());
       }
       
       circlereplylist.set_unit(circlereply->get());
