@@ -20,6 +20,7 @@ MYSQL_Pool::MYSQL_Pool()
 
 void MYSQL_Pool::Init(std::list<base::ConnAddr>& addrlist,
                       const int32 db_conn_num/* = 5*/) {
+    LOG_DEBUG2("MYSQL_Pool::Init size[%d]", db_conn_num);
   addrlist_ = addrlist;
 
   bool r = false;
