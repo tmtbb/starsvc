@@ -13,6 +13,8 @@ CheckSum	SHA1(AppSecret + Nonce + CurTime),三个参数拼接的字符串，进�
 */
 namespace im_process {
 
+ImProcess *ImProcess::instance_ = NULL;
+
 
  ImProcess::ImProcess(){
  	if(!init())
@@ -40,6 +42,17 @@ bool ImProcess::init(){
 	sqlengine = new im_mysql::Im_Mysql(config);
 	return true;
 }
+ImProcess *ImProcess::GetInstance() {
+  if (instance_ == NULL)
+    instance_ = new ImProcess();
+  return instance_;
+}
+
+void ImProcess::FreeInstance() {
+  delete instance_;
+  instance_ = NULL;
+}
+
 std::string sumHash1(std::string strin)  
 {  
     SHA_CTX c;  

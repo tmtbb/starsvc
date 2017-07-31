@@ -19,9 +19,10 @@ Im_Mysql::Im_Mysql(config::FileConfig* config) {
 
 Im_Mysql::~Im_Mysql() {
   if (mysql_engine_) {
+//    mysql_engine_->Release();
     delete mysql_engine_;
+    mysql_engine_ = NULL;
   }
-  mysql_engine_ = NULL;
 }
 void Im_Mysql::Callgetuserinfofromaccid(void* param, base_logic::Value* value){
 	base_storage::DBStorageEngine* engine =

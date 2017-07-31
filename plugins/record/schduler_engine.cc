@@ -768,8 +768,9 @@ void RecordManager::GetSymbolPosition(SYMBOL_TRADES_POSITION_MAP& symbol_trades_
         TRADES_POSITION_LIST::iterator it = position_list.begin();
         for(; it != position_list.end() && t_count < count; it++) {
             star_logic::TradesPosition position = (*it);
-            //只返回委托中的数据
-            if (position.handle() == POSITION_HANDLE || position.handle() == MATCHES_HANDLE) {
+            //只返回委托中和委托成功的数据
+            if (position.handle() == POSITION_HANDLE || position.handle() == MATCHES_HANDLE
+                || position.handle() == COMPLETE_HANDLE) {
                 t_start++;
                 trades_position_list.push_back(position);
             }

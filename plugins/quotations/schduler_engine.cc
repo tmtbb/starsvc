@@ -320,7 +320,7 @@ void QuotationsManager::SendSymbolOne(const int socket,
       star_logic::Quotations temp_quotations;
 
       std::string key;
-      key = "star_index:"+ star.symbol();
+      key = "star_index:"+ star.weibo_index_id();
       //读取上一分钟报价
       bool r = base::MapGet<LAST_QUOTATIONS_ALL_MAP, LAST_QUOTATIONS_ALL_MAP::iterator,
       int32, LAST_QUOTATIONS_MAP>(quotations_cache_->last_quotations_map_,
@@ -403,7 +403,7 @@ void QuotationsManager::SendQuotationsList(const int socket, const int64 session
       star_logic::Quotations temp_quotations;
 
       std::string key;
-      key = "star_index:"+ star.symbol();
+      key = "star_index:"+ star.weibo_index_id();
       //读取上一分钟报价
       r = base::MapGet<LAST_QUOTATIONS_ALL_MAP, LAST_QUOTATIONS_ALL_MAP::iterator,
       int32, LAST_QUOTATIONS_MAP>(quotations_cache_->last_quotations_map_,
@@ -598,9 +598,7 @@ void QuotationsManager::SendRealTime(const int socket, const int64 session,
 
         //查找对应的行情数据
         std::string key = "star_index:" + real_time_unit.symbol();
-        LOG_DEBUG2("====9999 star_index:[%s]", key.c_str());
         GetRealTime(real_time_unit.atype(), key, &quotations);
-        LOG_DEBUG2("====8888 quotations.current_unix_time[%d]", quotations.current_unix_time());
         if (quotations.current_unix_time() <= 0)
             continue;
         net_reply::RealTimeUnit* r_real_time_unit = new net_reply::RealTimeUnit;

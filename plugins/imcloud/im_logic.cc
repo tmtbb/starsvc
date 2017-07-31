@@ -44,6 +44,8 @@ bool Imlogic::Init() {
     return false;
   }
   sqlengine = new im_mysql::Im_Mysql(config);
+
+  im_process::ImProcess::GetInstance();
   return true;
 }
 
@@ -183,8 +185,8 @@ bool Imlogic::OnStarSendMessage(struct server* srv,int socket ,struct PacketHead
   
 	if(times <= 0){
 		//删除云信关联关系
-		im_process::ImProcess im_pro;
-		im_pro.delfriend(accid,faccid);
+		//im_process::ImProcess im_pro;
+		im_process::ImProcess::GetInstance()->delfriend(accid,faccid);
   }
   LOG_DEBUG2("own seconds:%ld.",times);
   struct PacketControl packet_reply;
@@ -222,9 +224,9 @@ bool Imlogic::OnEditFriendInfo(struct server* srv,int socket ,struct PacketHead*
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	return false;
   }
-  im_process::ImProcess im_pro;
+  //im_process::ImProcess im_pro;
 
-  r = im_pro.editfriendinfo(accid,faccid,alias,ex);
+  r = im_process::ImProcess::GetInstance()->editfriendinfo(accid,faccid,alias,ex);
   if(!r){
 	send_error(socket, ERROR_TYPE, NO_EDIT_FRIEND_INFO_ERR, packet->session_id);
 	return false;
@@ -259,10 +261,10 @@ bool Imlogic::OnGetFriendList(struct server* srv,int socket ,struct PacketHead* 
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
 	return false;
   }
-  im_process::ImProcess im_pro;
+  //im_process::ImProcess im_pro;
 
   base_logic::DictionaryValue ret;
-  r = im_pro.getfriendlist(accid,createtime,ret);
+  r = im_process::ImProcess::GetInstance()->getfriendlist(accid,createtime,ret);
   if(!r){
 	send_error(socket, ERROR_TYPE, NO_GET_FRIEND_LIST_ERR, packet->session_id);
 	return false;
@@ -299,8 +301,8 @@ bool Imlogic::OnDelCloudFriend(struct server* srv,int socket ,struct PacketHead*
 	send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
-  im_process::ImProcess im_pro;
-  r = im_pro.delfriend(accid,faccid);
+  //im_process::ImProcess im_pro;
+  r = im_process::ImProcess::GetInstance()->delfriend(accid,faccid);
   if(!r){
 	send_error(socket, ERROR_TYPE, NO_DEL_FRIEND_ERR, packet->session_id);
     return false;
@@ -339,8 +341,8 @@ bool Imlogic::OnAddCloudFriend(struct server* srv,int socket ,struct PacketHead*
     return false;
   }
 
-  im_process::ImProcess im_process;
-  r = im_process.addfriend(accid,faccid,msg,type);
+  //im_process::ImProcess im_process;
+  r = im_process::ImProcess::GetInstance()->addfriend(accid,faccid,msg,type);
   if(!r){
 	send_error(socket, ERROR_TYPE, NO_ADD_FRIEND, packet->session_id);
     return false;
@@ -386,10 +388,10 @@ bool Imlogic::OnGetTokenImcloud(struct server* srv,int socket ,struct PacketHead
 
   LOG_MSG2("getmessage-----:%s,%s",tokencode.name().c_str(),tokencode.accid().c_str());
   */
-  im_process::ImProcess tokenfun;
-  std::string tokenvalue = tokenfun.gettoken(name,phone);
+  //im_process::ImProcess tokenfun;
+  std::string tokenvalue = im_process::ImProcess::GetInstance()->gettoken(name,phone);
   if(tokenvalue.length()<=0){
-    tokenvalue = tokenfun.refreshtoken(phone);
+    tokenvalue = im_process::ImProcess::GetInstance()->refreshtoken(phone);
   }
 
   if(tokenvalue.length() > 0){
@@ -422,8 +424,8 @@ bool Imlogic::OnRefreshTokenImcloud(struct server* srv,int socket ,struct Packet
   struct PacketControl* packet_recv = (struct PacketControl*) (packet);
   tokencode.set_http_packet(packet_recv->body_);
 
-  im_process::ImProcess tokenfun;
-  std::string tokenvalue = tokenfun.refreshtoken(tokencode.accid());
+  //im_process::ImProcess tokenfun;
+  std::string tokenvalue = im_process::ImProcess::GetInstance()->refreshtoken(tokencode.accid());
   if(sizeof(tokenvalue)<=0){
 	  send_error(socket, ERROR_TYPE, NO_REFRESH_TOKEN, packet->session_id);
 	  return false;
