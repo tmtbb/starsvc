@@ -24,8 +24,8 @@ namespace record_logic {
 #define R_ALL_ORDER_RECORD    HISTORY_TYPE * 1000 + 9
 #define S_ALL_ORDER_RECORD    HISTORY_TYPE * 1000 + 10
 //粉丝委托
-#define R_FANS_POSITION      HISTORY_TYPE * 1000 + 11
-#define S_FANS_POSITION      HISTORY_TYPE * 1000 + 12
+#define R_FANS_POSITION      HISTORY_TYPE * 1000 + 25
+#define S_FANS_POSITION      HISTORY_TYPE * 1000 + 26
 //粉丝排行榜
 #define R_FANS_ORDER         HISTORY_TYPE * 1000 + 15
 #define S_FANS_ORDER         HISTORY_TYPE * 1000 + 16

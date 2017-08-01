@@ -26,8 +26,12 @@ class ImProcess {
   ~ImProcess();
  private:
   im_mysql::Im_Mysql *sqlengine;
+  static ImProcess *instance_;
   bool init();
  public:
+  static ImProcess *GetInstance();
+  static void FreeInstance();
+
   std::string gettoken(std::string accid,std::string name);
   std::string refreshtoken(std::string accid);
 

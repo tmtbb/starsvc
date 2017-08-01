@@ -36,7 +36,8 @@ bool DataMYSQLEngine::WriteData(const int32 type, base_logic::Value* value) {
   } while (0);
 
   // engine->Release();
-  db_pool_.DBConnectionPush(engine);
+  if(engine != NULL)
+      db_pool_.DBConnectionPush(engine);
   return true;
 }
 
@@ -73,7 +74,8 @@ bool DataMYSQLEngine::ReadData(const int32 type, base_logic::Value* value,
       storage_get(reinterpret_cast<void*>(engine), value);
     }
   } while (0);
-  db_pool_.DBConnectionPush(engine);
+  if(engine != NULL)
+      db_pool_.DBConnectionPush(engine);
   return r;
 }
 
