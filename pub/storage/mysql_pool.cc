@@ -66,8 +66,8 @@ void MYSQL_Pool::DBConnectionPush(base_storage::DBStorageEngine* engine) {
 }
 
 base_storage::DBStorageEngine* MYSQL_Pool::DBConnectionPop() {
-  if (db_conn_pool_.size() <= 0)
-    return NULL;
+//  if (db_conn_pool_.size() <= 0)
+//    return NULL;
   base_logic::WLockGd lk(db_pool_lock_);
   if (db_conn_pool_.size() <= 0)
     return NULL;

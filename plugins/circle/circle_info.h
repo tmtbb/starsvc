@@ -81,11 +81,13 @@ public:
   }
 
   void DelApprovId(){
-    m_approveList.pop_back();
+    if(!m_approveList.empty())
+        m_approveList.pop_back();
   }
 
   void DelComment(){
-    return m_commentList.pop_back();
+    if(!m_commentList.empty())
+        m_commentList.pop_back();
   }
 
 

@@ -69,11 +69,11 @@ void NetflashManager::ClearData() {
   publish_star_map_.clear();
   netflash_task_list_.clear();
   netflash_task_map_.clear();
-  STAR_EXPER_MAP::iterator it = star_experience_map_.begin();
-  for(; it != star_experience_map_.end(); ++it){
-    it->second.Clear();
-  }
-  star_experience_map_.clear();
+//  STAR_EXPER_MAP::iterator it = star_experience_map_.begin();
+//  for(; it != star_experience_map_.end(); ++it){
+//    it->second.Clear();
+//  }
+//  star_experience_map_.clear();
 }
 
 void NetflashManager::CreateTimeTask() {
@@ -92,12 +92,12 @@ void NetflashManager::CreateTimeTask() {
     netflash_task_list_.push_back(time_task);
     netflash_task_map_[starpub.symbol()] = time_task;
 
-    base_logic::DictionaryValue ret_list;
-    if(!netflash_db_->OnGetStarExperience(starpub.symbol(),ret_list)){
-      LOG_MSG2("DB star[%s] getstarexperience error.", starpub.symbol());
-      continue;
-    }
-    star_experience_map_[starpub.symbol()] = ret_list;
+//    base_logic::DictionaryValue ret_list;
+//    if(!netflash_db_->OnGetStarExperience(starpub.symbol(),ret_list)){
+//      LOG_MSG2("DB star[%s] getstarexperience error.", starpub.symbol());
+//      continue;
+//    }
+//    star_experience_map_[starpub.symbol()] = ret_list;
   }
 }
 

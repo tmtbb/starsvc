@@ -89,6 +89,10 @@ bool Searchlogic::OnSearchMessage(struct server *srv, const int socket,
     default:
         break;
     }
+  if(packet){
+      delete packet;
+      packet = NULL;
+  }
     return true;
 }
 

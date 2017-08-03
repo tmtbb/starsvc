@@ -117,6 +117,10 @@ bool Quotationslogic::OnQuotationsMessage(struct server *srv, const int socket,
         break;
     }
   }
+  if(packet){
+      delete packet;
+      packet = NULL;
+  }
   return true; /////////////////
 }
 

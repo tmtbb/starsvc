@@ -92,6 +92,7 @@ bool Banklogic::OnBankMessage(struct server *srv, const int socket,
     send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
     return false;
   }
+  
 try
 {
   switch (packet->operate_code) {
@@ -129,6 +130,15 @@ catch (...)
     LOG_DEBUG2("catch...... packet_length %d",packet->packet_length);
     LOG_DEBUG2("catch...... packet_length %d",packet->packet_length);
 }
+  if(packet && len == PACKET_HEAD_LENGTH){
+      delete packet;
+      packet = NULL;
+  }
+  else if (packet && len > PACKET_HEAD_LENGTH) {
+      struct PacketControl* packet_control = (struct PacketControl*) (packet);
+      delete packet_control;
+      packet = NULL;
+  }
   return true;
 }
 

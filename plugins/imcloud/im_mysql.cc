@@ -266,8 +266,7 @@ bool Im_Mysql::ReduceTalkingtimes(std::string& phone,std::string& starcode,int64
 	bool r4 = ret->GetString(L"accid", &accid);
 	bool r5 = ret->GetString(L"faccid", &faccid);
 	if(r1 && r2 && r3 && r4 && r5){
-		if(result == 1)
-			return true;
+        return true;
 	}
 	return false;
 }

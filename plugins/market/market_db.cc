@@ -75,6 +75,7 @@ bool Market_Mysql::getmarketstartransfer(const std::string& code,int64 startnum,
 	dic->SetBigInteger(L"endnum",endnum);
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetmarketstartransfer);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
 	int64 result;
@@ -140,8 +141,13 @@ bool Market_Mysql::getmarketstarseek(const std::string& code,int64 startnum,
 	dic->SetBigInteger(L"endnum",endnum);
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetmarketstarseek);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+	/*if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -162,8 +168,14 @@ bool Market_Mysql::addoptionstar(const std::string& phone,const std::string& sta
 	dic->SetString(L"sql", sql);
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),calladdoptionstar);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	DicValue* resultvalue = new DicValue();
 	if(!(dic->GetDictionary(L"resultvalue",&resultvalue))){
 		return false;
@@ -210,8 +222,14 @@ bool Market_Mysql::getoptionstarlist(const std::string& code,int64 startnum,
 	dic->SetBigInteger(L"endnum",endnum);
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetoptionstarlist);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -294,8 +312,14 @@ bool Market_Mysql::getstarachive(const std::string& code,DicValue &ret){
 	dic->SetString(L"sql", sql);
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetstarachive);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -339,8 +363,14 @@ bool Market_Mysql::getstarexperience(const std::string& code,DicValue &ret){
 	dic->SetString(L"sql", sql);
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetstarexperience);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -364,8 +394,14 @@ bool Market_Mysql::searchstarlist(const std::string& code,DicValue &ret){
 	dic->SetString(L"sql", sql);
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callsearchstarlist);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -414,8 +450,14 @@ bool Market_Mysql::getstarbrief(const std::string& code,DicValue &ret){
 	LOG_MSG2("====sql=====================%s",sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetstarbrief);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	base_logic::DictionaryValue* result = NULL;
 	r = dic->GetDictionary(L"resultvalue",&result);
 	if(result == NULL)
@@ -561,8 +603,14 @@ bool Market_Mysql::getmarketstarlist(int64& type,DicValue &ret,int64& startnum,i
 	dic->SetBigInteger(L"endnum",endnum);
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetmarketstarlist);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*jjj
+	if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -644,8 +692,14 @@ bool Market_Mysql::getmarkettypes(DicValue &ret){
 
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),callgetmarkettypes);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -704,8 +758,14 @@ bool Market_Mysql::getstarnews(const std::string& code,const std::string& name,D
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetstarnewsinfo);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -728,8 +788,14 @@ bool Market_Mysql::getorderstarinfo(const std::string& code,const std::string& p
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetorderstarinfo);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -843,8 +909,14 @@ bool Market_Mysql::getbannerinfo(const std::string& code,DicValue &ret_result,in
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetbannerinfo);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+	  return false;
+	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -903,8 +975,15 @@ bool Market_Mysql::getstarinfo(const std::string& code,const std::string& phone,
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetinfo);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*
+	if (!r) {
+        /*
+	  return false;
+	}
+    / */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -985,8 +1064,14 @@ bool Market_Mysql::addstarinfo(const std::string& code,
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callpublicback);
 	if (!r) {
+      if (dic) delete dic;
 	  return false;
 	}
+    /*8
+	if (!r) {
+	  return false;
+	}
+    */
 	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	int64 result;
 	dic->GetDictionary(L"resultvalue",&ret);
@@ -1078,8 +1163,13 @@ bool Market_Mysql::OnStarsInfo(std::list<star_logic::StarInfo>* list) {
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallStarInfo);
-  if (!r)
-    return false;
+	if (!r) {
+      if (dict) delete dict;
+	  return false;
+	}
+  //if (!r)
+    // return false;
+    
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::StarInfo item;
@@ -1175,7 +1265,10 @@ bool Market_Mysql::OnStarsbrief(std::list<star_logic::StarBrief>* list) {
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallStarbrief);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::StarBrief item;

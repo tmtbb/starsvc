@@ -140,6 +140,10 @@ bool Imlogic::OnImMessage(struct server *srv, const int socket,
     default:
       break;
   }
+  if(packet){
+      delete packet;
+      packet = NULL;
+  }
 
   return true;
 }

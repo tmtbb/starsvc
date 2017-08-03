@@ -39,7 +39,7 @@ void CircleDB::CallGetAllCircleInfo(void* param, base_logic::Value* value) {
           info_value->SetString(L"star_code", rows[1]);
 
       if (rows[2] != NULL)
-          info_value->SetBigInteger(L"create_time", atoi(rows[2]));
+          info_value->SetInteger(L"create_time", atoi(rows[2]));
 
       if (rows[3] != NULL)
           info_value->SetString(L"content", rows[3]);
@@ -72,7 +72,12 @@ bool CircleDB::OnFetchAllCircleInfo(base_logic::ListValue*& ret_list) {
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetAllCircleInfo);
   if (!r)
+  {
+    if (dict) delete dict;
       return false;
+  }
+  //if (!r)
+   //   return false;
   
   r = dict->GetList(L"resultvalue", &ret_list);
 
@@ -106,8 +111,13 @@ bool CircleDB::OnCreateCircleOrder(circle_logic::Circle& circle_info) {
       +"');";
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
+  //if (!r)
+   //   return false;
   if (!r)
+  {
+    if (dict) delete dict;
       return false;
+  }
 
   if (dict) {
       delete dict;
@@ -126,8 +136,13 @@ bool CircleDB::OnDeleteCircle(const int64 circleid) {
       +"');";
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
+  //if (!r)
+   //   return false;
   if (!r)
+  {
+    if (dict) delete dict;
       return false;
+  }
 
   if (dict) {
       delete dict;
@@ -187,7 +202,12 @@ bool CircleDB::OnUpdateCircle(int64 uid, circle_logic::Circle& circle_info, int3
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallOnUpdateCircle);
   if (!r)
+  {
+    if (dict) delete dict;
       return false;
+  }
+  //if (!r)
+   //   return false;
 
   dict->GetBigInteger(L"resultvalue", &result);
   switch (result)
@@ -241,7 +261,12 @@ bool CircleDB::OnGetUserName(const int64 uid, base_logic::DictionaryValue*& dict
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetUserName);
   if (!r)
+  {
+    if (dict) delete dict;
       return false;
+  }
+  //if (!r)
+   //   return false;
   
   return true;
 }

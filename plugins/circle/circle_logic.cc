@@ -198,7 +198,7 @@ bool Circlelogic::OnTimeout(struct server *srv, char *id, int opcode,
   {
   case TIME_DISTRIBUTION_TASK:
   {
-    //circle_logic::CircleEngine::GetSchdulerManager()->TimeStarEvent();
+    //circle_logic::CircleEngine::GetSchdulerManager()->InitData();
   }
   default:
       break;

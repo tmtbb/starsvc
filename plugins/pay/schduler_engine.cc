@@ -107,7 +107,12 @@ bool PayManager::OnAliPayCreateOrder(const int socket, const int64 session,
     return r;
   }
   pay_logic::AliPayContent  content;
-  content.set_total_amount(base::BasicUtil::StringUtil::DoubleToString(price));
+  //LOG_ERROR2("total_amount %lf", price);
+  //LOG_ERROR2("total_amount %s", base::BasicUtil::StringUtil::DoubleToString(price).c_str());
+  std::string tmp =  base::BasicUtil::StringUtil::DoubleToString(price);
+  if (price < 1 && tmp.length() && tmp[0] == '.')
+      tmp = "0" + tmp;
+  content.set_total_amount(tmp);
   content.set_product_code( "QUICK_MSECURITY_PAY");
   content.set_out_trade_no(base::BasicUtil::StringUtil::Int64ToString(rid));
   content.set_subject(title);

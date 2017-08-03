@@ -30,7 +30,10 @@ bool SearchDB::OnGetStarSearchDetail(std::list<star_logic::StarInfo>& list) {
     r = mysql_engine_->ReadData(0, (base_logic::Value*)(dict),
                                 CallGetSearchDetail);
     if (!r)
+    {   
+        if (dict) delete dict;
         return false;
+    }
     dict->GetList(L"resultvalue", &listvalue);
     while (listvalue->GetSize()) {
         star_logic::StarInfo star;

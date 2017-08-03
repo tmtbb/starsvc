@@ -61,12 +61,20 @@ int32 TradesDB::OnConfirmOrder(const int64 order_id, const int64 buy_uid,const i
     r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallConfirmOrder);
     
     if (!r && dict->empty())
+    {
+        if (dict) delete dict;
         return 3;
+    }
     
     dict->GetDictionary(L"resultvalue", &info_value);
     
     r = info_value->GetInteger(L"result", &result);
-    if (!r) return 3;
+    if (!r) 
+    {
+        if (dict) delete dict;
+        return 3;
+    }
+
     
     if (dict) {
         delete dict;
@@ -97,7 +105,12 @@ bool TradesDB::OnCreateTradesOrder(star_logic::TradesOrder& trades_order) {
     dict->SetString(L"sql", sql);
     r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
     if (!r)
+    {
+        if (dict) delete dict;
         return false;
+    }
+    //if (!r)
+     //   return false;
 
     if (dict) {
         delete dict;
@@ -117,7 +130,10 @@ bool TradesDB::OnFetchPlatformStar(std::map<std::string, trades_logic::TradesSta
     dict->SetString(L"sql", sql);
     r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetTradsRule);
     if (!r)
+    {
+        if (dict) delete dict;
         return false;
+    }
     dict->GetList(L"resultvalue", &listvalue);
     while (listvalue->GetSize()) {
         trades_logic::TradesStar star;

@@ -30,8 +30,13 @@ bool QuotationsDB::OnGetStarInfo(std::map<std::string,star_logic::StarInfo>& map
   base_logic::ListValue *listvalue;
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetStarInfo);
+  //if (!r)
+   // return false;
   if (!r)
-    return false;
+  {
+      if (dict) delete dict;
+      return false;
+  }
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::StarInfo star_info;
@@ -121,9 +126,15 @@ bool QuotationsDB::OngetSysParamValue(std::map<std::string,std::string>& paramma
   dic->SetString(L"sql", sql);
   LOG_DEBUG2("%s", sql.c_str());
   r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),CallgetSysParamValue);
-  if (!r) {
+  if (!r)
+  {
+      if (dic) delete dic;
+      return false;
+  }
+  /*if (!r) {
     return false;
   }
+  */
 
   std::string key,value;
   base_logic::ListValue *listvalue;

@@ -41,8 +41,13 @@ bool BankDB::OnWithDrawCash(const int64 uid, const int64 wid, const int64  card_
 
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallWithDrawCash);
+  //if (!r)
+   // return false; 
   if (!r)
-    return false; 
+  {
+    if (dict) delete dict;
+      return false;
+  }
   r = dict->GetDictionary(L"resultvalue", &resultvalue);
   if(r) {
     r = resultvalue->GetInteger(L"result", &result);
@@ -67,7 +72,12 @@ bool BankDB::OnGetBankCard(const int64 uid,
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetBankCard);
   if (!r)
-    return false;
+  {
+    if (dict) delete dict;
+      return false;
+  }
+  //if (!r)
+   // return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     bank_logic::BankCard bank_card;
@@ -100,7 +110,12 @@ bool BankDB::OnGetBankCard(const int64 uid,
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetBankCard);
   if (!r)
-    return false;
+  {
+    if (dict) delete dict;
+      return false;
+  }
+  //if (!r)
+   // return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     bank_logic::BankCard bank_card;

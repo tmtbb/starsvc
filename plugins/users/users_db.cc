@@ -31,7 +31,10 @@ bool UsersDB::CheckAccountExist(const std::string& phone, int32& existFlag) {
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallCheckAccountExist);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
 
   dict->GetDictionary(L"resultvalue", &info_value);
   r = info_value->GetInteger(L"result", &existFlag);
@@ -69,7 +72,12 @@ bool UsersDB::WXBindAccount(const std::string& phone_num,
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallRegisterAccount);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
 
   dict->GetDictionary(L"resultvalue", &info_value);
 
@@ -99,7 +107,12 @@ bool UsersDB::LoginWiXin(const std::string& open_id,
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallLoginwxAccount);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
 
   r = dict->GetDictionary(L"resultvalue", &info_value);
   if(!r)
@@ -189,6 +202,11 @@ bool UsersDB::UserChangePasswd(const std::string& phone_num,const std::string& o
 	dict->SetString(L"sql", sql);
 	r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallChangePasswd);
+  if (!r)
+  {
+    if (dict) delete dict;
+    return false;
+  }
 
 	base_logic::DictionaryValue *info_value = NULL;
 	dict->GetDictionary(L"resultvalue", &info_value);
@@ -241,7 +259,12 @@ bool UsersDB::RegisterAccount(const std::string& phone_num,
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallRegisterAccount);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
 
   dict->GetDictionary(L"resultvalue", &info_value);
 
@@ -274,7 +297,12 @@ bool UsersDB::GetUserInfo(const int64 uid, const std::string& ip,
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallLoginAccount);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
 
   if(!dict->GetDictionary(L"resultvalue", &info_value))
     return false;
@@ -306,7 +334,12 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallLoginAccount);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
 
   if(!dict->GetDictionary(L"resultvalue", &info_value)){
     return false;
@@ -360,7 +393,12 @@ bool UsersDB::AccountBalance(const int64 uid, double & balance, std::string &pwd
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallAccountBalance);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
 
   dict->GetDictionary(L"resultvalue", &info_value);
 
@@ -388,7 +426,12 @@ bool UsersDB::AccountRealNameInfo(const int64 uid, std::string &realname,std::st
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallAccountRealName);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
 
   dict->GetDictionary(L"resultvalue", &info_value);
   double balance = 0.0;
@@ -519,6 +562,11 @@ bool UsersDB::ResetAccount(const std::string& phone_num,const std::string& passw
 	dict->SetString(L"sql", sql);
 	r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallChangePasswd);
+  if (!r)
+  {
+    if (dict) delete dict;
+    return false;
+  }
 
 	base_logic::DictionaryValue *info_value = NULL;
 	dict->GetDictionary(L"resultvalue", &info_value);
@@ -547,7 +595,12 @@ try
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallRegisterAccount);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
   
   dict->GetDictionary(L"resultvalue", &info_value);
   int64 ruid = 0;
@@ -589,7 +642,12 @@ try
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallRegisterAccount);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
   
   dict->GetDictionary(L"resultvalue", &info_value);
   int64 ruid = 0;
@@ -625,7 +683,12 @@ bool UsersDB::ModifyNickName(const int64 &uid, const std::string &newNickName, i
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallChangeNickName);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
   
   dict->GetDictionary(L"resultvalue", &info_value);
   r = info_value->GetInteger(L"result", &flag);
@@ -669,7 +732,12 @@ try
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallGetVersion);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
 
   dict->GetDictionary(L"resultvalue", &info_value);
   int64 tmp = 0;
@@ -757,7 +825,12 @@ bool UsersDB::SaveDeviceId(const int64 &uid, const int64 &devicetype, const std:
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallSaveDeviceId);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
   
   dict->GetDictionary(L"resultvalue", &info_value);
   r = info_value->GetInteger(L"result", &flag);

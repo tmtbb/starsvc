@@ -93,7 +93,7 @@ bool CircleManager::CreateCircle(const int socket, const int64 session, const in
   circle->SetPicUrl(picurl);
   circle->SetStatus(CIRCLE_NORMAL_STATUS);
 
-  base_logic::RLockGd lk(lock_);
+/*  base_logic::RLockGd lk(lock_);
   CIRCLE_MAP t_circle_map;
   bool r = base::MapGet<STAR_CIRCLE_MAP,STAR_CIRCLE_MAP::iterator, std::string, CIRCLE_MAP>
         (star_circle_map_, circle->GetSymbol(), t_circle_map);
@@ -102,7 +102,20 @@ bool CircleManager::CreateCircle(const int socket, const int64 session, const in
   circle_list_.push_back(circle);
   t_circle_map[current_max_circle_id] = circle;
   star_circle_map_[symbol] = t_circle_map;
-  
+  */
+
+    {
+       base_logic::RLockGd lk(lock_);
+        STAR_CIRCLE_MAP::iterator it = star_circle_map_.find(circle->GetSymbol());
+        if(it != star_circle_map_.end()){
+            CIRCLE_MAP& t_circle_map = it->second;
+            t_circle_map[current_max_circle_id] = circle;
+        }else{
+            CIRCLE_MAP t_circle_map;
+            t_circle_map[current_max_circle_id] = circle;
+            star_circle_map_[symbol] = t_circle_map;
+        }
+    }
 
   if(circle_db_->OnCreateCircleOrder(*circle)){ //可优化
     send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, session);
@@ -206,8 +219,8 @@ bool CircleManager::UserCommentCircle(const int socket, const int64 session, con
             const int64 uid, const std::string& symbol,const int64 circleid,const int64 direction,const std::string& content){
   
   CIRCLE_MAP t_circle_map;
-  Circle* t_circle;
   base_logic::RLockGd lk(lock_);
+  Circle* t_circle;
   bool r = base::MapGet<STAR_CIRCLE_MAP,STAR_CIRCLE_MAP::iterator, std::string, CIRCLE_MAP>
           (star_circle_map_, symbol, t_circle_map);
   if(r) {

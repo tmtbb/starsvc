@@ -142,6 +142,10 @@ bool Netflashlogic::OnNetflashMessage(struct server *srv, const int socket,
     break;
   }
   if(packet){
+      delete packet;
+      packet = NULL;
+  }
+  if(packet){
     delete packet;
     packet = NULL;
   }

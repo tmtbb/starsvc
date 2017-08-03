@@ -41,7 +41,10 @@ bool HistoryDB::OnHandleWithdraw(const int64 uid, const int64 wid,
                               CallHandleWithdraw);
 
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
 
   dict->GetInteger(L"result", &result);
   if (result == 1) {
@@ -74,8 +77,13 @@ bool HistoryDB::OnHandleHistroyTrades(const int64 tid, const int64 uid,
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallHandleHistroyTrades);
 
+  //if (!r)
+   // return false;
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
   dict->GetDictionary(L"resultvalue", &info_value);
 
   r = info_value->GetInteger(L"r_handle", &r_handle);
@@ -96,8 +104,13 @@ bool HistoryDB::OnHistroyWithDraw(std::list<star_logic::Withdrawals>* list) {
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallHistorWithDrawRecord);
+  //if (!r)
+   // return false;
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::Withdrawals with_drawals;
@@ -128,8 +141,13 @@ bool HistoryDB::OnHistroyRechargeRecord(std::list<star_logic::Recharge>* list) {
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallHistroyRechargeRecord);
+  //if (!r)
+  //  return false;
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::Recharge recharge;
@@ -160,8 +178,13 @@ bool HistoryDB::OnOwnStarRecord(std::list<star_logic::TOwnStar>* list) {
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallOwnStarRecord);
+  //if (!r)
+   // return false;
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::TOwnStar ownstar;
@@ -193,8 +216,13 @@ bool HistoryDB::OnHistroyTradesRecord(
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallHistroyTradesRecord);
+  //if (!r)
+   // return false;
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::TradesPosition trades;

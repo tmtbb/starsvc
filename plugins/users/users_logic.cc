@@ -202,15 +202,15 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
       break;
   }
 
-  if(packet){
-      delete packet;
-      packet = NULL;
-  }
 }
 catch(...)
 {
   LOG_ERROR2("catch : operator[%d]", packet->operate_code);
 }
+  if(packet){
+      delete packet;
+      packet = NULL;
+  }
 
   
   return true;
@@ -573,8 +573,9 @@ bool Userslogic::OnUserRealInfo(struct server* srv, int socket,
   {
     std::string r_name = "" , id_card = "";
     r = user_db_->AccountRealNameInfo(user_real_info.uid(), r_name, id_card);
-    if (r_name != "")
+    if (r_name.length()>0 )
     {
+        LOG_ERROR2("rname [%s]", r_name.c_str());
         userinfo.set_realname(r_name);
         userinfo.set_id_card(id_card);
     }
