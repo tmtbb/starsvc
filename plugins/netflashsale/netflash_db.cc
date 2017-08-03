@@ -52,6 +52,7 @@ bool NetflashDB::OnGetStarExperience(const std::string& code, base_logic::Dictio
   dic->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),CallgetStarExperience);
   if (!r) {
+    if (dic) delete dic;
     return false;
   }
   int64 result;
@@ -106,7 +107,10 @@ bool NetflashDB::OnCreateNetflashOrder(star_logic::TradesOrder& netflash_trades_
   LOG_MSG2("sql [%s]", sql.c_str());
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallCreateNetflashOrder);
   if (!r)
+  {
+      if (dict) delete dict;
       return false;
+  }
 
   dict->GetBigInteger(L"resultvalue", &result);
   if (dict) {
@@ -132,7 +136,12 @@ bool NetflashDB::OnUpdatePublishStarInfo(const std::string& symbol,const int64 p
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
   if (!r)
+  {
+      if (dict) delete dict;
       return false;
+  }
+  //if (!r)
+   //   return false;
 
   if (dict) {
       delete dict;

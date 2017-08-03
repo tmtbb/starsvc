@@ -68,7 +68,10 @@ bool PayDB::OnUpdateCallBackRechargeOrder(const int64 rid, const double price,
                               CallUpdateCallBackRechargeOrder);
 
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
   dict->GetDictionary(L"resultvalue", &info_value);
 
   r = info_value->GetBigInteger(L"uid", &uid);
@@ -139,9 +142,14 @@ bool PayDB::OnCheckPayPwd(const int64 uid, std::string& pwd, int32& flag) {
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallCheckPayPwd);
-  if (!r)
-    return false;
+  //if (!r)
+   // return false;
 
+  if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
+    return false;
+  }
   dict->GetDictionary(L"resultvalue", &info_value);
   r = info_value->GetInteger(L"result", &flag);
 
@@ -203,6 +211,11 @@ bool PayDB::OnCreateUnionWithDraw(const int64 uid, const int64 rid, const double
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallUnionWithdrow);
 
+  if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
+    return false;
+  }
   base_logic::DictionaryValue *info_value = NULL;
   int64 result = 0;
   dict->GetDictionary(L"resultvalue", &info_value);

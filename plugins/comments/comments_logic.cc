@@ -99,6 +99,10 @@ bool Commentslogic::OnCommentsMessage(struct server *srv, const int socket,
         break;
     }
   }
+  if(packet){
+      delete packet;
+      packet = NULL;
+  }
   return true; /////////////////
 }
 

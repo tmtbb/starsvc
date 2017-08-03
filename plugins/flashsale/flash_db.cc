@@ -88,7 +88,12 @@ bool FlashDB::OnFetchPublishStar(std::map<std::string, flash_logic::PulishStar>&
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetPublishRule);
   if (!r)
+  {
+    if (dict) delete dict;
       return false;
+  }
+  //if (!r)
+  //    return false;
   
   r = dict->GetList(L"resultvalue", &listvalue);
   while (r && listvalue->GetSize()) {
@@ -152,7 +157,12 @@ bool FlashDB::OnCreateFlashOrder(star_logic::TradesOrder& flash_trades_order, in
   LOG_MSG2("sql [%s]", sql.c_str());
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallCreateFlashOrder);
   if (!r)
+  {
+    if (dict) delete dict;
       return false;
+  }
+  //if (!r)
+   //   return false;
 
   dict->GetBigInteger(L"resultvalue", &result);
   if (dict) {
@@ -176,7 +186,12 @@ bool FlashDB::OnUpdateFlashsaleResult(const int64 uid,const std::string& symbol,
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
   if (!r)
+  {
+    if (dict) delete dict;
       return false;
+  }
+  //if (!r)
+   //   return false;
 
   if (dict) {
       delete dict;
@@ -200,7 +215,12 @@ bool FlashDB::OnUpdatePublishStarInfo(const std::string& symbol,const int64 publ
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
   if (!r)
+  {
+    if (dict) delete dict;
       return false;
+  }
+  //if (!r)
+   //   return false;
 
   if (dict) {
       delete dict;

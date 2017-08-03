@@ -78,9 +78,15 @@ bool Infomation_Mysql::getfanscomments(const std::string& starcode,DicValue &ret
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetfanscomments);
-	if (!r) {
+  if (!r)
+  {
+    if (dic) { delete dic; dic = NULL; }
+    return false;
+  }
+/*	if (!r) {
 	  return false;
 	}
+    */
 	int64 result;
 	int32 num;
 	base_logic::ListValue *listvalue;
@@ -113,9 +119,16 @@ bool Infomation_Mysql::getstarnews(const std::string& code,const std::string& na
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetstarnewsinfo);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+  /*
 	if (!r) {
 	  return false;
 	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -137,9 +150,15 @@ bool Infomation_Mysql::getorderstarinfo(const std::string& code,const std::strin
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetorderstarinfo);
-	if (!r) {
+	/*if (!r) {
 	  return false;
 	}
+    */
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -252,9 +271,16 @@ bool Infomation_Mysql::getbannerinfo(const std::string& code,DicValue &ret_resul
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetbannerinfo);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -313,9 +339,16 @@ bool Infomation_Mysql::getstarinfo(const std::string& code,const std::string& ph
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetinfo);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -398,9 +431,16 @@ bool Infomation_Mysql::addstarinfo(const std::string& code,
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callpublicback);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
 	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	int64 result;
 	dic->GetDictionary(L"resultvalue",&ret);
@@ -442,9 +482,16 @@ bool Infomation_Mysql::getstarservicelist(const std::string& code,DicValue &ret_
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetstarservicelist);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -519,9 +566,16 @@ bool Infomation_Mysql::userorderstarservice(const int64 uid, const std::string& 
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Calluserorderstarservice);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
 	
 	r = dic->GetDictionary(L"resultvalue", &info_value);
 	if (!r) {
@@ -565,9 +619,16 @@ bool Infomation_Mysql::getuserstaramount(const int64 uid,int64& num){
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetuserstaramount);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
   
   base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	bool r1 = dic->GetDictionary(L"resultvalue",&ret);
@@ -611,9 +672,16 @@ bool Infomation_Mysql::getuserstartime(const int64 uid, const std::string starco
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetuserstartime);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*jjj
 	if (!r) {
 	  return false;
 	}
+    */
   
   base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	bool r1 = dic->GetDictionary(L"resultvalue",&ret);
@@ -656,9 +724,16 @@ bool Infomation_Mysql::getstartime(const std::string starcode, int64& time){
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetstartime);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
   
   base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	bool r1 = dic->GetDictionary(L"resultvalue",&ret);
@@ -702,9 +777,16 @@ bool Infomation_Mysql::getUserStarMeetinfo(const int64 uid,const int64 pos,const
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),CallgetUserStarMeetinfo);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
 	int64 result;
 	base_logic::ListValue *listvalue;
 	r = dic->GetList(L"resultvalue",&listvalue);
@@ -806,9 +888,16 @@ bool Infomation_Mysql::OngetOnestarInfo(const std::string& starcode, DicValue* d
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),CallgetOnestarInfo);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*jjj
 	if (!r) {
 	  return false;
 	}
+    */
 	
 	return r;
 }
@@ -847,7 +936,7 @@ void Infomation_Mysql::CallgetOnestarInfo(void* param, base_logic::Value* value)
         info_value->SetString(L"portray4", rows[8]);
 
       if (rows[9] != NULL)
-        info_value->SetBigInteger(L"acc_id", atoi(rows[9]));
+        info_value->SetBigInteger(L"acc_id", atoll(rows[9]));
     }
     dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
   }
@@ -867,9 +956,16 @@ bool Infomation_Mysql::OngetSysParamValue(const std::string& paramcode, std::str
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),CallgetSysParamValue);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
 
 	base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
 	bool r1 = dic->GetDictionary(L"resultvalue",&ret);
@@ -948,9 +1044,16 @@ bool Infomation_Mysql::getbarragedata(int64& startnum,int64& endnum,base_logic::
 	dic->SetString(L"sql", sql);
 	LOG_DEBUG2("%s", sql.c_str());
 	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetbarragedata);
+    if (!r)
+    {
+      if (dic) { delete dic; dic = NULL; }
+      return false;
+    }
+    /*
 	if (!r) {
 	  return false;
 	}
+    */
 	
 	r = dic->GetList(L"resultvalue",&listvalue);
 	return r;

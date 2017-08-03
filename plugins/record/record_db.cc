@@ -32,7 +32,12 @@ bool RecordDB::OnGetStarInfo(std::map<std::string,star_logic::StarInfo>& map) {
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetStarInfo);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::StarInfo star_info;
@@ -56,7 +61,8 @@ bool RecordDB::OnCreateTradesPosition(star_logic::TradesPosition& trades_positio
 
     bool r = false;
     base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
-
+try
+{
     std::string sql;
     sql = "call proc_CreateTradesPosition("
         + base::BasicUtil::StringUtil::Int64ToString(trades_position.position_id()) +","
@@ -77,6 +83,10 @@ bool RecordDB::OnCreateTradesPosition(star_logic::TradesPosition& trades_positio
         delete dict;
         dict = NULL;
     }
+}catch (...)
+{
+    return false;
+}
     return true;
 }
 
@@ -122,7 +132,12 @@ bool RecordDB::OnGetAllUserInfo(std::map<int64, star_logic::UserInfo>& user_map)
     dict->SetString(L"sql", sql);
     r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetAllUserInfo);
     if (!r)
+    {
+      if (dict) delete dict;
         return false;
+    }
+  //  if (!r)
+   //     return false;
     dict->GetList(L"resultvalue", &listvalue);
     while (listvalue->GetSize()) {
         star_logic::UserInfo userinfo;
@@ -154,8 +169,13 @@ bool RecordDB::OnGetAllOrderInfo(std::map<int64, star_logic::TradesOrder>& order
     base_logic::ListValue *listvalue;
     dict->SetString(L"sql", sql);
     r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetAllOrderInfo);
-    if (!r)
-        return false;
+  if (!r)
+  {
+    if (dict) delete dict;
+    return false;
+  }
+  //  if (!r)
+   //     return false;
     dict->GetList(L"resultvalue", &listvalue);
     while (listvalue->GetSize()) {
         star_logic::TradesOrder order;
@@ -188,7 +208,12 @@ bool RecordDB::OnGetAllPositionInfo(std::map<int64, star_logic::TradesPosition>&
     dict->SetString(L"sql", sql);
     r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallGetAllPositionInfo);
     if (!r)
+    {
+      if (dict) delete dict;
         return false;
+    }
+  //  if (!r)
+   //     return false;
     dict->GetList(L"resultvalue", &listvalue);
     while (listvalue->GetSize()) {
         star_logic::TradesPosition position;

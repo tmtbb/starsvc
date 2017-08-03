@@ -77,6 +77,7 @@ void StarSideManager::InitOwnStarUser()
 
 void StarSideManager::InitStarOwnService() {
   base_logic::WLockGd lk(lock_);
+  starside_cache_->all_starownservice_.clear();
   std::list<starside_logic::StarOwnService> list;
   starside_db_->OnHistroyStarOwnService(&list); //从数据库加载数据
 
@@ -333,7 +334,8 @@ void StarSideManager::UpdStarService(const int socket,
   packet_control.body_ = ret;
 
   send_message(socket, &packet_control);
-  
+ // 
+  InitStarOwnService();
 
 }
 

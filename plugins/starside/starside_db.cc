@@ -34,7 +34,12 @@ bool StarSideDB::OnProfitDetail(const int socket, const int64 session,
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallProfitDetail);
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
+  //if (!r)
+   // return false;
   //int32 result;
   //dict->GetInteger(L"result", &result);
   //if (result == 1) 
@@ -72,7 +77,12 @@ bool StarSideDB::OnUpdStarService(const std::string &starcode,
    //                           CallProfitDetail);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
+  //if (!r)
+   // return false;
 
   {
       /*
@@ -109,7 +119,12 @@ bool StarSideDB::OnUpdStarMeetDate(const std::string &starcode,
    //                           CallProfitDetail);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
+  //if (!r)
+   // return false;
 
   {
       /*
@@ -141,8 +156,13 @@ bool StarSideDB::OnUpdStarMeetRel(const int64 meet_id, const int64 meet_type)
   //r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
    //                           CallProfitDetail);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
+  //if (!r)
+   // return false;
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
 
   {
       /*
@@ -172,7 +192,12 @@ bool StarSideDB::OnHistroyServiceItem(std::list<starside_logic::ServiceItem>* li
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallServiceDef);
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
+ // if (!r)
+  //  return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     starside_logic::ServiceItem item;
@@ -204,7 +229,12 @@ bool StarSideDB::OnHistroyStarOwnService(std::list<starside_logic::StarOwnServic
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallHistorStarOwnService);
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
+  //if (!r)
+   // return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     starside_logic::StarOwnService item;
@@ -236,7 +266,12 @@ bool StarSideDB::OnHistroyStarMeetRel(std::list<starside_logic::StarMeetRelForFa
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallHistorStarMeetRelRecord);
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
+  //if (!r)
+   // return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     starside_logic::StarMeetRelForFan item;
@@ -269,7 +304,12 @@ bool StarSideDB::OnGetOwnStarUser(std::list<starside_logic::TOwnStarUser>* list)
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallOwnStarUser);
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
+  //if (!r)
+   // return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     starside_logic::TOwnStarUser item;
@@ -301,7 +341,12 @@ bool StarSideDB::OnHistroyTransStatis(std::list<starside_logic::TranscationStati
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallHistorTransStatisRecord);
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
+  //if (!r)
+   // return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     starside_logic::TranscationStatistics item;
@@ -333,7 +378,12 @@ bool StarSideDB::OnHistroyRechargeRecord(std::list<star_logic::Recharge>* list) 
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallHistroyRechargeRecord);
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
+  //if (!r)
+   // return false;
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::Recharge recharge;
@@ -364,8 +414,13 @@ bool StarSideDB::OnOwnStarRecord(std::list<star_logic::TOwnStar>* list) {
   dict->SetString(L"sql", sql);
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallOwnStarRecord);
+  //iif (!r)
+   // return false;
   if (!r)
+  {
+    if (dict) { delete dict; dict = NULL; }
     return false;
+  }
   dict->GetList(L"resultvalue", &listvalue);
   while (listvalue->GetSize()) {
     star_logic::TOwnStar ownstar;

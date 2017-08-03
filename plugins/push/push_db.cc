@@ -35,7 +35,12 @@ bool CPushDB::onGetUserDeviceId(const int64 uid, std::string &deviceId, int32& d
   r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
                               CallGetUserDeviceId);
   if (!r)
+  {
+    if (dict) delete dict;
     return false;
+  }
+  //if (!r)
+   // return false;
   
   dict->GetDictionary(L"resultvalue", &info_value);
   int32 result;

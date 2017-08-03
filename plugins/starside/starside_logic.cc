@@ -174,6 +174,10 @@ bool StarSidelogic::OnStarSideMessage(struct server *srv, const int socket,
     default:
       break;
   }
+  if(packet){
+      delete packet;
+      packet = NULL;
+  }
 #ifdef _DEBUG
   gettimeofday(&t_end, NULL);
   LOG_DEBUG2("recive operator[%d], star time[%ld]", packet->operate_code, t_end.tv_usec);
@@ -204,7 +208,7 @@ bool StarSidelogic::OnBroadcastClose(struct server *srv, const int socket) {
 bool StarSidelogic::OnIniTimer(struct server *srv) {
   if (srv->add_time_task != NULL) {
     if (srv->add_time_task != NULL) {
-      srv->add_time_task(srv, "starside", TIME_DISTRIBUTION_TASK, 3, -1);
+      srv->add_time_task(srv, "starside", TIME_DISTRIBUTION_TASK, 3000, -1);
     }
   }
   return true;
@@ -214,10 +218,11 @@ bool StarSidelogic::OnTimeout(struct server *srv, char *id, int opcode,
                              int time) {
   switch (opcode) {
     case TIME_DISTRIBUTION_TASK: {
-    //  starside_logic::StarSideEngine::GetSchdulerManager()->InitStarMeetRelList();
+      //starside_logic::StarSideEngine::GetSchdulerManager()->InitStarSideTransStatis(); //一天只需重新加载一次
       starside_logic::StarSideEngine::GetSchdulerManager()->InitServiceItem();
-      starside_logic::StarSideEngine::GetSchdulerManager()->InitStarOwnService();
       starside_logic::StarSideEngine::GetSchdulerManager()->InitOwnStarUser();
+      //starside_logic::StarSideEngine::GetSchdulerManager()->InitStarOwnService();
+    //  starside_logic::StarSideEngine::GetSchdulerManager()->InitStarMeetRelList();
       break;
     }
     default:
