@@ -198,6 +198,10 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
       OnGetVersion(srv, socket, packet);
       break;
     }
+    case R_SET_COMMISSION_INFO:{
+      OnGetCommission(srv, socket, packet);
+      break;
+    }
     default:
       break;
   }
@@ -1207,6 +1211,46 @@ bool Userslogic::OnSaveDeviceId(struct server* srv, int socket,
   MAKE_HEAD(packet_control_ack,S_SET_DEVICE_INFO, 1, 0, packet->session_id, 0);
   base_logic::DictionaryValue dic; 
   dic.SetInteger(L"result", 1);
+  packet_control_ack.body_ = &dic; 
+  send_message(socket, &packet_control_ack); 
+
+  return true;
+}
+
+bool Userslogic::OnGetCommission(struct server* srv, int socket,
+                                      struct PacketHead *packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  int64 uid;
+  bool r = packet_control->body_->GetBigInteger(L"uid", &uid);
+  
+  if (!r) {
+    LOG_DEBUG2("packet_length %d",packet->packet_length);
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  
+
+  int32 itotalnum = 0;
+  double dtotalamount = 0.0;
+  if(!user_db_->GetCommissionInfo(uid,itotalnum,dtotalamount)) {
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+    return false;
+  }
+
+  LOG_DEBUG2("uid[%ld], itotalnum[%d], dtotalamount[%0.2f]",uid, itotalnum, dtotalamount);
+  
+  //发送信息
+  struct PacketControl packet_control_ack; 
+  MAKE_HEAD(packet_control_ack,S_SET_COMMISSION_INFO, USERS_TYPE, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic; 
+  dic.SetInteger(L"result", 1);
+  dic.SetInteger(L"total_num", itotalnum);
+  dic.SetReal(L"total_amount", dtotalamount);
   packet_control_ack.body_ = &dic; 
   send_message(socket, &packet_control_ack); 
 
