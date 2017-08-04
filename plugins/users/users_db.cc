@@ -857,5 +857,67 @@ void UsersDB::CallSaveDeviceId(void* param, base_logic::Value* value) {
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
 }
 
+bool UsersDB::GetCommissionInfo(const int64& uid, int32 &totalnum, double& totalamount)
+{
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue *info_value = NULL;
+  std::string sql;
+
+  sql = "call proc_Getcommissioninfo('" + 
+      base::BasicUtil::StringUtil::Int64ToString(uid) + "');";
+  
+  LOG_ERROR2("sql = %s",sql.c_str());
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict),
+                              CallGetCommissionInfo);
+  if (!r)
+  {
+    if (dict) delete dict;
+    return false;
+  }
+  
+  r = false;
+
+  if(dict->GetDictionary(L"resultvalue", &info_value)){
+    bool r1 = info_value->GetInteger(L"total_num", &totalnum);
+    bool r2 = info_value->GetReal(L"total_amount", &totalamount);
+    if(!r2){
+        int32 iamout=0;
+        r2 = info_value->GetInteger(L"total_amount", &iamout);
+        LOG_DEBUG2("iamout [%d]", iamout);
+        totalamount = iamout;
+    }
+    LOG_DEBUG2("total_amount [%0.2f]", totalamount);
+    r = r1 && r2;
+  }
+  
+  if (dict) {
+    delete dict;
+    dict = NULL;
+  }
+  return r;
+}
+
+void UsersDB::CallGetCommissionInfo(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      if (rows[0] != NULL)
+        info_value->SetInteger(L"total_num", atoi(rows[0]));
+
+      if (rows[1] != NULL)
+        info_value->SetReal(L"total_amount", atof(rows[1]));
+    }
+    dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+  }
+  dict->Remove(L"sql", &value);
+}
+
 }  // namespace history_logic
 

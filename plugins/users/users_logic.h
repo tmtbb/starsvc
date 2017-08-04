@@ -90,6 +90,8 @@ class Userslogic {
 
   bool OnSaveDeviceId(struct server* srv, int socket,struct PacketHead *packet); 
 
+  bool OnGetCommission(struct server* srv, int socket, struct PacketHead *packet);
+
  private:
   bool Init();
  private:

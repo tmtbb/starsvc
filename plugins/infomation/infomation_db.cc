@@ -987,7 +987,11 @@ void Infomation_Mysql::CallgetSysParamValue(void* param, base_logic::Value* valu
 	if (num > 0) {
 		while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
 			if (rows[0] != NULL)
-				info_value->SetString(L"param_value", rows[0]);
+				info_value->SetString(L"param_code", rows[0]);
+
+			if (rows[1] != NULL)
+				info_value->SetString(L"param_value", rows[1]);
+		
 		
 		}
     	dict->Set(L"resultvalue", (base_logic::Value *) (info_value));

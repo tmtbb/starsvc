@@ -121,7 +121,7 @@ void QuotationsDB::CallGetStarInfo(void* param, base_logic::Value* value) {
 bool QuotationsDB::OngetSysParamValue(std::map<std::string,std::string>& parammap){
   bool r = false;
   DicValue* dic = new DicValue();
-  std::string sql = "call proc_GetSysParamVlue();";
+  std::string sql = "call proc_GetSysParamVlue('0');";
 
   dic->SetString(L"sql", sql);
   LOG_DEBUG2("%s", sql.c_str());
@@ -131,10 +131,6 @@ bool QuotationsDB::OngetSysParamValue(std::map<std::string,std::string>& paramma
       if (dic) delete dic;
       return false;
   }
-  /*if (!r) {
-    return false;
-  }
-  */
 
   std::string key,value;
   base_logic::ListValue *listvalue;
