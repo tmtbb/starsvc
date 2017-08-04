@@ -58,6 +58,9 @@ namespace users_logic {
 
 #define R_SET_DEVICE_INFO USERS_TYPE * 1000 + 35
 #define S_SET_DEVICE_INFO USERS_TYPE * 1000 + 36
+//获取佣金信息
+#define R_SET_COMMISSION_INFO USERS_TYPE * 1000 + 37
+#define S_SET_COMMISSION_INFO USERS_TYPE * 1000 + 38
 
 #define S_LOGIN_EXISTS USERS_TYPE * 1000 + 40
 }
