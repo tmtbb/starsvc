@@ -1576,6 +1576,9 @@ public:
     const int32 comment_dec_time() const {
         return data_->comment_dec_time_;
     }
+    const std::string& work() const {
+        return data_->work_;
+    }
 //----
     void set_weibo_index_id(const std::string& weibo_index_id) {
         data_->weibo_index_id_ = weibo_index_id;
@@ -1660,6 +1663,9 @@ public:
     void set_comment_dec_time(const int32 i) {
         data_->comment_dec_time_ = i;
     }
+    void set_work(const std::string& value) {
+        data_->work_ = value;
+    }
 
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
@@ -1701,6 +1707,7 @@ public:
         int32 publish_type_;//0-预售 1-发售 2-流通
         int32 approval_dec_time_;//点赞扣减时间
         int32 comment_dec_time_;//评论扣减时间
+        std::string work_;//工作; 
 
         static bool sort_add_time(const Data* t_info, const Data* r_info) {
             if (t_info == NULL || r_info == NULL)
