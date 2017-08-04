@@ -57,6 +57,8 @@ private:
 
   bool OnHomeSymbolList(struct server* srv, int socket, struct PacketHead* packet);
 
+  bool OnRefreshSymbol(struct server* srv, int socket, struct PacketHead* packet);
+
   void Test();
 
 private:
