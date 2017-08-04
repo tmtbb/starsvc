@@ -338,6 +338,7 @@ void QuotationsManager::SendSymbolOne(const int socket,
       r_symbol_unit->set_home_pic(star.home_pic());
       r_symbol_unit->set_symbol(star.symbol());
       r_symbol_unit->set_system_unix_time(time(NULL));
+      r_symbol_unit->set_work(star.work());
       if(r){
         r_symbol_unit->set_current_price(temp_quotations.current_price());
         r_symbol_unit->set_current_unix_time(temp_quotations.current_unix_time());
@@ -421,6 +422,7 @@ void QuotationsManager::SendQuotationsList(const int socket, const int64 session
       r_symbol_unit->set_home_pic(star.home_pic());
       r_symbol_unit->set_symbol(star.symbol());
       r_symbol_unit->set_system_unix_time(time(NULL));
+      r_symbol_unit->set_work(star.work());
       if(r){
         r_symbol_unit->set_current_price(temp_quotations.current_price());
         r_symbol_unit->set_current_unix_time(temp_quotations.current_unix_time());
