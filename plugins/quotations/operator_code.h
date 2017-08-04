@@ -24,5 +24,8 @@ namespace quatations_logic {
 
 #define R_SYMBOL_ONLY                  QUOTATIONS_TYPE * 1000 + 11
 #define S_SYMBOL_ONLY                  QUOTATIONS_TYPE * 1000 + 12
+
+#define R_REFRESH_SYMBOL               QUOTATIONS_TYPE * 1000 + 13
+#define S_REFRESH_SYMBOL               QUOTATIONS_TYPE * 1000 + 14
 }
 #endif

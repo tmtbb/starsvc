@@ -25,7 +25,8 @@ bool CShareMemory::Init(){
 		return false;
 	}
 	//获得信号量
-	if((m_semid=semget(m_key,1,0666|IPC_CREAT)) < 0){
+	//if((m_semid=semget(m_key,1,0666|IPC_CREAT)) < 0){
+	if((m_semid=semget((key_t)6688,1,0666|IPC_CREAT)) < 0){
 		LOG_MSG2("semget failure, semid[%d]", m_semid);
 		return false;
 	}

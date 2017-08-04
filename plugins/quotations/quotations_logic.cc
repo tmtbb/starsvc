@@ -113,6 +113,10 @@ bool Quotationslogic::OnQuotationsMessage(struct server *srv, const int socket,
         OnSymbolOne(srv, socket ,packet);
         break;
       }
+      case R_REFRESH_SYMBOL : {
+        OnRefreshSymbol(srv, socket ,packet);
+        break;
+      }
       default:
         break;
     }
@@ -175,6 +179,17 @@ bool Quotationslogic::OnTimeout(struct server *srv, char *id, int opcode,
     default:
       break;
   }
+  return true;
+}
+
+bool Quotationslogic::OnRefreshSymbol(struct server* srv, int socket,
+                                       struct PacketHead* packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  quotations_logic::QuotationsEngine::GetSchdulerManager()->InitStarData();
   return true;
 }
 
