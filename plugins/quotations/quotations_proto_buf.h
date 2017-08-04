@@ -759,6 +759,9 @@ class SymbolUnit {
   void set_star_type(const int32 startype) {
    star_type_ = new base_logic::FundamentalValue(startype);
   }
+  void set_work(const std::string& work) {
+    work_ = new base_logic::StringValue(work);
+  }
 
   base_logic::DictionaryValue* get() {
     value_ = new base_logic::DictionaryValue();
@@ -788,6 +791,8 @@ class SymbolUnit {
         value_->Set(L"pushlish_type", pushlish_type_);
     if (star_type_ != NULL)
         value_->Set(L"star_type", star_type_);
+    if(work_ != NULL)
+        value_->Set(L"work", work_);
     return value_;
   }
    
@@ -805,6 +810,7 @@ class SymbolUnit {
   base_logic::FundamentalValue*   pchg_;
   base_logic::FundamentalValue*   pushlish_type_;
   base_logic::FundamentalValue*   star_type_;
+  base_logic::StringValue* work_;
   base_logic::DictionaryValue* value_;
 };
 

@@ -111,6 +111,8 @@ void QuotationsDB::CallGetStarInfo(void* param, base_logic::Value* value) {
         info_value->SetInteger(L"approval_time", atoi(rows[15]));
       if (rows[16] != NULL)
         info_value->SetInteger(L"comment_time", atoi(rows[16]));
+      if (rows[17] != NULL)
+        info_value->SetString(L"work", rows[17]);
 
       list->Append((base_logic::Value *) (info_value));
     }
