@@ -330,8 +330,8 @@ void HistoryDB::CallOwnStarRecord(void* param,
       if (rows[6] != NULL)
         info_value->SetString(L"head_url", rows[6]);
 
-      if (rows[8] != NULL)
-        info_value->SetString(L"work", rows[8]);
+      if (rows[7] != NULL)
+        info_value->SetString(L"work", rows[7]);
 
       list->Append((base_logic::Value *) (info_value));
     }
