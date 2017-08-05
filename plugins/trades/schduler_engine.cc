@@ -203,12 +203,8 @@ int32 TradesManager::ConfirmOrder(const int64 uid,const int64 order_id, const in
                 (trades_cache_->all_trades_order_,order_id,trades_order);
 
     if(!r || trades_order.handle_type() == NO_ORDER ||
-        trades_order.handle_type() == MONEY_LESS_THAN ||
-        trades_order.handle_type() == TIME_LESS_THAN ||
-        trades_order.handle_type() == CANCEL_ORDER ||
         trades_order.handle_type() == COMPLETE_ORDER){
         LOG_ERROR2("ConfirmOrder NO_HAVE_ORDER [%ld]", order_id);
-        ret = 0;
         return ret;
     }
 
@@ -268,11 +264,15 @@ int32 TradesManager::ConfirmOrder(const int64 uid,const int64 order_id, const in
         }
         else if (result == -2){
             trades_order.set_handle_type(TIME_LESS_THAN); 
+            trades_order.set_buy_handle_type(COMPLETE_ORDER);
+            trades_order.set_sell_handle_type(COMPLETE_ORDER);
             AlterTradesPositionState(trades_order.buy_position_id(),CANCEL_POSITION);
             AlterTradesPositionState(trades_order.sell_position_id(), CANCEL_POSITION);
         }
         else if (result == -3){
             trades_order.set_handle_type(MONEY_LESS_THAN);
+            trades_order.set_buy_handle_type(COMPLETE_ORDER);
+            trades_order.set_sell_handle_type(COMPLETE_ORDER);
             AlterTradesPositionState(trades_order.buy_position_id(),CANCEL_POSITION);
             AlterTradesPositionState(trades_order.sell_position_id(), CANCEL_POSITION);
         }
