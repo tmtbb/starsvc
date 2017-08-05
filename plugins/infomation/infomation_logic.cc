@@ -182,8 +182,8 @@ bool Infomationlogic::GetUserAndStarTime(struct server* srv,int socket ,struct P
   }
   
   int64 starowntime = 0, userstartime = 0;
-  if(!sqldb->getuserandstartime(uid,starcode,starowntime,userstartime)){
-    send_error(socket, ERROR_TYPE, NO_STAR_TIMER_DATA, packet->session_id);
+  if(!sqldb->getuserandstartime(uid,starcode,userstartime,starowntime)){
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
     return false;
   }
   
