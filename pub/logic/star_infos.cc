@@ -549,6 +549,7 @@ void TOwnStar::ValueSerialization(base_logic::DictionaryValue* dict) {
     dict->GetString(L"starcode", &data_->starcode_);
     dict->GetString(L"faccid", &data_->faccid_);
     dict->GetString(L"head_url", &data_->head_url_);
+    dict->GetString(L"work", &data_->work_);
 }
 
 Comments::Comments() {
