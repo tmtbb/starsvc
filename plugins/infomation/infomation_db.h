@@ -50,11 +50,14 @@ class Infomation_Mysql {
   //»ñÈ¡ÓÃ»§¶©¹ºÃ÷ÐÇÊý
   bool getuserstaramount(const int64 uid, int64& num);
   
-  //»ñÈ¡ÓÃ»§Ã÷ÐÇÊ±¼ä
+  //获取用户拥有明星时间
   bool getuserstartime(const int64 uid, const std::string code, int64& time);
   
-  //»ñÈ¡Ã÷ÐÇÊ±¼ä
+  //获取明星时间
   bool getstartime(const std::string code, int64& time);
+
+  //获取用户拥有明星时间 和 明星时间
+  bool getuserandstartime(const int64 uid, const std::string code, int64& usertime, int64& startime);
 
   //获取约见情况
   bool getUserStarMeetinfo(const int64 uid,const int64 pos,const int64 count, DicValue &ret);
@@ -84,6 +87,7 @@ class Infomation_Mysql {
   static void CallgetOnestarInfo(void* param, base_logic::Value* value);
   static void CallgetSysParamValue(void* param, base_logic::Value* value);
   static void Callgetbarragedata(void* param, base_logic::Value* value);
+  static void Callgetuserandstartime(void* param, base_logic::Value* value);
   private:
   base_logic::DataEngine* mysql_engine_;
 };

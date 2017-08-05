@@ -67,5 +67,8 @@ namespace infomation_logic {
 //获取弹幕信息
 #define R_GET_BARRAGE_INFO    INFO_TYPE * 1000 + 35
 #define S_GET_BARRAGE_INFO    INFO_TYPE * 1000 + 36
+//明星剩余时间和用户拥有明星时间
+#define R_GET_USER_AND_STAR_TIME    INFO_TYPE * 1000 + 37
+#define S_GET_USER_AND_STAR_TIME    INFO_TYPE * 1000 + 38
 }
 #endif
