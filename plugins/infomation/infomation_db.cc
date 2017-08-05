@@ -937,8 +937,6 @@ void Infomation_Mysql::CallgetOnestarInfo(void* param, base_logic::Value* value)
 
       if (rows[9] != NULL)
         info_value->SetBigInteger(L"acc_id", atoll(rows[9]));
-      if (rows[10] != NULL)
-        info_value->SetString(L"work", rows[10]);
     }
     dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
   }
@@ -1063,6 +1061,59 @@ bool Infomation_Mysql::getbarragedata(int64& startnum,int64& endnum,base_logic::
 	
 	r = dic->GetList(L"resultvalue",&listvalue);
 	return r;
+}
+
+bool Infomation_Mysql::getuserandstartime(const int64 uid, const std::string starcode, 
+					int64& usertime, int64& startime){
+	bool r = false;
+	DicValue* dic = new DicValue();
+	std::string sql;
+	sql = "call proc_GetUserAndStarTime('"
+	  + base::BasicUtil::StringUtil::Int64ToString(uid) + "','"
+    + starcode + "');";
+
+	dic->SetString(L"sql", sql);
+	LOG_DEBUG2("%s", sql.c_str());
+	r = mysql_engine_->ReadData(0, (base_logic::Value*) (dic),Callgetuserandstartime);
+	if (!r){
+	  if (dic) { delete dic; dic = NULL; }
+	  return false;
+	}
+  
+  base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
+	bool r1 = dic->GetDictionary(L"resultvalue",&ret);
+	bool r2 = ret->GetBigInteger(L"star_time", &startime);
+	bool r3 = ret->GetBigInteger(L"user_star_time", &usertime);
+	if(!r1 || !r2 || !r3){
+	  return false;
+	}
+	
+	return r;
+}
+
+void Infomation_Mysql::Callgetuserandstartime(void* param, base_logic::Value* value){	
+	base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  
+  int32 num = engine->RecordCount();
+  if (num > 0) {
+    base_logic::DictionaryValue *info_value = new base_logic::DictionaryValue();
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+    	if (rows[0] != NULL)
+    		info_value->SetBigInteger(L"star_time", atoi(rows[0]));
+
+    	if (rows[1] != NULL)
+        info_value->SetBigInteger(L"user_star_time", atoi(rows[1]));
+    }
+    dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+  }
+  else {
+		LOG_ERROR ("proc_GetUserAndStarTime count < 0");
+	}
+  
+  dict->Remove(L"sql", &value);
 }
 
 }
