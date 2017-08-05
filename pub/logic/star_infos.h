@@ -1774,6 +1774,9 @@ public:
     const std::string& headurl() const {
         return data_->head_url_;
     }
+    const std::string& work() const {
+        return data_->work_;
+    }
 //----
     void set_uid(const int64 value) {
         data_->uid_ = value;
@@ -1797,6 +1800,9 @@ public:
     void set_headurl(const std::string& value) {
         data_->head_url_ = value;
     }
+    void set_work(const std::string& value) {
+        data_->work_ = value;
+    }
 
     void ValueSerialization(base_logic::DictionaryValue* dict);
 
@@ -1817,6 +1823,7 @@ public:
         std::string starname_;
         std::string faccid_;
         std::string head_url_;
+        std::string work_; //职业
         void AddRef() {
             __sync_fetch_and_add(&refcount_, 1);
         }

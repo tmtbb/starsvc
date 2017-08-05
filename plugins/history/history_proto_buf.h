@@ -801,6 +801,9 @@ class OwnStar{
   void set_headurl(const std::string& head_url) {
     headurl_ = new base_logic::StringValue(head_url);
   }
+  void set_work(const std::string& work) {
+    work_ = new base_logic::StringValue(work);
+  }
 
   base_logic::DictionaryValue* get() {
     value_ = new base_logic::DictionaryValue();
@@ -818,6 +821,8 @@ class OwnStar{
       value_->Set(L"faccid", faccid_);
     if (headurl_ != NULL)
       value_->Set(L"head_url", headurl_);
+    if (work_ != NULL)
+      value_->Set(L"work", work_);
     return value_;
   }
 
@@ -829,6 +834,7 @@ class OwnStar{
   base_logic::StringValue* starname_;
   base_logic::StringValue* faccid_;
   base_logic::StringValue* headurl_;
+  base_logic::StringValue* work_;
 
   base_logic::DictionaryValue* value_;
 };
