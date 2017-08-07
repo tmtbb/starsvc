@@ -186,7 +186,7 @@ bool Circlelogic::OnIniTimer(struct server *srv)
 {
   if (srv->add_time_task != NULL)
   {
-      srv->add_time_task(srv, "circle", TIME_DISTRIBUTION_TASK, 15, -1);
+      srv->add_time_task(srv, "circle", TIME_DISTRIBUTION_TASK, 5, -1);
   }
   return true;
 }
