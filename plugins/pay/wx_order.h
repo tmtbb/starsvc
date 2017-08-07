@@ -8,8 +8,10 @@
 #include "logic/base_values.h"
 
 
-const std::string APPID = "wx9dc39aec13ee3158";
-const std::string MCH_ID = "1404391902";
+//const std::string APPID = "wx9dc39aec13ee3158";
+//const std::string MCH_ID = "1404391902";
+const std::string APPID = "wxa75d31be7fcb762f";
+const std::string MCH_ID = "1486969632";
 
 const std::string MPID = "wxe9f0932fb23e8f8a";
 const std::string MPMCH_ID = "1419354002";
@@ -23,7 +25,7 @@ const std::string MP_TRADE_TYPE = "JSAPI";
 const std::string WX_URL = "https://api.mch.weixin.qq.com/pay/unifiedorder";
 const std::string WX_PACKAGE = "Sign=WXPay";
 const std::string NOTIFY_URL =
-    "http://122.144.169.214/cgi-bin/star/pay/v1/wx_callback.fcgi";
+    "http://139.224.18.190:8080/cgi-bin/star/pay/v1/wx_callback.fcgi";
 
 /*
  *命名规则为微信文档命名方式

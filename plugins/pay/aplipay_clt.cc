@@ -79,7 +79,7 @@ const std::string KEY_SIGN             = "sign";
 const std::string KEY_TIMESTAMP        = "timestamp";
 const std::string KEY_VERSION          = "version";
 const std::string KEY_BIZ_CONTENT      = "biz_content";
-const std::string NOTIFY_URL           = "http://122.144.169.214/cgi-bin/star/pay/v1/alipay_callback.fcgi";
+const std::string NOTIFY_URL           = "http://139.224.18.190:8080/cgi-bin/star/pay/v1/alipay_callback.fcgi";
 //static std::string method = "alipay.trade.create";
 static std::string method = "alipay.trade.app.pay";
 ApliPayOrder::ApliPayOrder() {
