@@ -150,6 +150,10 @@ bool Infomationlogic::OnInfomationMessage(struct server *srv, const int socket,
     GetBarrageInfo(srv,socket,packet);
     break;
   }
+  case R_GET_USER_AND_STAR_TIME:{
+    GetUserAndStarTime(srv,socket,packet);
+    break;
+  }
   default:
       break;
   }
@@ -158,6 +162,41 @@ bool Infomationlogic::OnInfomationMessage(struct server *srv, const int socket,
       packet = NULL;
   }
 
+  return true;
+}
+
+bool Infomationlogic::GetUserAndStarTime(struct server* srv,int socket ,struct PacketHead* packet){
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  struct PacketControl* packet_recv = (struct PacketControl*) (packet);
+  int64 uid;
+  std::string starcode;
+  bool r1 = packet_recv->body_->GetBigInteger(L"uid",&uid);
+  bool r2 = packet_recv->body_->GetString(L"star_code",&starcode);
+  if(!r1 || !r2){
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+  
+  int64 starowntime = 0, userstartime = 0;
+  if(!sqldb->getuserandstartime(uid,starcode,userstartime,starowntime)){
+    send_error(socket, ERROR_TYPE, NO_DATABASE_ERR, packet->session_id);
+    return false;
+  }
+  
+  
+  //返回
+  struct PacketControl packet_control_ack; 
+  MAKE_HEAD(packet_control_ack,S_GET_USER_AND_STAR_TIME, INFO_TYPE, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic; 
+  dic.SetInteger(L"result", 1);
+  dic.SetBigInteger(L"star_own_time", starowntime);
+  dic.SetBigInteger(L"user_star_time", userstartime);
+  packet_control_ack.body_ = &dic; 
+  send_message(socket, &packet_control_ack); 
   return true;
 }
 

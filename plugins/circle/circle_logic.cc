@@ -186,7 +186,7 @@ bool Circlelogic::OnIniTimer(struct server *srv)
 {
   if (srv->add_time_task != NULL)
   {
-      srv->add_time_task(srv, "circle", TIME_DISTRIBUTION_TASK, 10, -1);
+      srv->add_time_task(srv, "circle", TIME_DISTRIBUTION_TASK, 15, -1);
   }
   return true;
 }
@@ -198,7 +198,7 @@ bool Circlelogic::OnTimeout(struct server *srv, char *id, int opcode,
   {
   case TIME_DISTRIBUTION_TASK:
   {
-    //circle_logic::CircleEngine::GetSchdulerManager()->InitData();
+    circle_logic::CircleEngine::GetSchdulerManager()->InitData();
   }
   default:
       break;
