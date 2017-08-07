@@ -16,7 +16,8 @@ const std::string MCH_ID = "1486969632";
 const std::string MPID = "wxe9f0932fb23e8f8a";
 const std::string MPMCH_ID = "1419354002";
 
-const std::string APP_KEY = "241b71f361d6663c12a12e0f43208ae9";
+//const std::string APP_KEY = "241b71f361d6663c12a12e0f43208ae9";
+const std::string APP_KEY = "yundiankejiAndZhongYing341871845";
 const std::string MP_KEY = "5A9KRBAxYNoNLuaDeWo6U2NzaMvT0iEM";
 
 const std::string APP_TRADE_TYPE = "APP";
