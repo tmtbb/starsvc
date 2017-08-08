@@ -284,6 +284,7 @@ void NetflashManager::ConfirmOrder(const int socket, const int64 session, const 
   }
   if(result == -1){
     share_memory_->JudgeStarLastTimeFinish(symbol);
+    netflash_db_->OnUpdateNetflashsaleResult(netflash_trades_order.order_id(), MONEY_LESS_THAN);
     //用户余额不足
     send_error(socket, ERROR_TYPE, NO_USER_BALANCE_ERR, session);
     return ;
@@ -299,13 +300,16 @@ void NetflashManager::ConfirmOrder(const int socket, const int64 session, const 
   LOG_MSG2("star publish_last_time[%d]", t_last_time);
   
 
+  netflash_trades_order.set_handle_type(COMPLETE_ORDER);
+  netflash_trades_order.set_buy_handle_type(COMPLETE_ORDER);
+  netflash_trades_order.set_sell_handle_type(COMPLETE_ORDER);
   //通知确认
   //SendNoiceMessage(uid, netflash_trades_order.order_id(), netflash_trades_order.handle_type(), session);
   //发送kafka
   netflash_kafka_->SetNetflashOrder(netflash_trades_order);
   //更新用户余额，更新明星时间
   //double totlePrice = amount * price;
-  //netflash_db_->OnUpdateNetflashsaleResult(uid,symbol,amount,totlePrice);
+  netflash_db_->OnUpdateNetflashsaleResult(netflash_trades_order.order_id(), COMPLETE_ORDER);
 
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
   base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(1);
@@ -331,7 +335,7 @@ void NetflashManager::SetNetflashOrder(const int64 uid,const std::string& symbol
   netflash_trades_order.set_close_position_time(0);
   netflash_trades_order.set_open_price(price);
   netflash_trades_order.set_match_type();
-  netflash_trades_order.set_handle_type(COMPLETE_ORDER);
+  //netflash_trades_order.set_handle_type(COMPLETE_ORDER);
 
   //user_order_map_[uid] = netflash_trades_order;
 }

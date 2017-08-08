@@ -18,7 +18,8 @@ THIRD_PATH = $(LIB_DIR)/mylib/public
 
 CUSTOM_THIRD_PATH = $(LIB_DIR)/mylib/third_party
 
-LINK_PATHS = -L./ -L/usr/local/libmemcached-1.0.7/lib/  -L/usr/lib64/mysql
+LINK_PATHS = -L./ -L/usr/local/libmemcached-1.0.7/lib/  -L/usr/lib64/mysql 
+
 
 PLUGIN = $(SO_DIR)/push/push.so
 PLUGIN_TYPE = "LIB"
@@ -132,9 +133,8 @@ $(PLUGIN) : push_init.o  push_logic.o push_db.o push_kafka.o push_engine.o push_
 	star_infos.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o \
 	data_redis_engine.o mysql_pool.o redis_pool.o \
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a \
-	./libgtpushsdk_gc4.1.2_64.so \
 	$(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a 
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ -lgtpushsdk_gc4.1.2_64  \
 	$^ -o $@
 
 ##	$(HOME)/fortest/GETUI_C++_SDK/libgtpushsdk_gc4.1.2_64.so 

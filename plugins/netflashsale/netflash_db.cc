@@ -120,6 +120,25 @@ bool NetflashDB::OnCreateNetflashOrder(star_logic::TradesOrder& netflash_trades_
   return true;
 }
 
+bool NetflashDB::OnUpdateNetflashsaleResult(const int64& orderid, const int32 status) {
+  bool r = false;
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+
+  std::string sql;
+  sql = "call proc_UpdateFlashsaleResult('" 
+      + base::BasicUtil::StringUtil::Int64ToString(orderid) + "','"
+      + base::BasicUtil::StringUtil::Int64ToString(status) 
+      + "');";
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), NULL);
+
+  if (dict) {
+      delete dict;
+      dict = NULL;
+  }
+  return r;
+}
+
 
 bool NetflashDB::OnUpdatePublishStarInfo(const std::string& symbol,const int64 publishtype,
                               const int64 publasttime,const int64 pubbegintime) {
