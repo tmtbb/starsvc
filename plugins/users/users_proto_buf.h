@@ -17,17 +17,24 @@ namespace net_request {
 class RegisterVerfiycode {
  public:
   RegisterVerfiycode()
-      : phone_(NULL) {
+      : phone_(NULL),type_(NULL) {
   }
 
   ~RegisterVerfiycode() {
     if (phone_) {
       delete phone_;
     }
+    if (type_) {
+      delete type_;
+    }
   }
 
   void set_phone(const std::string& phone) {
     phone_ = new base_logic::StringValue(phone);
+  }
+
+  void set_type(const int64 type) {
+    type_ = new base_logic::FundamentalValue(type);
   }
 
   const std::string& phone() const {
@@ -36,10 +43,18 @@ class RegisterVerfiycode {
     return phone;
   }
 
+  const int64 type() {
+    int64 tmp = 0;
+    type_->GetAsBigInteger(&tmp);
+    return tmp;
+  }
+
   bool set_http_packet(base_logic::DictionaryValue* value);
 
  private:
   base_logic::StringValue* phone_;
+  base_logic::FundamentalValue* type_;
+
 };
 
 class UserAccount {
