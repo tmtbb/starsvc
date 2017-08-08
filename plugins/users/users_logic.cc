@@ -799,6 +799,7 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
   }
   
   std::string phone = register_vercode.phone().c_str();
+  int64 t_type = register_vercode.type();
   
 /*  
   ////检测号码是否已经注册
@@ -817,11 +818,13 @@ bool Userslogic::OnRegisterVerifycode(struct server* srv, int socket,
   std::stringstream ss;
   ss << SHELL_SMS << " " << phone << " "
       <<rand_code<<" "
-      << 0;
+      << t_type;
+      //<< 0;
 
   std::string sysc = ss.str();
   //system(sysc.c_str());
   char m_ret[1024] = {0};
+  LOG_ERROR2("send shell : %s,result = 1",sysc.c_str());
   executeCMD(sysc.c_str(),m_ret);
   LOG_MSG2("send shell : %s,result = %s",sysc.c_str(),m_ret);
   if(strstr(m_ret,"\"success\":false")!=NULL){
@@ -1124,6 +1127,10 @@ bool Userslogic::OnResetNickName(struct server* srv, int socket,
 	  else{
 	    userinfo.set_socket_fd(socket);
       userinfo.set_is_effective(true);
+      userinfo.set_token(token);
+      int64 token_time =  time(NULL);
+      userinfo.set_token_time(token_time);
+
       schduler_engine_->SetUserInfoSchduler(userinfo.uid(), &userinfo);
       dic.SetInteger(L"result", 1);
 	  }
