@@ -48,7 +48,7 @@ void Circle::ValueSerialization(base_logic::DictionaryValue* dict) {
   std::string t_approvelist,t_commentlist;
   dict->GetString(L"approval_list", &t_approvelist);
   dict->GetString(L"comment_list", &t_commentlist);
-  LOG_DEBUG2("t_approvelist [%s],",t_approvelist.c_str());
+  //LOG_DEBUG2("t_approvelist [%s],",t_approvelist.c_str());
   
   bool r = false;
   int error_code = 0;

@@ -132,9 +132,11 @@ $(PLUGIN) : push_init.o  push_logic.o push_db.o push_kafka.o push_engine.o push_
 	star_infos.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o \
 	data_redis_engine.o mysql_pool.o redis_pool.o \
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a \
-	$(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a \
-	$(HOME)/fortest/GETUI_C++_SDK/libgtpushsdk_gc4.1.2_64.so 
+	./libgtpushsdk_gc4.1.2_64.so \
+	$(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -lmysqlclient -lfcgi++ \
 	$^ -o $@
+
+##	$(HOME)/fortest/GETUI_C++_SDK/libgtpushsdk_gc4.1.2_64.so 
 
 include ../base.mk
