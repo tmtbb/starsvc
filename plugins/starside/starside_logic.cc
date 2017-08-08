@@ -18,6 +18,7 @@
 #define DEFAULT_CONFIG_PATH "./plugins/starside/starside_config.xml"
 
 #define TIME_DISTRIBUTION_TASK 10001
+#define TIME_RELOADTRANSSTATIS_TASK 10002
 
 namespace starside_logic {
 
@@ -208,7 +209,8 @@ bool StarSidelogic::OnBroadcastClose(struct server *srv, const int socket) {
 bool StarSidelogic::OnIniTimer(struct server *srv) {
   if (srv->add_time_task != NULL) {
     if (srv->add_time_task != NULL) {
-      srv->add_time_task(srv, "starside", TIME_DISTRIBUTION_TASK, 3000, -1);
+      srv->add_time_task(srv, "starside", TIME_DISTRIBUTION_TASK, 600, -1);
+      srv->add_time_task(srv, "starside", TIME_RELOADTRANSSTATIS_TASK, 60*30, -1); //30分
     }
   }
   return true;
@@ -218,11 +220,25 @@ bool StarSidelogic::OnTimeout(struct server *srv, char *id, int opcode,
                              int time) {
   switch (opcode) {
     case TIME_DISTRIBUTION_TASK: {
-      //starside_logic::StarSideEngine::GetSchdulerManager()->InitStarSideTransStatis(); //一天只需重新加载一次
       starside_logic::StarSideEngine::GetSchdulerManager()->InitServiceItem();
       starside_logic::StarSideEngine::GetSchdulerManager()->InitOwnStarUser();
       //starside_logic::StarSideEngine::GetSchdulerManager()->InitStarOwnService();
     //  starside_logic::StarSideEngine::GetSchdulerManager()->InitStarMeetRelList();
+      break;
+    }
+    case TIME_RELOADTRANSSTATIS_TASK: {
+    //条件判断
+      int _time = 0; 
+      struct tm *t;
+      time_t tt;
+      ::time(&tt);
+      t = localtime(&tt);
+
+      char str[10];
+      sprintf(str, "%02d%02d", t->tm_hour, t->tm_min );
+      _time = atoi (str);
+      if (330 < _time < 400) //3：30到4：40之间触发
+        starside_logic::StarSideEngine::GetSchdulerManager()->InitStarSideTransStatis(); //一天只需重新加载一次
       break;
     }
     default:
