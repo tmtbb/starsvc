@@ -26,6 +26,7 @@ public:
   bool OnCreateNetflashOrder(star_logic::TradesOrder& netflash_order, int64& result);
   bool OnUpdatePublishStarInfo(const std::string& symbol,const int64 publishtype,
                             const int64 publasttime,const int64 pubbegintime);
+  bool OnUpdateNetflashsaleResult(const int64& orderid, const int32 status);
 
 private:
   static void CallgetStarExperience(void* param, base_logic::Value* value);

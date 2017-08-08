@@ -24,8 +24,7 @@ public:
 public:
     bool OnFetchPublishStar(std::map<std::string, flash_logic::PulishStar>& map);
     bool OnCreateFlashOrder(star_logic::TradesOrder& flash_order, int64& result);
-    bool OnUpdateFlashsaleResult(const int64 uid,const std::string& symbol,
-                const int64 amount,const double totlePrice);
+    bool OnUpdateFlashsaleResult(const int64& orderid, const int32 status);
     bool OnUpdatePublishStarInfo(const std::string& symbol,const int64 publishtype,
                               const int64 publasttime,const int64 pubbegintime);
 

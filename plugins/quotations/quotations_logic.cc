@@ -190,6 +190,14 @@ bool Quotationslogic::OnRefreshSymbol(struct server* srv, int socket,
   }
 
   quotations_logic::QuotationsEngine::GetSchdulerManager()->InitStarData();
+
+  base_logic::DictionaryValue* ret = new base_logic::DictionaryValue();
+  base_logic::FundamentalValue* t_result = new base_logic::FundamentalValue(1);
+  ret->Set("result", t_result);
+  struct PacketControl packet_control;
+  MAKE_HEAD(packet_control, S_REFRESH_SYMBOL, QUOTATIONS_TYPE, 0, packet->session_id, 0);
+  packet_control.body_ = ret;
+  send_message(socket, &packet_control);
   return true;
 }
 
