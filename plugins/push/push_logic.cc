@@ -168,7 +168,7 @@ bool CPushlogic::OnBroadcastClose(struct server *srv, const int socket) {
 
 bool CPushlogic::OnIniTimer(struct server *srv) {
   if (srv->add_time_task != NULL) {
-    srv->add_time_task(srv, "push", TIME_PUSH_MESSAGE_TASK, 30, -1);
+    srv->add_time_task(srv, "push", TIME_PUSH_MESSAGE_TASK, 5, -1);
   }
   return true;
 }

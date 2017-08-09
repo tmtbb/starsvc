@@ -219,6 +219,7 @@ void FlashManager::ConfirmOrder(const int socket, const int64 session, const int
   }
   if(result == -1){
     share_memory_->JudgeStarLastTimeFinish(symbol);
+    flash_db_->OnUpdateFlashsaleResult(flash_trades_order.order_id(), MONEY_LESS_THAN);
     //用户余额不足
     send_error(socket, ERROR_TYPE, NO_USER_BALANCE_ERR, session);
     return ;
@@ -234,13 +235,16 @@ void FlashManager::ConfirmOrder(const int socket, const int64 session, const int
   LOG_MSG2("star publish_last_time[%d]", t_last_time);
   
 
+  flash_trades_order.set_handle_type(COMPLETE_ORDER);
+  flash_trades_order.set_buy_handle_type(COMPLETE_ORDER);
+  flash_trades_order.set_sell_handle_type(COMPLETE_ORDER);
   //通知确认
   SendNoiceMessage(uid, flash_trades_order.order_id(), flash_trades_order.handle_type(), session);
   //发送kafka
   flash_kafka_->SetFlashOrder(flash_trades_order);
   //更新用户余额，更新明星时间
   //double totlePrice = amount * price;
-  //flash_db_->OnUpdateFlashsaleResult(uid,symbol,amount,totlePrice);
+  flash_db_->OnUpdateFlashsaleResult(flash_trades_order.order_id(),COMPLETE_ORDER);
 
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
   base_logic::FundamentalValue* ret = new base_logic::FundamentalValue(1);
@@ -266,7 +270,7 @@ void FlashManager::SetFlashOrder(const int64 uid,const std::string& symbol,const
   flash_trades_order.set_close_position_time(0);
   flash_trades_order.set_open_price(price);
   flash_trades_order.set_match_type();
-  flash_trades_order.set_handle_type(COMPLETE_ORDER);
+  //flash_trades_order.set_handle_type(COMPLETE_ORDER);
 
   user_order_map_[uid] = flash_trades_order;
 }

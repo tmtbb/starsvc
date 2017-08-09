@@ -129,11 +129,11 @@ void CNotificationMessage::SetData(char* title, char* text,
   //templ->t.duration_start="2015-07-10 18:00:00";
   //templ->t.duration_end="2015-07-10 19:00:00";
   //接收消息是否响铃, GT_ON: 响铃  GT_OFF: 不响铃
-  templ->isRing = GT_OFF;
+  templ->isRing = GT_ON;
   //震动
-  templ->isVibrate = GT_OFF;
+  templ->isVibrate = GT_ON;
   //接收到消息是否可清除
-  templ->isClearable = GT_OFF;
+  templ->isClearable = GT_ON;
 }
 
 //CLinkMessage
