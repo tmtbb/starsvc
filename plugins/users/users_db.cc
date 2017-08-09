@@ -790,7 +790,7 @@ void UsersDB::CallGetVersion(void* param, base_logic::Value* value) {
       if (rows[1] != NULL)
         info_value->SetString(L"versionname", (rows[1]));
       if (rows[2] != NULL)
-        info_value->SetInteger(L"type", atoi(rows[2]));
+        info_value->SetBigInteger(L"type", atoi(rows[2]));
       if (rows[3] != NULL)
         info_value->SetBigInteger(L"size", atoll(rows[3]));
       if (rows[4] != NULL)
@@ -802,7 +802,7 @@ void UsersDB::CallGetVersion(void* param, base_logic::Value* value) {
       if (rows[7] != NULL)
         info_value->SetString(L"url", rows[7]);
       if (rows[8] != NULL)
-        info_value->SetInteger(L"isforceupdate", atoi(rows[8]));
+        info_value->SetBigInteger(L"isforceupdate", atoi(rows[8]));
     }
   }
   dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
