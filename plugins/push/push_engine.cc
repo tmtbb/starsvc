@@ -24,7 +24,7 @@ void IPushImpl::printResult(IPushResult &result){
 void CPushToAppImpl::sendMessage(IMessage* pMessage, TemplateType tType){
   //准备数据
   Message msg = {0};
-  msg.isOffline = 0;//是否离线下发
+  msg.isOffline = true;//是否离线下发
   msg.offlineExpireTime = GetOfflineExpireTime();//离线下发有效期 毫秒
   msg.pushNetWorkType = UNLIMIT;//0不限 1wifi 2:4G/3G/2G
 
@@ -36,11 +36,11 @@ void CPushToAppImpl::sendMessage(IMessage* pMessage, TemplateType tType){
   appMsg.appIdListSize = 1;
 
   IPushResult result = {0};
-  cout<<"TemplateType tType:"<<tType<<",appKey:"<<appKey<<endl;
+  //cout<<"TemplateType tType:"<<tType<<",appKey:"<<appKey<<endl;
   result = pushMessageToApp(appKey, &appMsg, pMessage->GetData(), tType);
   
   //打印结果
-  printResult(result);
+  //printResult(result);
 }
 
 //CPushToSingleImpl

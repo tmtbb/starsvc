@@ -2135,6 +2135,107 @@ class StarBrief {
   Data* data_;
 };
 
+class PushMessage {
+ public: 
+    PushMessage();
+    PushMessage(const PushMessage& mesage_);
+
+    PushMessage& operator =(const PushMessage& push_message);
+
+    ~PushMessage() {
+        if (data_ != NULL) {
+            data_->Release();
+        }
+    }
+
+    base_logic::DictionaryValue* GetValue();
+
+    void ValueSerialization(base_logic::DictionaryValue* dict);
+
+    const int64 uid() const {
+        return data_->uid_;
+    }
+
+    const std::string& title() const {
+        return data_->title_;
+    }
+
+    const std::string& text() const {
+        return data_->text_;
+    }
+
+    const std::string& log() const {
+        return data_->log_;
+    }
+
+    const std::string& logurl() const {
+        return data_->logurl_;
+    }
+
+    const std::string& content() const {
+        return data_->content_;
+    }
+
+    void set_uid(const int64 uid) {
+        data_->uid_ = uid;
+    }
+
+    void set_title(const std::string& title) {
+        data_->title_ = title;
+    }
+
+    void set_text(const std::string& text) {
+        data_->text_ = text;
+    }
+
+    void set_log(const std::string& log) {
+        data_->log_ = log;
+    }
+
+    void set_logurl(const std::string& logurl) {
+        data_->logurl_ = logurl;
+    }
+
+    void set_content(const std::string& content) {
+        data_->content_ = content;
+    }
+
+
+ private:
+    class Data {
+       public:
+        Data()
+            :uid_(0)
+            ,title_("")
+            ,text_("")
+            ,log_("")
+            ,logurl_("")
+            ,content_("")
+            { }
+
+        public:
+            int64       uid_;
+            std::string   title_;
+            std::string   text_;
+            std::string   log_;
+            std::string   logurl_;
+            std::string   content_;
+
+        void AddRef() {
+            __sync_fetch_and_add(&refcount_, 1);
+        }
+        void Release() {
+            __sync_fetch_and_sub(&refcount_, 1);
+            if (!refcount_)
+                delete this;
+        }
+
+        private:
+            int refcount_;
+    };
+    Data*  data_;
+};
+
 }  // namespace quotations_logic
 
 #endif /* QUOTATIONS_PUB_LOGIC_QUOTATIONS_INFOS_H_ */

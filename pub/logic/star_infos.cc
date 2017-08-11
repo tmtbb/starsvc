@@ -671,4 +671,60 @@ void StarBrief::ValueSerialization(base_logic::DictionaryValue* dict) {
 }
 
 
+PushMessage::PushMessage() {
+    data_ = new Data();
+}
+
+PushMessage::PushMessage(const PushMessage& push_message)
+    : data_(push_message.data_) {
+    if (data_ != NULL) {
+        data_->AddRef();
+    }
+}
+
+PushMessage& PushMessage::operator =(
+    const PushMessage& push_message) {
+    if (push_message.data_ != NULL) {
+        push_message.data_->AddRef();
+    }
+
+    if (data_ != NULL) {
+        data_->Release();
+    }
+
+    data_ = push_message.data_;
+    return (*this);
+}
+
+
+void PushMessage::ValueSerialization(base_logic::DictionaryValue* dict) {
+    dict->GetBigInteger(L"uid", &data_->uid_);
+    dict->GetString(L"title",&data_->title_);
+    dict->GetString(L"text",&data_->text_);
+    dict->GetString(L"log",&data_->log_);
+    dict->GetString(L"logurl",&data_->logurl_);
+    dict->GetString(L"content",&data_->content_);
+}
+
+
+base_logic::DictionaryValue* PushMessage::GetValue() {
+    if (data_ == NULL)
+        return NULL;
+    base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+    if (data_->uid_ != 0)
+        dict->SetBigInteger(L"uid",data_->uid_);
+    if (!data_->title_.empty())
+        dict->SetString(L"title", data_->title_);
+    if (!data_->text_.empty())
+        dict->SetString(L"text", data_->text_);
+    if (!data_->log_.empty())
+        dict->SetString(L"log", data_->log_);
+    if (!data_->logurl_.empty())
+        dict->SetString(L"logurl", data_->logurl_);
+    if (!data_->content_.empty())
+        dict->SetString(L"content", data_->content_);
+    return dict;
+}
+
+
 }  // namespace quotations_logic

@@ -128,27 +128,26 @@ void NetflashManager::TimeStarEvent() {
   if (netflash_task_list_.size() <= 0)
     return;
 
+  bool r = false;
   netflash_task_list_.sort(flash_logic::TimeTask::cmp);
-  while (netflash_task_list_.size() > 0) {
-    //达到任务时间，则执行任务
-    flash_logic::TimeTask time_task = netflash_task_list_.front();
-    LOG_MSG2("current_time %d, time_task %d", current_time, time_task.task_start_time());
-    if (current_time < time_task.task_start_time() || time_task.task_start_time() < 1262275200)
-        break;
-    netflash_task_list_.pop_front();
-    //修改状态
+  TIME_TASK_LIST::iterator iter = netflash_task_list_.begin();
+  for(; iter != netflash_task_list_.end(); ++iter){
+    LOG_MSG2("current_time %d, time_task %d", current_time, iter->task_start_time());
+    if (current_time < iter->task_start_time() || iter->task_start_time() < 1262275200)
+      break;
+
     LOG_MSG("NEXT STAT");
-    ProcessTimeTask(current_time, time_task);
-    netflash_task_list_.push_back(time_task);
+    ProcessTimeTask(current_time, *(iter));
 
     flash_logic::PulishStar pubstar;
-    bool r = share_memory_->GetStarfromShareMemory(time_task.symbol(), pubstar);
+    r = share_memory_->GetStarfromShareMemory(iter->symbol(), pubstar);
     if (!r) {
       continue;
     }
-    netflash_db_->OnUpdatePublishStarInfo(time_task.symbol(),time_task.task_type(),
-                          pubstar.publish_last_time(),pubstar.publish_begin_time());
-  }
+    netflash_db_->OnUpdatePublishStarInfo(iter->symbol(),
+                      iter->task_type(),pubstar.publish_last_time(),pubstar.publish_begin_time());
+    
+    }
 
 }
 
