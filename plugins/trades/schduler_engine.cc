@@ -653,7 +653,7 @@ void TradesManager::SendNoiceMessage(const int64 uid, const int32 operator_code,
         pushmessage.set_logurl("http://ofr5nvpm7.bkt.clouddn.com/startshare-80.jpg");
         if(S_MATCH_NOTICE == operator_code) {
             pushmessage.set_text("委托匹配成功");
-            resultstr = "0";
+            resultstr = "10";
         } else {
             pushmessage.set_text("交易成功");
             int64 result = 0;
@@ -673,10 +673,6 @@ void TradesManager::SendNoiceMessage(const int64 uid, const int32 operator_code,
         pushmessage.set_content(resultstr);
         push_message_kafka_->SetPushMessage(pushmessage);
 
-        if(message) {
-            delete message;
-            message = NULL;
-        }
     }
     
 }
