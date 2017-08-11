@@ -55,7 +55,7 @@ public:
     m_lOfflineExpireTime = l;
   }
   
-  void SetOfflineExpireTime(int32 i){
+  void SetPushNetWorkType(int32 i){
     m_iPushNetWorkType = i;
   }
   

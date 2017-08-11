@@ -7,7 +7,7 @@
 
 namespace trades_logic {
 
-TradesKafka::TradesKafka(config::FileConfig* config) {
+TradesKafka::TradesKafka(config::FileConfig* config, int32 id) {
   /*
    if (PRODUCER_INIT_SUCCESS
    != kafka_producer_.Init(
@@ -17,14 +17,22 @@ TradesKafka::TradesKafka(config::FileConfig* config) {
    else
    LOG_ERROR("producer kafka_newsparser_algo init success");
    */
-  base::ConnAddr addr = config->kafka_list_.front();
-  if (PRODUCER_INIT_SUCCESS
-      != kafka_producer_.Init(addr))
-      LOG_ERROR2("producer init failed: host:%s source %s additional %s",
-                addr.host().c_str(), addr.source().c_str(),addr.additional().c_str());
-  else
-      LOG_MSG2("producer init success: host:%s source %s additional %s",
-        addr.host().c_str(), addr.source().c_str(),addr.additional().c_str());
+  
+  std::list<base::ConnAddr>::iterator it = config->kafka_list_.begin();
+  for(; it != config->kafka_list_.end(); ++it) {
+    if ( id == it->id() ) {
+      if ( PRODUCER_INIT_SUCCESS == kafka_producer_.Init(*it) )
+        LOG_MSG2("producer init success: id:%d host:%s source %s additional %s",
+          it->id(),it->host().c_str(), it->source().c_str(), it->additional().c_str());
+      else
+        LOG_ERROR2("producer init failed: id:%d host:%s source %s additional %s",
+          it->id(),it->host().c_str(), it->source().c_str(), it->additional().c_str());
+
+      break;
+    } else {
+      continue;
+    }
+  }
 }
 
 TradesKafka::TradesKafka(base::ConnAddr& addr) {
@@ -65,6 +73,20 @@ bool TradesKafka::SetTradesOrder(star_logic::TradesOrder& order) {
         return true;
     else {
         LOG_ERROR("kafka producer send data failed");
+        return false;
+    }
+}
+
+bool TradesKafka::SetPushMessage(star_logic::PushMessage& message) {
+  LOG_DEBUG2("message ________ %ld, %s", message.uid(), message.text().c_str());
+    int re = PUSH_DATA_SUCCESS; 
+    base_logic::DictionaryValue* task_info = message.GetValue();
+    re = kafka_producer_.PushData(task_info);
+    delete task_info;
+    if (PUSH_DATA_SUCCESS == re)
+        return true;
+    else {
+        LOG_ERROR("kafka producer send push data failed");
         return false;
     }
 }

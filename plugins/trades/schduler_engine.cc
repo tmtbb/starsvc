@@ -40,6 +40,10 @@ void TradesManager::InitKafka(trades_logic::TradesKafka* trades_kafka) {
     trades_kafka_ = trades_kafka;
 }
 
+void TradesManager::InitPushKafka(trades_logic::TradesKafka* push_message_kafka) {
+    push_message_kafka_ = push_message_kafka;
+}
+
 void TradesManager::Init() {
     InitThreadrw(&lock_);
     InitThreadrw(&auto_lock_);
@@ -241,13 +245,13 @@ int32 TradesManager::ConfirmOrder(const int64 uid,const int64 order_id, const in
 
     //trades_kafka_->SetTradesOrder(trades_order);
     //通知确认
-    {
+    /*{
         trades_logic::net_reply::OrderConfirm order_confirm;
         order_confirm.set_order_id(order_id);
         order_confirm.set_uid(uid);
         order_confirm.set_status(trades_order.handle_type());
         SendNoiceMessage(uid, S_CONFIRM_ORDER, 0, order_confirm.get());
-    }
+    }*/
     //检测是否双方确认
     if(trades_order.is_complete()){
         //双方确认，开始扣费
@@ -634,12 +638,47 @@ void TradesManager::AlterTradesPositionState(const int64 position_id,
 void TradesManager::SendNoiceMessage(const int64 uid, const int32 operator_code, const int64 session,
                                      base_logic::DictionaryValue* message) {
     star_logic::UserInfo user;
-    schduler_engine_->GetUserInfoSchduler(uid, &user);
-    struct PacketControl packet_control;
-    MAKE_HEAD(packet_control, operator_code, 1, 0, session, 0);
-    packet_control.body_ = message;
-    send_message(user.socket_fd(), &packet_control);
+    if(schduler_engine_->GetUserInfoSchduler(uid, &user)) {
+        struct PacketControl packet_control;
+        MAKE_HEAD(packet_control, operator_code, 1, 0, session, 0);
+        packet_control.body_ = message;
+        send_message(user.socket_fd(), &packet_control);
+    } else {
+        // 离线推送
+        star_logic::PushMessage pushmessage;
+        std::string resultstr = "0";
+        pushmessage.set_uid(uid); 
+        pushmessage.set_title("星享时光");
+        pushmessage.set_log("星享时光图标"); //TODO
+        pushmessage.set_logurl("http://ofr5nvpm7.bkt.clouddn.com/startshare-80.jpg");
+        if(S_MATCH_NOTICE == operator_code) {
+            pushmessage.set_text("委托匹配成功");
+            resultstr = "0";
+        } else {
+            pushmessage.set_text("交易成功");
+            int64 result = 0;
+            if( message->GetBigInteger(L"result", &result) ) 
+                resultstr = base::BasicUtil::StringUtil::Int64ToString(result);
+        }
 
+        //int64 result, orderid, status;
+        /*std::string tmpstr = "uid:" + base::BasicUtil::StringUtil::Int64ToString(uid);;
+        if( message->GetBigInteger(L"orderId", &orderid) ) 
+            tmpstr += ",orderId:" + base::BasicUtil::StringUtil::Int64ToString(orderid);
+        if( message->GetBigInteger(L"result", &result) ) 
+            tmpstr = ",result:" + base::BasicUtil::StringUtil::Int64ToString(result);
+        if( message->GetBigInteger(L"status", &status) )
+            tmpstr += ",status:" + base::BasicUtil::StringUtil::Int64ToString(status);*/
+        
+        pushmessage.set_content(resultstr);
+        push_message_kafka_->SetPushMessage(pushmessage);
+
+        if(message) {
+            delete message;
+            message = NULL;
+        }
+    }
+    
 }
 
 void TradesManager::AutoMatachOrder(time_t& current_time) {

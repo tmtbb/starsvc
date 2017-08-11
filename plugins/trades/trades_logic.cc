@@ -43,6 +43,10 @@ Tradeslogic::~Tradeslogic()
         delete trades_kafka_;
         trades_kafka_ = NULL;
     }
+    if(push_message_kafka_) {
+        delete push_message_kafka_;
+        push_message_kafka_ = NULL;
+    }
     trades_logic::TradesEngine::FreeSchdulerManager();
     trades_logic::TradesEngine::FreeTradesEngine();
 }
@@ -60,9 +64,11 @@ bool Tradeslogic::Init()
     LOG_MSG2("path : %s", path.c_str());
     trades_logic::TradesEngine::GetSchdulerManager();
     trades_db_ = new trades_logic::TradesDB(config);
-    trades_kafka_ = new trades_logic::TradesKafka(config);
+    trades_kafka_ = new trades_logic::TradesKafka(config, 1);
+    push_message_kafka_ = new trades_logic::TradesKafka(config, 2);
     trades_logic::TradesEngine::GetSchdulerManager()->InitDB(trades_db_);
     trades_logic::TradesEngine::GetSchdulerManager()->InitKafka(trades_kafka_);
+    trades_logic::TradesEngine::GetSchdulerManager()->InitPushKafka(push_message_kafka_);
     trades_logic::TradesEngine::GetSchdulerManager()->InitData();
     base::SysRadom::GetInstance();
     std::string schduler_library = "./data_share.so";

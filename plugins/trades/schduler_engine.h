@@ -78,6 +78,7 @@ public:
     void TimeEvent(int opcode, int time);
     void InitDB(trades_logic::TradesDB* trades_db);
     void InitKafka(trades_logic::TradesKafka* trades_kafka);
+    void InitPushKafka(trades_logic::TradesKafka* push_message_kafka);
     void InitData();
     void InitManagerSchduler(manager_schduler::SchdulerEngine* schduler_engine);
     void TimeStarEvent();
@@ -143,6 +144,7 @@ private:
     TradesCache *trades_cache_;
     trades_logic::TradesDB* trades_db_;
     trades_logic::TradesKafka*  trades_kafka_;
+    trades_logic::TradesKafka*  push_message_kafka_;
     struct threadrw_t *lock_;
     struct threadrw_t *auto_lock_;
 };

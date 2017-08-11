@@ -29,7 +29,8 @@ class UsersDB {
                        const std::string &recommend, 
                        const std::string& memberid,
                        const std::string& sub_agentId,
-                       const std::string& channel);
+                       const std::string& channel,
+                       const std::string& starcode);
 
   bool LoginAccount(const std::string& phone_num, const std::string& passwd,
                     const std::string& ip, star_logic::UserInfo& user);
