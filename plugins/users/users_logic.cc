@@ -441,7 +441,7 @@ bool Userslogic::OnRegisterAccount(struct server* srv, int socket,
     bool r7 = packet_control->body_->GetString(L"channel", &channel);
     bool r8 = packet_control->body_->GetString(L"star_code", &starcode);
     LOG_ERROR2("---------------------%d,%d,%d,%d,%d",r1,r2,r3,r4,r5);
-    bool r = (r1 && r2 && r3 && r4 && r5 && r6 && r7);
+    bool r = (r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8);
     if (!r) {
         LOG_DEBUG2("packet_length %d",packet->packet_length);
         send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
