@@ -42,6 +42,7 @@ void HistoryManager::InitSchdulerEngine(
 
 void HistoryManager::InitHistoryWithDrawals() {
   base_logic::WLockGd lk(lock_);
+  history_cache_->all_withdrawals_map_.clear();
   std::list<star_logic::Withdrawals> list;
   history_db_->OnHistroyWithDraw(&list);
   while (list.size() > 0) {
@@ -64,6 +65,7 @@ void HistoryManager::InitHistoryTradesData() {
 
 void HistoryManager::InitHistoryRechargeData() {
   base_logic::WLockGd lk(lock_);
+  history_cache_->all_rechage_map_.clear();
   std::list<star_logic::Recharge> list;
   history_db_->OnHistroyRechargeRecord(&list);
   while (list.size() > 0) {
@@ -76,6 +78,7 @@ void HistoryManager::InitHistoryRechargeData() {
 
 void HistoryManager::InitOwnStarData() {
   base_logic::WLockGd lk(lock_);
+  history_cache_->all_ownstar_map_.clear();
   std::list<star_logic::TOwnStar> list;
   history_db_->OnOwnStarRecord(&list);
   while (list.size() > 0) {
