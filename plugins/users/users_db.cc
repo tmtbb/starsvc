@@ -239,7 +239,8 @@ bool UsersDB::RegisterAccount(const std::string& phone_num,
                               const std::string& recommend, 
                               const std::string& memberid,
                               const std::string& sub_agentId,
-                              const std::string& channel
+                              const std::string& channel,
+                              const std::string& starcode
                               ) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
@@ -252,6 +253,7 @@ bool UsersDB::RegisterAccount(const std::string& phone_num,
       + memberid + "','" + agentid + "','" + recommend + "'," + "''"
       + ",'" + sub_agentId 
       + "','" + channel 
+      + "','" + starcode 
       + "');";
   LOG_ERROR2("sqlcommand = %s",sql.c_str());
   base_logic::ListValue *listvalue;

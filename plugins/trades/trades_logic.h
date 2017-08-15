@@ -63,6 +63,7 @@ private:
 private:
     trades_logic::TradesDB*  trades_db_;
     trades_logic::TradesKafka*  trades_kafka_;
+    trades_logic::TradesKafka*  push_message_kafka_;
     manager_schduler::SchdulerEngine* schduler_engine_;
 };
 } // namespace trades_logic

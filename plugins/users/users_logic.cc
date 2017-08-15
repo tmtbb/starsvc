@@ -431,7 +431,7 @@ bool Userslogic::OnRegisterAccount(struct server* srv, int socket,
     std::string sub_agentId;
     std::string memberId;
     std::string recommend;
-    std::string channel;
+    std::string channel, starcode("");
     bool r1 = packet_control->body_->GetString(L"pwd", &passwd);
     bool r2 = packet_control->body_->GetString(L"phone", &phonenum);
     bool r3 = packet_control->body_->GetString(L"agentId", &agentId);
@@ -439,8 +439,9 @@ bool Userslogic::OnRegisterAccount(struct server* srv, int socket,
     bool r5 = packet_control->body_->GetString(L"memberId", &memberId);
     bool r6 = packet_control->body_->GetString(L"sub_agentId", &sub_agentId);
     bool r7 = packet_control->body_->GetString(L"channel", &channel);
+    bool r8 = packet_control->body_->GetString(L"star_code", &starcode);
     LOG_ERROR2("---------------------%d,%d,%d,%d,%d",r1,r2,r3,r4,r5);
-    bool r = (r1 && r2 && r3 && r4 && r5 && r6 && r7);
+    bool r = (r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8);
     if (!r) {
         LOG_DEBUG2("packet_length %d",packet->packet_length);
         send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
@@ -454,7 +455,7 @@ bool Userslogic::OnRegisterAccount(struct server* srv, int socket,
     r = user_db_->RegisterAccount(phonenum,
                                   passwd, 0,
                                   uid, result,agentId,
-                                  recommend,memberId,sub_agentId, channel);
+                                  recommend,memberId,sub_agentId, channel, starcode);
     if (!r && result == -1) {  //agenid 不存在
         send_error(socket, ERROR_TYPE, NO_AGENTID, packet->session_id);
         return false;

@@ -178,7 +178,6 @@ bool CPushlogic::OnTimeout(struct server *srv, char *id, int opcode,
   switch (opcode) {
     case TIME_PUSH_MESSAGE_TASK:
       DealMessage();
-      LOG_DEBUG2("Ontime message deal finished [%d]", 6666);
       break; 
     default:
       break;
@@ -267,13 +266,16 @@ void CPushlogic::DealMessage(){
       }else{
         //android 单推
         //透传模版
-        m_pPushMessage = m_pMessageFactory->CreateMessage(Notification);
+        //m_pPushMessage = m_pMessageFactory->CreateMessage(Notification);
+        m_pPushMessage = m_pMessageFactory->CreateMessage(Transmission);
         m_pPushMessage->SetData(cTitle, cTitleText, 
                                 cLogo, cLogoUrl, cContent);
 
         m_pPushImpl = m_pPushImplFactory->CreatePushMessageImpl(push_logic::PUSH_TO_SINGLE);
+        m_pPushImpl->SetOfflineExpireTime(30000);
         m_pPushImpl->setCid(deviceId.c_str());
-        m_pPushImpl->sendMessage(m_pPushMessage, Notification);
+        //m_pPushImpl->sendMessage(m_pPushMessage, Notification);
+        m_pPushImpl->sendMessage(m_pPushMessage, Transmission);
         LOG_DEBUG2("Push to android user finish.[%ld],[%s]", iUid, deviceId.c_str());
       }
     }

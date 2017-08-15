@@ -32,7 +32,7 @@ void CTransmissionMessage::SetData(char* title, char* text, char* logo, char* lo
   templ->t.appId = appId; 
   templ->t.appKey = appKey; 
    //应用启动类型，1：强制应用启动 2：等待应用启动
-  templ->transmissionType = 1;          
+  templ->transmissionType = 2;          
   //透传内容  
   templ->transmissionContent = content; 
   //templ->t.duration_start="2015-07-10 18:00:00";
