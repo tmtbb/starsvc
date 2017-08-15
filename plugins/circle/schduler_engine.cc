@@ -336,10 +336,18 @@ bool CircleManager::StarReplyCircle(const int socket, const int64 session, const
 bool CircleManager::GetSymbolAllCircle(const int socket, const int64 session, const int32 reserved,
                         const std::string& symbol, const int64 pos, const int64 count){
   circle_reply::CircleListReply circlereplylist;
+  star_logic::StarInfo star;
+  bool r = manager_schduler_engine_->GetStarInfoSchduler(symbol, &star);
+  if(!r){
+    //明星已经删除
+    LOG_ERROR2("star [%s] not exist or expired.", symbol.c_str());
+    send_error(socket, ERROR_TYPE, NO_STAR_NO_EXIST, session);
+    return false;
+  }
   
   base_logic::RLockGd lk(lock_);
   CIRCLE_MAP t_circle_map;
-  bool r = base::MapGet<STAR_CIRCLE_MAP,STAR_CIRCLE_MAP::iterator, std::string, CIRCLE_MAP>
+  r = base::MapGet<STAR_CIRCLE_MAP,STAR_CIRCLE_MAP::iterator, std::string, CIRCLE_MAP>
           (star_circle_map_, symbol, t_circle_map);
   if(!r){
     send_error(socket, ERROR_TYPE, NO_CIRCLE_NO_ERR, session);
@@ -362,22 +370,10 @@ bool CircleManager::GetSymbolAllCircle(const int socket, const int64 session, co
       circlereply->SetCircle(circle);
       circlereply->SetApproveList(GetCircleApproveList(circle));
       circlereply->SetCommentList(GetCircleCommentList(circle));
-
-      star_logic::StarInfo star;
-      r = manager_schduler_engine_->GetStarInfoSchduler(symbol, &star);
-      if (!r) {
-        circlereply->SetName("");
-        circlereply->SetHeadUrl("");
-        circlereply->SetApproveDecTime(1);
-        circlereply->SetCommentDecTime(1);
-      }
-      else{
-        circlereply->SetName(star.name());
-        circlereply->SetHeadUrl(star.pic());
-        circlereply->SetApproveDecTime(star.approval_dec_time());
-        circlereply->SetCommentDecTime(star.comment_dec_time());
-      }
-      
+      circlereply->SetName(star.name());
+      circlereply->SetHeadUrl(star.pic());
+      circlereply->SetApproveDecTime(star.approval_dec_time());
+      circlereply->SetCommentDecTime(star.comment_dec_time());
       
       circlereplylist.set_unit(circlereply->get());
     }
@@ -401,6 +397,7 @@ bool CircleManager::GetAllCircle(const int socket, const int64 session, const in
                         const int64 pos, const int64 count){
   
   circle_reply::CircleListReply circlereplylist;
+  star_logic::StarInfo star;
 
   bool r = false;
   int32 posnum = 0;
@@ -412,6 +409,12 @@ bool CircleManager::GetAllCircle(const int socket, const int64 session, const in
     if((*iter)->GetStatus() == CIRCLE_DEL_STATUS)
       continue;
     
+    r = manager_schduler_engine_->GetStarInfoSchduler((*iter)->GetSymbol(), &star);
+    if(!r){
+      //过期明星圈子信息不展示
+      continue;
+    }
+
     ++posnum;
     if(posnum > pos){
       ++startnum;
@@ -419,21 +422,10 @@ bool CircleManager::GetAllCircle(const int socket, const int64 session, const in
       circlereply->SetCircle(*iter);
       circlereply->SetApproveList(GetCircleApproveList(*iter));
       circlereply->SetCommentList(GetCircleCommentList(*iter));
-
-      star_logic::StarInfo star;
-      r = manager_schduler_engine_->GetStarInfoSchduler((*iter)->GetSymbol(), &star);
-      if (!r) {
-        circlereply->SetName("");
-        circlereply->SetHeadUrl("");
-        circlereply->SetApproveDecTime(1);
-        circlereply->SetCommentDecTime(1);
-      }
-      else{
-        circlereply->SetName(star.name());
-        circlereply->SetHeadUrl(star.pic());
-        circlereply->SetApproveDecTime(star.approval_dec_time());
-        circlereply->SetCommentDecTime(star.comment_dec_time());
-      }
+      circlereply->SetName(star.name());
+      circlereply->SetHeadUrl(star.pic());
+      circlereply->SetApproveDecTime(star.approval_dec_time());
+      circlereply->SetCommentDecTime(star.comment_dec_time());
       
       circlereplylist.set_unit(circlereply->get());
     }

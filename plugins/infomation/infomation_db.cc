@@ -939,6 +939,8 @@ void Infomation_Mysql::CallgetOnestarInfo(void* param, base_logic::Value* value)
         info_value->SetBigInteger(L"acc_id", atoll(rows[9]));
       if (rows[10] != NULL)
       	info_value->SetString(L"work", rows[10]);
+      if (rows[11] != NULL)
+        info_value->SetInteger(L"publish_type", atoi(rows[11]));
     }
     dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
   }

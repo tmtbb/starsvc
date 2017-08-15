@@ -61,11 +61,17 @@ void QuotationsManager::InitStarData() {
   BASIC_INFO_MAP::iterator it = star_info_list.begin();
   for(; it != star_info_list.end(); ++it) {
     star_logic::StarInfo& star = it->second;
-    std::string key = "star_index:" + star.weibo_index_id();
-    InitRedisData(key, STAR_TYPE);
+    if(0 == star.status()){
+      std::string key = "star_index:" + star.weibo_index_id();
+      InitRedisData(key, STAR_TYPE);
 
-    manager_schduler_engine_->SetStarInfoSchduler(star.symbol(),
+      manager_schduler_engine_->SetStarInfoSchduler(star.symbol(),
                                 &star);
+    } else {
+      //delete
+      manager_schduler_engine_->DelStarInfoSchduler(star.symbol());
+    }
+    
   }
 
   quotations_db_->OngetSysParamValue(quotations_cache_->sys_param_map_);
@@ -353,7 +359,8 @@ void QuotationsManager::SendSymbolOne(const int socket,
         r_symbol_unit->set_change(0);
         r_symbol_unit->set_pchg(0);
       }
-      r_symbol_unit->set_pushlish_type(star.publish_type());
+      //r_symbol_unit->set_cur_pulish_type(star.cur_pulish_type());
+      r_symbol_unit->set_pushlish_type(star.home_pulish_type());
       r_symbol_unit->set_home_button_pic(star.home_button_pic());
       
       //symbol_list.set_unit(r_symbol_unit->get());
@@ -437,7 +444,8 @@ void QuotationsManager::SendQuotationsList(const int socket, const int64 session
         r_symbol_unit->set_change(0);
         r_symbol_unit->set_pchg(0);
       }
-      r_symbol_unit->set_pushlish_type(star.publish_type());
+      //r_symbol_unit->set_cur_pulish_type(star.cur_pulish_type());
+      r_symbol_unit->set_pushlish_type(star.home_pulish_type());
       r_symbol_unit->set_home_button_pic(star.home_button_pic());
       
       symbol_list.set_unit(r_symbol_unit->get());
