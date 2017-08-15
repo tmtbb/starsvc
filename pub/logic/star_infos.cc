@@ -508,10 +508,12 @@ void StarInfo::ValueSerialization(base_logic::DictionaryValue* dict) {
     dict->GetString(L"pic1", &data_->home_pic_);
     dict->GetString(L"home_button_pic", &data_->home_button_pic_);
     dict->GetBigInteger(L"add_time", &data_->add_time_);
-    dict->GetInteger(L"publish_type", &data_->publish_type_);
+    dict->GetInteger(L"cur_pulish_type", &data_->cur_pulish_type_);
+    dict->GetInteger(L"home_pulish_type", &data_->home_pulish_type_);
     dict->GetInteger(L"approval_time", &data_->approval_dec_time_);
     dict->GetInteger(L"comment_time", &data_->comment_dec_time_);
     dict->GetString(L"work", &data_->work_);
+    dict->GetInteger(L"status", &data_->status_);
 }
 ///TOwnStar
 
