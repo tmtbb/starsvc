@@ -336,6 +336,18 @@ class LoginAccount {
   void set_device_id(std::string& device_id) {
     device_id_ = new base_logic::StringValue(device_id);
   }
+  void set_isp(std::string& isp) {
+    isp_ = isp;
+  }
+  void set_area(std::string& area) {
+    area_ = area;
+  }
+  void set_isp_id(int64 id) {
+    isp_id_ = id;
+  }
+  void set_area_id(int64 id) {
+    area_id_ = id;
+  }
 
   const std::string phone_num() const {
     std::string phone_num;
@@ -356,11 +368,25 @@ class LoginAccount {
       device_id_->GetAsString(&device_id);
     return device_id;
   }
+  const std::string isp() const {
+    return isp_;
+  }
+  const std::string area() const {
+    return area_;
+  }
+  const int64 isp_id() const {
+    return isp_id_;
+  }
+  const int64 area_id() const {
+    return area_id_;
+  }
 
  private:
   base_logic::StringValue* phone_num_;
   base_logic::StringValue* passwd_;
   base_logic::StringValue* device_id_;
+  std::string isp_, area_;
+  int64 isp_id_, area_id_;
 
 };
 

@@ -320,6 +320,10 @@ bool UsersDB::GetUserInfo(const int64 uid, const std::string& ip,
 
 bool UsersDB::LoginAccount(const std::string& phone_num,
                            const std::string& passwd, const std::string& ip,
+                           const std::string& isp,
+                           const std::string& area,
+                           int64 isp_id,
+                           int64 area_id,
                            star_logic::UserInfo& user) {
   bool r = false;
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
@@ -327,7 +331,9 @@ bool UsersDB::LoginAccount(const std::string& phone_num,
   std::string sql;
 
   //call actuals.proc_LoginAccount('18668169052','4bcf73028a526f5ae6899759ab332c3d3b173855bef3b22b19224cd5233d39c0','127.0,0.1')
-  sql = "call proc_LoginAccount('" + phone_num + "','" + passwd + "','" + ip
+  sql = "call proc_LoginAccount('" + phone_num + "','" + passwd + "','" + ip + "','" + isp + "','" + area + "','" 
+      + base::BasicUtil::StringUtil::Int64ToString(isp_id) + "','"
+      + base::BasicUtil::StringUtil::Int64ToString(area_id) 
       + "')";
 
   base_logic::ListValue *listvalue;
