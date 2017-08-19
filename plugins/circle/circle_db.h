@@ -23,6 +23,8 @@ public:
 
 public:
   bool OnFetchAllCircleInfo(base_logic::ListValue*& ret_list);
+  bool OnFetchAllUserAskAnswer(base_logic::ListValue*& ret_list); 
+  bool OnFetchAllUserSeeAsk(base_logic::ListValue*& ret_list); 
 
   bool OnCreateCircleOrder(circle_logic::Circle& circle_info);
 
@@ -32,12 +34,21 @@ public:
 
   bool OnGetUserName(const int64 uid, base_logic::DictionaryValue*& dict);
 
+  int64 OnUserAsk(const int64 uid, const int32 a_type, 
+            const int32 p_type, const int32 c_type, 
+            const std::string &starcode, const std::string &uask,
+            const std::string &video_url);
+  int64 OnStarAnswer(const int64 id, const int32 p_type, 
+            const std::string &sanswer);
 private:
-	static void CallGetAllCircleInfo(void* param, base_logic::Value* value);
+  static void CallGetAllCircleInfo(void* param, base_logic::Value* value);
+  static void CallGetAllUserAskAnswer(void* param, base_logic::Value* value);
+  static void CallUserAsk(void* param, base_logic::Value* value);
 
-	static void CallGetUserName(void* param, base_logic::Value* value);
+  static void CallGetUserName(void* param, base_logic::Value* value);
 
   static void CallOnUpdateCircle(void* param, base_logic::Value* value);
+  static void CallGetAllUserSeeAsk(void* param, base_logic::Value* value);
 private:
   base_logic::DataEngine* mysql_engine_;
 };

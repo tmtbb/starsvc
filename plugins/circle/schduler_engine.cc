@@ -76,7 +76,110 @@ void CircleManager::InitData() {
   LOG_MSG2("circle list size %ld", circle_list_.size());
   
 }
+typedef std::map<std::string, circle_logic::UserQustions> TEMP_T;
+void UpdateMap(circle_logic::UserQustions &item, 
+    std::map<std::string, circle_logic::UserQustions> &map_)
+{
+    circle_logic::UserQustions temp; 
+    bool r = base::MapGet<TEMP_T,TEMP_T::iterator, 
+    std::string, circle_logic::UserQustions> 
+    (map_, item.starcode(), temp);
+    if (r)
+    {
+        if (item.s_total() > temp.s_total()) //根据访问量更新
+          map_[item.starcode()] = temp;
+        else if (item.s_total() == temp.s_total() //访问量相同根据时间最新更新
+            && item.answer_t() > temp.answer_t())
+          map_[item.starcode()] = temp;
+    }
+    else //不存在放入列表中
+    {
+        map_[item.starcode()] = temp;
+    }
+}
+//-----
+void CircleManager::InitUserSeeAskInfo()
+{
+  base_logic::RLockGd lk(lock_);
 
+  bool r = false;
+  base_logic::ListValue *listvalue;
+  if(!circle_db_->OnFetchAllUserSeeAsk(listvalue))
+    return;
+
+
+  while (listvalue->GetSize()) {
+    base_logic::Value *result_value;
+    listvalue->Remove(0, &result_value);
+    base_logic::DictionaryValue *dict_result_value =
+        (base_logic::DictionaryValue *) (result_value);
+    //item.ValueSerialization(dict_result_value);
+    
+    
+    delete dict_result_value;
+    dict_result_value = NULL;
+  }
+}
+//-----
+void CircleManager::InitUserAskAnswerData()
+{
+  base_logic::RLockGd lk(lock_);
+  userqus_all_map_.clear();
+  s_userqus_all_map_.clear();
+
+  bool r = false;
+  base_logic::ListValue *listvalue;
+  if(!circle_db_->OnFetchAllUserAskAnswer(listvalue))
+    return;
+
+
+  while (listvalue->GetSize()) {
+    circle_logic::UserQustions item;// = new item_logic::UserQustions();
+    base_logic::Value *result_value;
+    listvalue->Remove(0, &result_value);
+    base_logic::DictionaryValue *dict_result_value =
+        (base_logic::DictionaryValue *) (result_value);
+    item.ValueSerialization(dict_result_value);
+    
+    
+    USERQUS t_item_map, t_map2;
+    //UserQustions* t_item;
+    r = base::MapGet<USERQUS_ALL_MAP,USERQUS_ALL_MAP::iterator, int64, 
+        USERQUS> (userqus_all_map_, item.uid(), t_item_map);
+
+    r = base::MapGet<S_USERQUS_ALL_MAP,S_USERQUS_ALL_MAP::iterator, std::string, 
+        USERQUS> (s_userqus_all_map_, item.starcode(), t_map2);
+/*
+    if(r) {
+      r = base::MapGet<CIRCLE_MAP,CIRCLE_MAP::iterator, int64, UserQustions*>
+            (t_item_map, item->GetUserQustionsId(), t_item);
+    }
+    */
+
+    //if(r){
+      t_item_map[item.id()] = item;
+      t_map2[item.id()] = item;
+      userqus_all_map_[item.uid()] = t_item_map;
+      s_userqus_all_map_[item.starcode()] = t_map2; //明星对应的问答信息
+
+    //}
+/* 此功能废除  全部明星最热的一条数据
+    if (item.p_type() != circle_logic::pt_private 
+        && item.starcode().length() > 1) //公开并且star已回答  不能用starcode长度判断如果启用需要修改
+    {
+        if ( item.a_type() == circle_logic::at_voice){ //更新最热语音
+            UpdateMap(item, star_user_ask_hot_voice_);
+
+        }
+        else if (item.a_type() == circle_logic::at_video){ //更新最热视频
+            UpdateMap(item, star_user_ask_hot_video_);
+        }
+    }
+*/
+    delete dict_result_value;
+    dict_result_value = NULL;
+  }
+}
 //发表动态
 bool CircleManager::CreateCircle(const int socket, const int64 session, const int32 reserved,
             const std::string& symbol, const std::string content, const std::string picurl){
@@ -517,6 +620,345 @@ std::string CircleManager::GetUserName(int64 uid){
   return username;
 }
 
+//____
+
+void CircleManager::GetUserAskNoLock(const int64 uid,std::list<UserQustions> &list)
+{
+  USERQUS userqus_map;
+  base::MapGet<USERQUS_ALL_MAP, USERQUS_ALL_MAP::iterator, int64, USERQUS>(
+          userqus_all_map_ ,uid, userqus_map);
+
+  for (USERQUS::iterator iter = userqus_map.begin(); 
+        iter != userqus_map.end(); iter++)
+  {
+    UserQustions item = iter->second;
+    list.push_back(item);
+  }
+}
+
+void CircleManager::GetStarUserAskNoLock(const std::string &starcode,std::list<UserQustions> &list)
+{
+  USERQUS userqus_map;
+  base::MapGet<S_USERQUS_ALL_MAP, S_USERQUS_ALL_MAP::iterator, std::string, USERQUS>(
+          s_userqus_all_map_ ,starcode, userqus_map);
+
+  for (USERQUS::iterator iter = userqus_map.begin(); 
+        iter != userqus_map.end(); iter++)
+  {
+    UserQustions item = iter->second;
+    list.push_back(item);
+  }
+}
+bool CircleManager::GetUserAsk(const int socket, const int64 session, 
+                        const int32 reserved,const int64 uid,
+                        const int64 pos, const int64 count)
+{
+  
+  std::list<UserQustions> list;
+  //LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+  {
+    base_logic::RLockGd lk(lock_);  //
+    GetUserAskNoLock(uid, list);
+  }
+
+  //LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+  //没有对应的历史记录
+  if (list.size() <= 0) {
+    send_error(socket, ERROR_TYPE, NO_USER_ASK_DATA , session);
+    return false;
+  }
+/*
+    LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+    LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+    LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+    LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+*/
+  int32 base_num = 10;
+/*
+  if (revered / 1000 == HTTP)
+    base_num = count;
+  else
+*/
+    base_num = base_num < count ? base_num : count;
+
+  int32 t_start = 0;
+  int32 t_count = 0;
+
+
+  circle_reply::AskAnswerList net_list ;
+  //list.sort(star_logic::Recharge::close_after);
+  while (list.size() > 0 && t_count < count) {
+    UserQustions qus_itme = list.front();
+    list.pop_front();
+    t_start++;
+    if (t_start < pos)
+      continue;
+
+    circle_reply::AskAnswer *askanswer = new circle_reply::AskAnswer;
+
+    askanswer->set_id(qus_itme.id());
+    askanswer->set_uid(qus_itme.uid());
+    askanswer->set_ask_t(qus_itme.ask_t());
+    askanswer->set_answer_t(qus_itme.answer_t());
+    askanswer->set_s_total(qus_itme.s_total());
+    askanswer->set_a_type(qus_itme.a_type());
+    askanswer->set_p_type(qus_itme.p_type());
+    askanswer->set_c_type(qus_itme.c_type());
+    askanswer->set_starcode(qus_itme.starcode());
+    askanswer->set_uask(qus_itme.uask());
+    askanswer->set_sanswer(qus_itme.sanswer());
+    askanswer->set_video_url(qus_itme.video_url());
+
+    
+    net_list.set_unit(askanswer->get());
+    t_count++;
+    if (net_list.Size() % base_num == 0
+        && net_list.Size() != 0) {
+      struct PacketControl packet_control;
+      MAKE_HEAD(packet_control, S_GET_USER_ASK , 1, 0, session, 0);
+      packet_control.body_ = net_list.get();
+      send_message(socket, &packet_control);
+      net_list.Reset();
+    }
+  }
+
+
+  if (net_list.Size() > 0) {
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_GET_USER_ASK , 1, 0, session, 0);
+    packet_control.body_ = net_list.get();
+    send_message(socket, &packet_control);
+  }
+
+  return true;
+}
+
+bool CircleManager::GetStarUserAsk(const int socket, const int64 session, 
+                        const int32 reserved,const std::string& starcode,
+                        const int64 pos, const int64 count)
+{
+  
+  std::list<UserQustions> list;
+  //LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+  {
+    base_logic::RLockGd lk(lock_);  //
+    GetStarUserAskNoLock(starcode, list);
+  }
+
+  //LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+  //没有对应的历史记录
+  if (list.size() <= 0) {
+    send_error(socket, ERROR_TYPE, NO_USER_ASK_DATA , session);
+    return false;
+  }
+/*
+    LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+    LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+    LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+    LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
+*/
+  int32 base_num = 10;
+/*
+  if (revered / 1000 == HTTP)
+    base_num = count;
+  else
+*/
+    base_num = base_num < count ? base_num : count;
+
+  int32 t_start = 0;
+  int32 t_count = 0;
+
+
+  circle_reply::AskAnswerList net_list ;
+  //list.sort(star_logic::Recharge::close_after);
+  while (list.size() > 0 && t_count < count) {
+    UserQustions qus_itme = list.front();
+    list.pop_front();
+    t_start++;
+    if (t_start < pos)
+      continue;
+
+    circle_reply::AskAnswer *askanswer = new circle_reply::AskAnswer;
+
+    askanswer->set_id(qus_itme.id());
+    askanswer->set_uid(qus_itme.uid());
+    askanswer->set_ask_t(qus_itme.ask_t());
+    askanswer->set_answer_t(qus_itme.answer_t());
+    askanswer->set_s_total(qus_itme.s_total());
+    askanswer->set_a_type(qus_itme.a_type());
+    askanswer->set_p_type(qus_itme.p_type());
+    askanswer->set_c_type(qus_itme.c_type());
+    askanswer->set_starcode(qus_itme.starcode());
+    askanswer->set_uask(qus_itme.uask());
+    askanswer->set_sanswer(qus_itme.sanswer());
+    askanswer->set_video_url(qus_itme.video_url());
+
+    
+    net_list.set_unit(askanswer->get());
+    t_count++;
+    if (net_list.Size() % base_num == 0
+        && net_list.Size() != 0) {
+      struct PacketControl packet_control;
+      MAKE_HEAD(packet_control, S_GET_USER_ASK , 1, 0, session, 0);
+      packet_control.body_ = net_list.get();
+      send_message(socket, &packet_control);
+      net_list.Reset();
+    }
+  }
+
+
+  if (net_list.Size() > 0) {
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_GET_USER_ASK , 1, 0, session, 0);
+    packet_control.body_ = net_list.get();
+    send_message(socket, &packet_control);
+  }
+
+  return true;
+}
+
+
+bool CircleManager::GetAllStarUserAskHot(const int socket, const int64 session, 
+                        const int32 reserved,const int64 type,
+                        const int64 pos, const int64 count)
+{
+/*
+  std::map<std::string, UserQustions> *map_t = NULL;
+  if (type == 0)
+      map_t = &star_user_ask_hot_voice_; //音频
+  else
+      map_t = &star_user_ask_hot_video_;//视频
+
+
+  //没有对应的历史记录
+  if (map_t->size() <= 0) {
+    send_error(socket, ERROR_TYPE, NO_USER_ASK_DATA , session);
+    return false;
+  }
+  int32 base_num = 10;
+
+  base_num = base_num < count ? base_num : count;
+
+  int32 t_start = 0;
+  int32 t_count = 0;
+
+
+  circle_reply::AskAnswerList net_list ;
+  
+  //list.sort(star_logic::Recharge::close_after);
+  //while (list.size() > 0 && t_count < count) {
+  for (std::map<std::string, UserQustions>::iterator iter = map_t->begin();
+    iter != map_t->end(); iter++)
+  {
+    if (t_count < count)
+        break;
+    UserQustions qus_itme = (*iter).second;
+    t_start++;
+    if (t_start < pos)
+      continue;
+
+    circle_reply::AskAnswer *askanswer = new circle_reply::AskAnswer;
+
+    askanswer->set_id(qus_itme.id());
+    askanswer->set_uid(qus_itme.uid());
+    askanswer->set_ask_t(qus_itme.ask_t());
+    askanswer->set_answer_t(qus_itme.answer_t());
+    askanswer->set_s_total(qus_itme.s_total());
+    askanswer->set_a_type(qus_itme.a_type());
+    askanswer->set_p_type(qus_itme.p_type());
+    askanswer->set_c_type(qus_itme.c_type());
+    askanswer->set_starcode(qus_itme.starcode());
+    askanswer->set_uask(qus_itme.uask());
+    askanswer->set_sanswer(qus_itme.sanswer());
+    askanswer->set_video_url(qus_itme.video_url());
+
+    
+    net_list.set_unit(askanswer->get());
+    t_count++;
+    if (net_list.Size() % base_num == 0
+        && net_list.Size() != 0) {
+      struct PacketControl packet_control;
+      MAKE_HEAD(packet_control, S_GET_ALLSTAR_USER_ASK_HOT , 1, 0, session, 0);
+      packet_control.body_ = net_list.get();
+      send_message(socket, &packet_control);
+      net_list.Reset();
+    }
+  }
+
+
+  if (net_list.Size() > 0) {
+    struct PacketControl packet_control;
+    MAKE_HEAD(packet_control, S_GET_ALLSTAR_USER_ASK_HOT , 1, 0, session, 0);
+    packet_control.body_ = net_list.get();
+    send_message(socket, &packet_control);
+  }
+*/
+  return true;
+}
+bool CircleManager::UpdateUserAsk(circle_logic::UserQustions &item)
+{
+    base_logic::RLockGd lk(lock_);
+    //circle_logic::UserQustions item;// = new item_logic::UserQustions();
+
+    USERQUS t_item_map, t_map2;
+
+    bool r = base::MapGet<USERQUS_ALL_MAP,USERQUS_ALL_MAP::iterator, int64, 
+        USERQUS> (userqus_all_map_, item.uid(), t_item_map);
+
+    r = base::MapGet<S_USERQUS_ALL_MAP,S_USERQUS_ALL_MAP::iterator, std::string, 
+        USERQUS> (s_userqus_all_map_, item.starcode(), t_map2);
+/*
+    if(r) {
+      r = base::MapGet<CIRCLE_MAP,CIRCLE_MAP::iterator, int64, UserQustions*>
+            (t_item_map, item->GetUserQustionsId(), t_item);
+    }
+    */
+
+    t_item_map[item.id()] = item;
+    t_map2[item.id()] = item;
+    userqus_all_map_[item.uid()] = t_item_map;
+    s_userqus_all_map_[item.starcode()] = t_map2; //明星对应的问答信息
+}
+
+
+bool CircleManager::UpdateStarAnswer(const int64 id, const int32 p_type,
+        const int64 answer_t, const std::string &sanswer)
+{
+
+    base_logic::RLockGd lk(lock_);
+    circle_logic::UserQustions item ;// = new item_logic::UserQustions();
+
+    USERQUS t_item_map, t_map2;
+//用户问答信息内存查找
+    bool r = base::MapGet<USERQUS_ALL_MAP,USERQUS_ALL_MAP::iterator, int64, 
+        USERQUS> (userqus_all_map_, item.uid(), t_item_map);
+    if (r)
+    {
+      if (base::MapGet<USERQUS, USERQUS::iterator, int64, circle_logic::UserQustions>(t_item_map, id, item))
+      {
+        t_item_map[id].set_p_type(p_type) ;
+        t_item_map[id].set_answer_t(answer_t) ;
+        t_item_map[id].set_sanswer(sanswer) ;
+        userqus_all_map_[t_item_map[id].uid()] = t_item_map;
+      }
+    }
+//明星文档信息
+    r = base::MapGet<S_USERQUS_ALL_MAP,S_USERQUS_ALL_MAP::iterator, std::string, 
+        USERQUS> (s_userqus_all_map_, item.starcode(), t_map2);
+
+    if (r)
+    {
+      if (base::MapGet<USERQUS, USERQUS::iterator, int64, circle_logic::UserQustions>(t_map2, id, item))
+      {
+        t_map2[id].set_p_type(p_type) ;
+        t_map2[id].set_answer_t(answer_t) ;
+        t_map2[id].set_sanswer(sanswer) ;
+        s_userqus_all_map_[t_map2[id].starcode()] = t_map2; //明星对应的问答信息
+      }
+    }
+  return true;
+
+}
 
 }
 
