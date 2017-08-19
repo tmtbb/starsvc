@@ -33,6 +33,27 @@ namespace circle_logic {
 #define S_STAR_REPLY_COMMENT CIRCLE_TYPE * 1000 + 14
 
 
+#define R_GET_USER_ASK CIRCLE_TYPE * 1000 + 15 //获取用户问答信息
+#define S_GET_USER_ASK CIRCLE_TYPE * 1000 + 16
+
+#define R_GET_STAR_USER_ASK CIRCLE_TYPE * 1000 + 17 //获取指定明星所有用户问答信息
+#define S_GET_STAR_USER_ASK CIRCLE_TYPE * 1000 + 18
+
+#define R_USER_ASK CIRCLE_TYPE * 1000 + 19 // 用户提问
+#define S_USER_ASK CIRCLE_TYPE * 1000 + 20
+
+#define R_STAR_ANSWER CIRCLE_TYPE * 1000 + 21//明星回答问题
+#define S_STAR_ANSWER CIRCLE_TYPE * 1000 + 22
+
+#define R_USER_SEE_VOICE CIRCLE_TYPE * 1000 + 23  //用户查看语音
+#define S_USER_SEE_VOICE CIRCLE_TYPE * 1000 + 24
+
+#define R_USER_SEE_VIDEO CIRCLE_TYPE * 1000 + 25  //用户查看视频
+#define S_USER_SEE_VIDEO CIRCLE_TYPE * 1000 + 26
+
+
+#define R_GET_ALLSTAR_USER_ASK_HOT CIRCLE_TYPE * 1000 + 27  //获取明星最热问答
+#define S_GET_ALLSTAR_USER_ASK_HOT CIRCLE_TYPE * 1000 + 28
 }
 #endif 
 

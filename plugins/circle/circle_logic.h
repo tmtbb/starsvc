@@ -58,7 +58,12 @@ private:
   bool OnUserCommentCircle(struct server* srv, int socket, struct PacketHead* packet);
 
   bool OnStarReplyCircle(struct server* srv, int socket, struct PacketHead* packet);
-
+//
+  bool OnGetUserAsk(struct server* srv, int socket, struct PacketHead* packet);
+  bool OnGetStarUserAsk(struct server* srv, int socket, struct PacketHead* packet);
+  bool OnGetAllStarUserAskHot(struct server* srv, int socket, struct PacketHead* packet); 
+  bool OnUserAsk(struct server* srv, int socket, struct PacketHead* packet); 
+  bool OnStarAnswer(struct server* srv, int socket, struct PacketHead* packet); 
 private:
   bool Init();
 private:

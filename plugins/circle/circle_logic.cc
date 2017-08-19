@@ -58,6 +58,7 @@ bool Circlelogic::Init()
   circle_db_ = new circle_logic::CircleDB(config);
   circle_logic::CircleEngine::GetSchdulerManager()->InitDB(circle_db_);
   circle_logic::CircleEngine::GetSchdulerManager()->InitData();
+  circle_logic::CircleEngine::GetSchdulerManager()->InitUserAskAnswerData();
   base::SysRadom::GetInstance();
   std::string schduler_library = "./data_share.so";
   std::string schduler_func = "GetManagerSchdulerEngine";
@@ -136,6 +137,32 @@ bool Circlelogic::OnCircleMessage(struct server *srv, const int socket,
   }
   case R_STAR_REPLY_COMMENT:{
     OnStarReplyCircle(srv, socket, packet);
+    break;
+  }
+  case R_GET_USER_ASK:{ //获取用户问答信息
+    OnGetUserAsk(srv, socket, packet);
+    break;
+  }
+  case R_GET_STAR_USER_ASK:{ //获取明星的用户问答信息
+    OnGetStarUserAsk(srv, socket, packet);
+    break;
+  }
+  case R_USER_ASK:{ //用户提问
+    OnUserAsk(srv, socket, packet);
+    break;
+  }
+  case R_STAR_ANSWER:{ //明星回答
+    OnStarAnswer(srv, socket, packet);
+    break;
+  }
+  case R_USER_SEE_VOICE :{ //用户查看语音
+    break;
+  }
+  case R_USER_SEE_VIDEO:{ //用户查看视频
+    break;
+  }
+  case R_GET_ALLSTAR_USER_ASK_HOT : {
+    OnGetAllStarUserAskHot(srv, socket, packet);
     break;
   }
   default:
@@ -361,8 +388,165 @@ bool Circlelogic::OnStarReplyCircle(struct server* srv, int socket, struct Packe
       packet->session_id, packet->reserved, uid, starcode, circleid, direction, content);
   return true;
 }
+//
+
+bool Circlelogic::OnGetStarUserAsk(struct server* srv, int socket, struct PacketHead* packet) {
+
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  int64 pos, count ;
+  std::string starcode = "";
+  bool r1 = packet_control->body_->GetBigInteger(L"pos", &pos);
+  bool r2 = packet_control->body_->GetBigInteger(L"count", &count);
+  bool r3 = packet_control->body_->GetString(L"starcode", &starcode);
+  if (!r1 || !r2 || !r3){
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+
+  circle_logic::CircleEngine::GetSchdulerManager()->GetStarUserAsk(socket,
+      packet->session_id, packet->reserved, starcode, pos, count);
+  return true;
+}
+bool Circlelogic::OnGetUserAsk(struct server* srv, int socket, struct PacketHead* packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  int64 pos, count, uid = 0;
+  bool r1 = packet_control->body_->GetBigInteger(L"pos", &pos);
+  bool r2 = packet_control->body_->GetBigInteger(L"count", &count);
+  bool r3 = packet_control->body_->GetBigInteger(L"uid", &count);
+  if (!r1 || !r2 || !r3){
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+
+  circle_logic::CircleEngine::GetSchdulerManager()->GetUserAsk(socket,
+      packet->session_id, packet->reserved, uid, pos, count);
+  return true;
+}
+
+bool Circlelogic::OnGetAllStarUserAskHot(struct server* srv, int socket, struct PacketHead* packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  int64 type;
+  bool r1 = packet_control->body_->GetBigInteger(L"type", &type);
+  if (!r1){
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+
+  int64 pos = 0;
+  int64 count = 20;
+  circle_logic::CircleEngine::GetSchdulerManager()->GetAllStarUserAskHot(socket,
+      packet->session_id, packet->reserved, type, pos, count);
+  return true;
+}
+
+bool Circlelogic::OnUserAsk(struct server* srv, int socket, struct PacketHead* packet) {
+
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  int64 uid = 0;
+  int32 a_type,c_type, p_type;
+  a_type, c_type ,p_type = -1;
+
+  std::string starcode, uask, video_url;
+
+  circle_logic::UserQustions item;
+  bool flag = item.ValueSeriForUserAsk(packet_control->body_);
+  /*
+  bool r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
+  bool r2 = packet_control->body_->GetInteger(L"a_type", &a_type);
+  bool r3 = packet_control->body_->GetInteger(L"c_type", &c_type);
+  bool r4 = packet_control->body_->GetInteger(L"p_type", &p_type);
+  bool r5 = packet_control->body_->GetString(L"starcode", &starcode);
+  bool r6 = packet_control->body_->GetString(L"uask", &uask);
+  bool r7 = packet_control->body_->GetString(L"video_url", &video_url);
+  if (!r1 || !r2 || !r3 || !r4 || !r5 || !r6 || !r7){
+  */
+  if (flag)
+  {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+
+  int64 id = circle_db_->OnUserAsk(uid, a_type, p_type, c_type, starcode,
+            uask, video_url);
+  int32 result = 0; //0提问成功,失败
+  if (id != -1){//sucess 更新内存
+    item.set_id(id);
+    circle_logic::CircleEngine::GetSchdulerManager()->UpdateUserAsk(item);
+  }
+  else {
+    result = 1;
+  }
+  struct PacketControl packet_control_ack;
+  MAKE_HEAD(packet_control_ack,S_USER_ASK , 1, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic;
+  dic.SetInteger(L"result", result);
+  packet_control_ack.body_ = &dic;
+  send_message(socket, &packet_control_ack);
+
+  return true;
+}
 
 
+bool Circlelogic::OnStarAnswer(struct server* srv, int socket, struct PacketHead* packet) {
+
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  int64 id = 0;
+  int32 p_type;
+  p_type = -1;
+
+  std::string sanswer;
+
+  bool r1 = packet_control->body_->GetBigInteger(L"id", &id);
+  bool r2 = packet_control->body_->GetString(L"sanswer", &sanswer);
+  bool r3 = packet_control->body_->GetInteger(L"p_type", &p_type);
+  if (!r1 || !r2 || !r3)
+  {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+
+  int64 answer_t = circle_db_->OnStarAnswer(id, p_type, sanswer);
+  int32 result = 0; //0提问成功,失败
+  if (answer_t != -1){//sucess 更新内存
+    circle_logic::CircleEngine::GetSchdulerManager()->UpdateStarAnswer(id, p_type, answer_t, sanswer);
+  }
+  else {
+    result = 1;
+  }
+  struct PacketControl packet_control_ack;
+  MAKE_HEAD(packet_control_ack,S_STAR_ANSWER, 1, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic;
+  dic.SetInteger(L"result", result);
+  packet_control_ack.body_ = &dic;
+  send_message(socket, &packet_control_ack);
+
+  return true;
+}
 
 }  // namespace circle_logic
 

@@ -198,6 +198,62 @@ base_logic::ListValue* Circle::GetCommentList() {
   return value;
 }*/
 
+//____________
+UserQustions::UserQustions() {
+  data_ = new Data();
+}
+
+UserQustions::UserQustions(const UserQustions& userqustions)
+: data_(userqustions.data_) {
+  if (data_ != NULL) {
+    data_->AddRef();
+  }
+}
+
+UserQustions& UserQustions::operator =(const UserQustions& userqustions) {
+  if (userqustions.data_ != NULL) {
+    userqustions.data_->AddRef();
+  }
+
+  if (data_ != NULL) {
+    data_->Release();
+  }
+
+  data_ = userqustions.data_;
+  return (*this);
+}
+
+void UserQustions::ValueSerialization(base_logic::DictionaryValue* dict) {
+    
+  dict->GetBigInteger(L"id", &data_->id_);
+  dict->GetBigInteger(L"uid", &data_->uid_);
+  dict->GetString(L"starcode", &data_->starcode_);
+  dict->GetBigInteger(L"ask_t", &data_->ask_t_);
+  dict->GetBigInteger(L"answer_t", &data_->answer_t_);
+
+  dict->GetInteger(L"s_total", &data_->s_total_);
+  dict->GetInteger(L"a_type", &data_->a_type_);
+  dict->GetInteger(L"p_type", &data_->p_type_);
+  dict->GetInteger(L"c_type", &data_->c_type_);
+
+  dict->GetString(L"uask", &data_->uask_); //
+  dict->GetString(L"sanswer", &data_->sanswer_); //
+  dict->GetString(L"video_url", &data_->video_url_); //
+}
 
 
+bool UserQustions::ValueSeriForUserAsk(base_logic::DictionaryValue* dict) {
+    
+  bool r1 = dict->GetBigInteger(L"uid", &data_->uid_);
+  bool r2 = dict->GetString(L"starcode", &data_->starcode_);
+  //bool r3 = dict->GetBigInteger(L"ask_t", &data_->ask_t_);
+
+  bool r3 = dict->GetInteger(L"a_type", &data_->a_type_);
+  bool r4 = dict->GetInteger(L"p_type", &data_->p_type_);
+  bool r5 = dict->GetInteger(L"c_type", &data_->c_type_);
+
+  bool r6 = dict->GetString(L"uask", &data_->uask_); //
+  bool r7 = dict->GetString(L"video_url", &data_->video_url_); //
+  return (!r1 || !r2 || !r3 || !r4 || !r5 || !r6 || !r7);
+}
 }  // namespace circle_logic

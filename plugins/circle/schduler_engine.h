@@ -18,6 +18,12 @@ typedef std::list<Circle*> CIRCLE_LIST;
 typedef std::map<int64, Circle*> CIRCLE_MAP;//circle_id
 typedef std::map<std::string, CIRCLE_MAP> STAR_CIRCLE_MAP;//key:symble
 
+typedef std::map<int64, UserQustions> USERQUS; //id ,Qustions
+typedef std::map<int64, USERQUS> USERQUS_ALL_MAP; //uid,Qustions_list
+typedef std::map<std::string, USERQUS> S_USERQUS_ALL_MAP; //starcode,Qustions_list
+
+typedef std::map<int64, std::vector<int64> > USER_SEE_ALL_MAP;
+
 class CircleManager {
 public:
   CircleManager();
@@ -26,6 +32,8 @@ public:
 public:
   void InitDB(circle_logic::CircleDB* circle_db);
   void InitData();
+  void InitUserAskAnswerData();
+  void InitUserSeeAskInfo();
   void InitManagerSchduler(manager_schduler::SchdulerEngine* schduler_engine);
 
   bool CreateCircle(const int socket, const int64 session, const int32 reserved,
@@ -51,12 +59,27 @@ public:
   bool GetAllCircle(const int socket, const int64 session, const int32 reserved,
                         const int64 pos, const int64 count);
   
+  bool GetUserAsk(const int socket, const int64 session, 
+                        const int32 reserved,const int64 uid,
+                        const int64 pos, const int64 count);
+  bool GetStarUserAsk(const int socket, const int64 session, 
+                        const int32 reserved,const std::string &starcode,
+                        const int64 pos, const int64 count);
+  bool GetAllStarUserAskHot(const int socket, const int64 session, 
+                        const int32 reserved,const int64 type,
+                        const int64 pos, const int64 count);
+  bool UpdateUserAsk(circle_logic::UserQustions &item);
+  bool UpdateStarAnswer(const int64 id, const int32 p_type,
+        const int64 answer_t, const std::string &sanswer);
 private:
   void Init();
 
   base_logic::ListValue* GetCircleApproveList(Circle*& circle);
   base_logic::ListValue* GetCircleCommentList(Circle*& circle);
   std::string GetUserName(int64 uid);
+//____________
+  void GetUserAskNoLock(const int64 uid, std::list<UserQustions> &list);
+  void GetStarUserAskNoLock(const std::string &starcode, std::list<UserQustions> &list);
 
 private:
   manager_schduler::SchdulerEngine* manager_schduler_engine_;
@@ -65,7 +88,14 @@ private:
 
   CIRCLE_LIST    circle_list_;
   STAR_CIRCLE_MAP  star_circle_map_;
-
+//__问答相关
+  USERQUS_ALL_MAP userqus_all_map_;    //用户id为key 对应key的所有问答
+  S_USERQUS_ALL_MAP s_userqus_all_map_;   //明星id为key 对应key的所有问答
+//__明星最热语音和视频
+  //std::map<std::string, UserQustions> star_user_ask_hot_voice_;
+  //std::map<std::string, UserQustions> star_user_ask_hot_video_;
+//___
+  USER_SEE_ALL_MAP user_see_all_map_;  //用户偷听问答列表
 public:
   static int64 current_max_circle_id;
 };
