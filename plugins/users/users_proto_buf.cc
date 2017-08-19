@@ -158,6 +158,8 @@ bool LoginAccount::set_http_packet(base_logic::DictionaryValue* value) {
   std::string phone_num;
   std::string token;
   std::string device_id;
+  std::string isp, area;
+  int64 isp_id, area_id;
 
 
   if (value == NULL)
@@ -191,6 +193,15 @@ bool LoginAccount::set_http_packet(base_logic::DictionaryValue* value) {
   //set_token(token);
   //else
   //return false;
+
+  if(value->GetString(L"isp", &isp))
+    set_isp(isp);
+  if(value->GetString(L"area", &area))
+    set_area(area);
+  if(value->GetBigInteger(L"isp_id", &isp_id))
+    set_isp_id(isp_id);
+  if(value->GetBigInteger(L"area_id", &area_id))
+    set_area_id(area_id);
 
   return true;
 }

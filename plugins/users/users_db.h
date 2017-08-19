@@ -33,7 +33,9 @@ class UsersDB {
                        const std::string& starcode);
 
   bool LoginAccount(const std::string& phone_num, const std::string& passwd,
-                    const std::string& ip, star_logic::UserInfo& user);
+                    const std::string& ip, const std::string& isp,
+                    const std::string& area, int64 isp_id, int64 area_id, 
+                    star_logic::UserInfo& user);
 
   bool CheckAccountExist(const std::string& phone, int32& existFlag);
 

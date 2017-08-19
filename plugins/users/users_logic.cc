@@ -640,8 +640,8 @@ bool Userslogic::OnLoginAccount(struct server* srv, int socket,
     logic::SomeUtils::GetIPAddress(socket, ip, port);
 
     star_logic::UserInfo userinfo;
-    r = user_db_->LoginAccount(login_account.phone_num(), login_account.passwd(),
-                               ip, userinfo);
+    r = user_db_->LoginAccount(login_account.phone_num(), login_account.passwd(),ip,login_account.isp(),
+                               login_account.area(),login_account.isp_id(),login_account.area_id(), userinfo);
     if (!r) {
         send_error(socket, ERROR_TYPE, NO_PASSWORD_ERRNOR, packet->session_id);
         return false;
