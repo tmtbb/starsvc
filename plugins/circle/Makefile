@@ -18,7 +18,11 @@ THIRD_PATH = $(LIB_DIR)/mylib/public
 
 CUSTOM_THIRD_PATH = $(LIB_DIR)/mylib/third_party
 
-LINK_PATHS = -L./ -L/usr/local/libmemcached-1.0.7/lib/  -L/usr/lib64/mysql
+LINK_PATHS = -L./ \
+	-L/usr/local/libmemcached-1.0.7/lib/  \
+	-L/usr/lib64/mysql \
+	-L$(CUSTOM_THIRD_PATH)/qiniu/lib 
+
 
 PLUGIN = $(SO_DIR)/circle/circle.so
 PLUGIN_TYPE="LIB"
@@ -33,6 +37,7 @@ INCLUDE_PATHS = -I../\
 				-I$(CUSTOM_THIRD_PATH)/hiredis\
 				-I$(CUSTOM_THIRD_PATH)\
 				-I$(CUSTOM_THIRD_PATH)/librdkafka/src\
+				-I$(CUSTOM_THIRD_PATH)/qiniu/include\
 				-I$(LIB_DIR)/mylib/base\
 				-I../\
 				

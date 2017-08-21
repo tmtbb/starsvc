@@ -14,7 +14,7 @@
 #include "circle_info.h"
 #include "errno.h"
 #include "operator_code.h"
-#include "qiniu/qiniu/rs.h"
+#include "qiniu/rs.h"
 
 
 #define DEFAULT_CONFIG_PATH "./plugins/circle/circle_config.xml"
