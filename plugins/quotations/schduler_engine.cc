@@ -290,7 +290,8 @@ void QuotationsManager::SendSymbolList(const int socket, const int64 session, co
   int32 t_count = 0, curpos = 0;
   std::list<star_logic::StarInfo>::iterator iter = starlist.begin();
   for(; iter != starlist.end(); ){
-      if(curpos++ < pos || t_count == count){
+      //热度榜只显示流通明星
+      if((sort != 0 && iter->home_pulish_type() != PUB_SELL_TYPE) || curpos++ < pos || t_count == count){
           iter = starlist.erase(iter);
           continue;
       }

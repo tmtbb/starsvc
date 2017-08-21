@@ -45,6 +45,13 @@ enum TIMETYPE {
     ONE_HOUR = 3600
 };
 
+//0-预售 1-发售 2-流通
+enum PUBLISHTYPE {
+    PUB_PRE_SELL_TYPE = 0,
+    PUB_SELLING_TYPE = 1,
+    PUB_SELL_TYPE = 2
+};
+
 class QuotationsCache {
 public:
     BASIC_INFO_MAP     basic_info_map_;
