@@ -98,6 +98,9 @@ public:
     void SendHomeSymbolList(const int socket, const int64 session, 
                 const int32 reversed, const int32 atype);
 
+    void GetQiniuUrlList(const int socket, const int64 session, 
+                                      const int32 reversed);
+
     void TimeEvent(int opcode, int time);
 
     void InitRedis(quotations_logic::QuotationsRedis* quotations_redis);
