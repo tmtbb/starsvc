@@ -117,6 +117,10 @@ bool Quotationslogic::OnQuotationsMessage(struct server *srv, const int socket,
         OnRefreshSymbol(srv, socket ,packet);
         break;
       }
+      case R_GET_QINIU_URL : {
+        OnGetQiniuUrl(srv, socket ,packet);
+        break;
+      }
       default:
         break;
     }
@@ -179,6 +183,23 @@ bool Quotationslogic::OnTimeout(struct server *srv, char *id, int opcode,
     default:
       break;
   }
+  return true;
+}
+
+bool Quotationslogic::OnGetQiniuUrl(struct server* srv, int socket,
+                                       struct PacketHead* packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+  int64 uid;
+  bool r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
+
+  quotations_logic::QuotationsEngine::GetSchdulerManager()->GetQiniuUrlList(
+    socket, packet->session_id, packet->reserved);
+
   return true;
 }
 

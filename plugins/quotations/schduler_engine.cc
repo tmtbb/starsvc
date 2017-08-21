@@ -767,4 +767,37 @@ void QuotationsManager::LoginQuotationsCenter(const int socket) {
     send_message(socket, &packet_control);
 }
 
+
+
+void QuotationsManager::GetQiniuUrlList(const int socket, const int64 session, 
+                                      const int32 reversed) {
+  base_logic::DictionaryValue* ret = new base_logic::DictionaryValue();
+  std::map<std::string, std::string>::iterator iter;
+  
+  iter = quotations_cache_->sys_param_map_.find("QINIU_URL_HUADONG");
+  if(iter != quotations_cache_->sys_param_map_.end()){
+    base_logic::StringValue* t_huadong = new base_logic::StringValue(iter->second);
+    ret->Set("QINIU_URL_HUADONG", t_huadong);
+  }
+
+  iter = quotations_cache_->sys_param_map_.find("QINIU_URL_HUABEI");
+  if(iter != quotations_cache_->sys_param_map_.end()){
+    base_logic::StringValue* t_huabei = new base_logic::StringValue(iter->second);
+    ret->Set("QINIU_URL_HUABEI", t_huabei);
+  }
+
+  iter = quotations_cache_->sys_param_map_.find("QINIU_URL_HUANAN");
+  if(iter != quotations_cache_->sys_param_map_.end()){
+    base_logic::StringValue* t_huanan = new base_logic::StringValue(iter->second);
+    ret->Set("QINIU_URL_HUANAN", t_huanan);
+  }
+
+  struct PacketControl packet_control;
+  MAKE_HEAD(packet_control, S_GET_QINIU_URL, QUOTATIONS_TYPE, 0, session, reversed);
+  packet_control.body_ = ret;
+  send_message(socket, &packet_control);
+  
+}
+
+
 }
