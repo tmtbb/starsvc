@@ -54,6 +54,9 @@ namespace circle_logic {
 
 #define R_GET_ALLSTAR_USER_ASK_HOT CIRCLE_TYPE * 1000 + 27  //获取明星最热问答
 #define S_GET_ALLSTAR_USER_ASK_HOT CIRCLE_TYPE * 1000 + 28
+
+#define R_GET_QINIU_TOKEN CIRCLE_TYPE * 1000 + 29
+#define S_GET_QINIU_TOKEN CIRCLE_TYPE * 1000 + 30
 }
 #endif 
 

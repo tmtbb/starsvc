@@ -27,5 +27,8 @@ namespace quatations_logic {
 
 #define R_REFRESH_SYMBOL               QUOTATIONS_TYPE * 1000 + 13
 #define S_REFRESH_SYMBOL               QUOTATIONS_TYPE * 1000 + 14
+
+#define R_GET_QINIU_URL               QUOTATIONS_TYPE * 1000 + 15
+#define S_GET_QINIU_URL               QUOTATIONS_TYPE * 1000 + 16
 }
 #endif
