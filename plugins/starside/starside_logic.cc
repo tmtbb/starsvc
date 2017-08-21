@@ -175,15 +175,15 @@ bool StarSidelogic::OnStarSideMessage(struct server *srv, const int socket,
     default:
       break;
   }
-  if(packet){
-      delete packet;
-      packet = NULL;
-  }
 #ifdef _DEBUG
   gettimeofday(&t_end, NULL);
   LOG_DEBUG2("recive operator[%d], star time[%ld]", packet->operate_code, t_end.tv_usec);
   LOG_DEBUG2("operator[%d], Cost time[%ld]", packet->operate_code, t_end.tv_usec - t_start.tv_usec);
 #endif
+  if(packet){
+      delete packet;
+      packet = NULL;
+  }
   return true;
 }
 
