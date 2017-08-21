@@ -64,6 +64,8 @@ private:
   bool OnGetAllStarUserAskHot(struct server* srv, int socket, struct PacketHead* packet); 
   bool OnUserAsk(struct server* srv, int socket, struct PacketHead* packet); 
   bool OnStarAnswer(struct server* srv, int socket, struct PacketHead* packet); 
+
+  bool OnGetQiniuToken(struct server* srv, int socket, struct PacketHead* packet);
 private:
   bool Init();
 private:

@@ -14,6 +14,7 @@
 #include "circle_info.h"
 #include "errno.h"
 #include "operator_code.h"
+#include "qiniu/rs.h"
 
 
 #define DEFAULT_CONFIG_PATH "./plugins/circle/circle_config.xml"
@@ -165,6 +166,10 @@ bool Circlelogic::OnCircleMessage(struct server *srv, const int socket,
     OnGetAllStarUserAskHot(srv, socket, packet);
     break;
   }
+  case R_GET_QINIU_TOKEN:{
+    OnGetQiniuToken(srv, socket, packet);
+    break;
+  }
   default:
       break;
   }
@@ -230,6 +235,60 @@ bool Circlelogic::OnTimeout(struct server *srv, char *id, int opcode,
   default:
       break;
   }
+  return true;
+}
+
+bool Circlelogic::OnGetQiniuToken(struct server* srv, int socket, 
+                            struct PacketHead* packet) {
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  std::string token;
+  int64 uid;
+  bool r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
+  bool r2 = packet_control->body_->GetString(L"token", &token);
+  if (!r1 || !r2){
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+
+  const char accessKey[] = "4jvwuLa_Xcux7WQ40KMO89DfinEuI3zXizMpwnc7";
+  const char secretKey[] = "8tSk8O9VS0vl9zh8jUV1mkR1GijH2KyXMLbVel_T";
+  const char bucket[] = "star";
+  Qiniu_Mac mac;
+  mac.accessKey = accessKey;
+  mac.secretKey = secretKey;
+
+  Qiniu_RS_PutPolicy putPolicy;
+  char *uptoken = NULL;
+
+  //简单上传凭证
+  /*Qiniu_Zero(putPolicy);
+  putPolicy.scope = bucket;
+  uptoken = Qiniu_RS_PutPolicy_Token(&putPolicy, &mac);
+  printf("simple:\t%s\n\n", uptoken);
+  Qiniu_Free(uptoken);*/
+
+  //自定义凭证有效期（示例1小时）
+  Qiniu_Zero(putPolicy);
+  putPolicy.scope = bucket;
+  putPolicy.expires = 3600; //单位秒
+  uptoken = Qiniu_RS_PutPolicy_Token(&putPolicy, &mac);
+  LOG_DEBUG2("deadline:\t%s\n\n", uptoken);
+  std::string t_str(uptoken);
+  Qiniu_Free(uptoken);
+  
+  base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
+  base_logic::StringValue* ret = new base_logic::StringValue(t_str);
+  dic->Set("uptoken", ret);
+  struct PacketControl packet_reply;
+  MAKE_HEAD(packet_reply, S_GET_QINIU_TOKEN, CIRCLE_TYPE, 0, packet->session_id, packet->reserved);
+  packet_reply.body_ = dic;
+  send_message(socket, &packet_reply);
+
   return true;
 }
 
