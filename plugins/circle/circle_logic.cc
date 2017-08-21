@@ -257,7 +257,7 @@ bool Circlelogic::OnGetQiniuToken(struct server* srv, int socket,
 
   const char accessKey[] = "4jvwuLa_Xcux7WQ40KMO89DfinEuI3zXizMpwnc7";
   const char secretKey[] = "8tSk8O9VS0vl9zh8jUV1mkR1GijH2KyXMLbVel_T";
-  const char bucket[] = "star";
+  const char bucket[] = "starshareimage";
   Qiniu_Mac mac;
   mac.accessKey = accessKey;
   mac.secretKey = secretKey;
