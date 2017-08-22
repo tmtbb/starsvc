@@ -9,6 +9,7 @@
 #include <list>
 #include "basic/basictypes.h"
 #include "logic/base_values.h"
+#include "logic/logic_unit.h"
 
 namespace circle_logic {
 
@@ -318,6 +319,7 @@ public:
               , m_createTime(NULL)
               , m_content(NULL)
               , m_picUrl(NULL)
+              , m_picUrlTail(NULL)
               , m_approveList(NULL)
               , m_commentList(NULL)
               , m_approveDecTime(NULL)
@@ -334,6 +336,10 @@ public:
 
   void SetHeadUrl(const std::string& picurl) {
     m_headUrl = new base_logic::StringValue(picurl);
+  }
+
+  void SetHeadUrlTail(const std::string& picurl) {
+    m_headUrlTail = new base_logic::StringValue(picurl);
   }
 
   void SetApproveDecTime(const int32 i) {
@@ -358,6 +364,7 @@ public:
     m_createTime = new base_logic::FundamentalValue(circle->GetCreateTime());
     m_content = new base_logic::StringValue(circle->GetContent());
     m_picUrl = new base_logic::StringValue(circle->GetPicUrl());
+    m_picUrlTail = new base_logic::StringValue(logic::SomeUtils::FindPicTail(circle->GetPicUrl()));
   }
 
   base_logic::DictionaryValue* get(){
@@ -372,6 +379,10 @@ public:
       m_value->Set(L"content", m_content);
     if(m_picUrl != NULL)
       m_value->Set(L"pic_url", m_picUrl);
+#if defined(STAR_CLOUD)
+    if(m_picUrlTail != NULL)
+      m_value->Set(L"pic_url_tail", m_picUrlTail);
+#endif
     if(m_approveList != NULL)
       m_value->Set(L"approve_list", m_approveList);
     if(m_commentList != NULL)
@@ -380,6 +391,10 @@ public:
       m_value->Set(L"symbol_name", m_name);
     if(m_headUrl != NULL)
       m_value->Set(L"head_url", m_headUrl);
+#if defined(STAR_CLOUD)
+    if(m_headUrlTail != NULL)
+      m_value->Set(L"head_url_tail", m_headUrlTail);
+#endif
     if(m_approveDecTime != NULL)
       m_value->Set(L"approve_dec_time", m_approveDecTime);
     if(m_commentDecTime != NULL)
@@ -393,10 +408,12 @@ private:
   base_logic::StringValue* m_symbol;
   base_logic::StringValue* m_name;
   base_logic::StringValue* m_headUrl;
+  base_logic::StringValue* m_headUrlTail;
   base_logic::FundamentalValue* m_circleId;
   base_logic::FundamentalValue* m_createTime;
   base_logic::StringValue* m_content;
   base_logic::StringValue* m_picUrl;
+  base_logic::StringValue* m_picUrlTail;
   base_logic::ListValue* m_approveList;
   base_logic::ListValue* m_commentList;
   base_logic::FundamentalValue* m_approveDecTime;
