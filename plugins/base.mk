@@ -6,7 +6,10 @@ DEBUG_FLAG=0
 CPPFLAGS=
 CC=g++
 MAKE=gmake
-#BIN LIB
+#星云
+#PROJECT="STAR_CLOUD"
+#默认星享
+PROJECT=""
 
 
 
@@ -26,11 +29,16 @@ else
 	CXXFLAGS += -g  -Wextra -pthread 
 endif
 
+#BIN LIB
 ifeq ($(PLUGIN_TYPE), "BIN")
 endif
 
 ifeq ($(PLUGIN_TYPE), "LIB")
 	CPPFLAGS += -shared -fPIC
 	CXXFLAGS += -shared -fPIC
+endif
+
+ifeq ($(PROJECT), "STAR_CLOUD")
+	CPPFLAGS += -DSTAR_CLOUD
 endif
 

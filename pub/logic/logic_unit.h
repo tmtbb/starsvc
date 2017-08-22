@@ -155,6 +155,16 @@ class SomeUtils {
     }
     return false;
   }
+
+  static inline std::string FindPicTail(const std::string& ori_string) {
+      int rpos = ori_string.rfind ("/", ori_string.length());
+      if (rpos == std::string::npos)
+          return ori_string;
+      else
+        return ori_string.substr(rpos+1);
+  }
+
+
 };
 
 extern std::map<int, const char*> error_code_msgs;
