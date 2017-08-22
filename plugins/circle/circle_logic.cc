@@ -266,20 +266,21 @@ bool Circlelogic::OnGetQiniuToken(struct server* srv, int socket,
   char *uptoken = NULL;
 
   //简单上传凭证
-  /*Qiniu_Zero(putPolicy);
-  putPolicy.scope = bucket;
-  uptoken = Qiniu_RS_PutPolicy_Token(&putPolicy, &mac);
-  printf("simple:\t%s\n\n", uptoken);
-  Qiniu_Free(uptoken);*/
-
-  //自定义凭证有效期（示例1小时）
   Qiniu_Zero(putPolicy);
   putPolicy.scope = bucket;
-  putPolicy.expires = 3600; //单位秒
   uptoken = Qiniu_RS_PutPolicy_Token(&putPolicy, &mac);
-  LOG_DEBUG2("deadline:\t%s\n\n", uptoken);
+  LOG_DEBUG2("simple:\t%s\n\n", uptoken);
   std::string t_str(uptoken);
   Qiniu_Free(uptoken);
+
+  //自定义凭证有效期（示例1小时）
+  //Qiniu_Zero(putPolicy);
+  //putPolicy.scope = bucket;
+  //putPolicy.expires = 3600; //单位秒
+  //uptoken = Qiniu_RS_PutPolicy_Token(&putPolicy, &mac);
+  //LOG_DEBUG2("deadline:\t%s\n\n", uptoken);
+  //std::string t_str(uptoken);
+  //Qiniu_Free(uptoken);
   
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
   base_logic::StringValue* ret = new base_logic::StringValue(t_str);

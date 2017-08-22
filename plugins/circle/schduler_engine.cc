@@ -475,6 +475,9 @@ bool CircleManager::GetSymbolAllCircle(const int socket, const int64 session, co
       circlereply->SetCommentList(GetCircleCommentList(circle));
       circlereply->SetName(star.name());
       circlereply->SetHeadUrl(star.pic());
+#if defined(STAR_CLOUD)
+      circlereply->SetHeadUrlTail(logic::SomeUtils::FindPicTail(star.pic()));
+#endif
       circlereply->SetApproveDecTime(star.approval_dec_time());
       circlereply->SetCommentDecTime(star.comment_dec_time());
       
@@ -527,6 +530,9 @@ bool CircleManager::GetAllCircle(const int socket, const int64 session, const in
       circlereply->SetCommentList(GetCircleCommentList(*iter));
       circlereply->SetName(star.name());
       circlereply->SetHeadUrl(star.pic());
+#if defined(STAR_CLOUD)
+      circlereply->SetHeadUrlTail(logic::SomeUtils::FindPicTail(star.pic()));
+#endif
       circlereply->SetApproveDecTime(star.approval_dec_time());
       circlereply->SetCommentDecTime(star.comment_dec_time());
       
