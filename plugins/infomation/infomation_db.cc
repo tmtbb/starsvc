@@ -6,6 +6,7 @@
 #include "comm/comm_head.h"
 
 #include "logic/logic_comm.h"
+#include "logic/logic_unit.h"
 #include "basic/basic_util.h"
 #include "infomation_db.h"
 
@@ -199,12 +200,18 @@ void Infomation_Mysql::Callgetstarnewsinfo(void* param, base_logic::Value* value
 		}
 	  if (rows[3] != NULL){
 			ret->SetString(L"showpic_url", rows[3]);
+#if defined(STAR_CLOUD)
+			ret->SetString(L"showpic_url_tail", logic::SomeUtils::FindPicTail(rows[3]));
+#endif
 		}
 	  if (rows[4] != NULL){
 			ret->SetString(L"subject_name", rows[4]);
 		}
 	  if (rows[5] != NULL){
 			ret->SetString(L"link_url", rows[5]);
+#if defined(STAR_CLOUD)
+			ret->SetString(L"link_url_tail", logic::SomeUtils::FindPicTail(rows[5]));
+#endif
 		}
 	  if (rows[6] != NULL){
 			ret->SetString(L"remarks", rows[6]);
@@ -383,6 +390,9 @@ void Infomation_Mysql::Callgetinfo(void* param, base_logic::Value* value){
 	  	}
 	  if (rows[4] != NULL){
 	  		ret->SetString(L"brief", rows[4]);
+#if defined(STAR_CLOUD)
+	  		ret->SetString(L"brief_tail", logic::SomeUtils::FindPicTail(rows[4]));
+#endif
 	  	}
 	  if (rows[5] != NULL){
 	  		ret->SetBigInteger(L"price", atoi(rows[5]));
@@ -392,9 +402,15 @@ void Infomation_Mysql::Callgetinfo(void* param, base_logic::Value* value){
 	  	}
 	  if (rows[7] != NULL){
 	  		ret->SetString(L"pic_url", rows[7]);
+#if defined(STAR_CLOUD)
+	  		ret->SetString(L"pic_url_tail", logic::SomeUtils::FindPicTail(rows[7]));
+#endif
 	  	}
     if (rows[8] != NULL){
 	  		ret->SetString(L"pic1", rows[8]);
+#if defined(STAR_CLOUD)
+	  		ret->SetString(L"pic1_tail", logic::SomeUtils::FindPicTail(rows[8]));
+#endif
 	  	}
 	  //dict->Set(L"resultvalue", (base_logic::Value *) (ret));
 	  list->Append((base_logic::Value *) (ret));
@@ -518,9 +534,15 @@ void Infomation_Mysql::Callgetstarservicelist(void* param, base_logic::Value* va
 			}
 		  if (rows[1] != NULL){
 				ret->SetString(L"url1", rows[1]);
+#if defined(STAR_CLOUD)
+				ret->SetString(L"url1_tail", logic::SomeUtils::FindPicTail(rows[1]));
+#endif
 			}
 		  if (rows[2] != NULL){
 				ret->SetString(L"url2", rows[2]);
+#if defined(STAR_CLOUD)
+				ret->SetString(L"url2_tail", logic::SomeUtils::FindPicTail(rows[2]));
+#endif
 			}
 		  if (rows[3] != NULL){
 				ret->SetString(L"name", rows[3]);
@@ -846,6 +868,9 @@ void Infomation_Mysql::CallgetUserStarMeetinfo(void* param, base_logic::Value* v
 			}
 		  if (rows[2] != NULL){
 				ret->SetString(L"star_pic", rows[2]);
+#if defined(STAR_CLOUD)
+				ret->SetString(L"star_pic_tail", logic::SomeUtils::FindPicTail(rows[2]));
+#endif
 			}
 		  if (rows[3] != NULL){
 				ret->SetBigInteger(L"star_type", atoi(rows[3]));
@@ -920,20 +945,44 @@ void Infomation_Mysql::CallgetOnestarInfo(void* param, base_logic::Value* value)
       if (rows[2] != NULL)
         info_value->SetInteger(L"star_tpye", atoi(rows[2]));
 
-      if (rows[3] != NULL)
-        info_value->SetString(L"head_url", rows[3]);
+      if (rows[3] != NULL) {
+      	info_value->SetString(L"head_url", rows[3]);
+#if defined(STAR_CLOUD)
+      	info_value->SetString(L"head_url_tail", logic::SomeUtils::FindPicTail(rows[3]));
+#endif
+      }
+        
+      if (rows[4] != NULL) {
+      	info_value->SetString(L"back_pic", rows[4]);
+#if defined(STAR_CLOUD)
+      	info_value->SetString(L"back_pic_tail", logic::SomeUtils::FindPicTail(rows[4]));
+#endif
+      }
 
-      if (rows[4] != NULL)
-        info_value->SetString(L"back_pic", rows[4]);
-
-      if (rows[5] != NULL)
-        info_value->SetString(L"portray1", rows[5]);
-      if (rows[6] != NULL)
-        info_value->SetString(L"portray2", rows[6]);
-      if (rows[7] != NULL)
-        info_value->SetString(L"portray3", rows[7]);
-      if (rows[8] != NULL)
-        info_value->SetString(L"portray4", rows[8]);
+      if (rows[5] != NULL) {
+      	info_value->SetString(L"portray1", rows[5]);
+#if defined(STAR_CLOUD)
+      	info_value->SetString(L"portray1_tail", logic::SomeUtils::FindPicTail(rows[5]));
+#endif
+      }
+      if (rows[6] != NULL) {
+      	info_value->SetString(L"portray2", rows[6]);
+#if defined(STAR_CLOUD)
+      	info_value->SetString(L"portray2_tail", logic::SomeUtils::FindPicTail(rows[6]));
+#endif
+      }
+      if (rows[7] != NULL) {
+      	info_value->SetString(L"portray3", rows[7]);
+#if defined(STAR_CLOUD)
+      	info_value->SetString(L"portray3_tail", logic::SomeUtils::FindPicTail(rows[7]));
+#endif
+      }
+      if (rows[8] != NULL) {
+      	info_value->SetString(L"portray4", rows[8]);
+#if defined(STAR_CLOUD)
+      	info_value->SetString(L"portray4_tail", logic::SomeUtils::FindPicTail(rows[8]));
+#endif
+      }
 
       if (rows[9] != NULL)
         info_value->SetBigInteger(L"acc_id", atoll(rows[9]));
@@ -1021,8 +1070,12 @@ void Infomation_Mysql::Callgetbarragedata(void* param, base_logic::Value* value)
 		  if (rows[0] != NULL)
 				info_value->SetString(L"user_name", rows[0]);
 			
-		  if (rows[1] != NULL)
-				info_value->SetString(L"head_url", rows[1]);
+		  if (rows[1] != NULL) {
+		  	info_value->SetString(L"head_url", rows[1]);
+#if defined(STAR_CLOUD)
+		  	info_value->SetString(L"head_url_tail", logic::SomeUtils::FindPicTail(rows[1]));
+#endif
+		  }
 			
 		  if (rows[2] != NULL)
 				info_value->SetInteger(L"order_type", atoi(rows[2]));

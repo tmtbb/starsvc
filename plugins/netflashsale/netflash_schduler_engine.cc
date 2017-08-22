@@ -161,6 +161,9 @@ bool NetflashManager::NetSymbolList(const int socket, const int64 session, const
     base_logic::DictionaryValue *ret = new base_logic::DictionaryValue();
     ret->SetString(L"star_code", pubstar.symbol());
     ret->SetString(L"head_url", pubstar.pic());
+#if defined(STAR_CLOUD)
+    ret->SetString(L"head_url_tail", logic::SomeUtils::FindPicTail(pubstar.pic()));
+#endif
     ret->SetString(L"star_name", pubstar.name());
     ret->SetString(L"work", pubstar.work());
     list->Append((base_logic::Value *) (ret));
@@ -233,6 +236,10 @@ bool NetflashManager::SymbolInfo(const int socket, const int64 session, const in
   base_logic::StringValue* t_starname = new base_logic::StringValue(pubstar.name());
   base_logic::StringValue* t_pic = new base_logic::StringValue(pubstar.pic());
   base_logic::StringValue* t_backpic = new base_logic::StringValue(pubstar.back_pic());
+#if defined(STAR_CLOUD)
+  base_logic::StringValue* t_pictail = new base_logic::StringValue(logic::SomeUtils::FindPicTail(pubstar.pic()));
+  base_logic::StringValue* t_backpictail = new base_logic::StringValue(logic::SomeUtils::FindPicTail(pubstar.back_pic()));
+#endif
   base_logic::FundamentalValue* t_startype = new base_logic::FundamentalValue(pubstar.star_type());
   base_logic::FundamentalValue* t_publishtype = new base_logic::FundamentalValue(pubstar.publish_type());
   base_logic::FundamentalValue* t_publishtime = new base_logic::FundamentalValue(pubstar.publish_time());
@@ -246,6 +253,10 @@ bool NetflashManager::SymbolInfo(const int socket, const int64 session, const in
   dic->Set("star_name", t_starname);
   dic->Set("head_url", t_pic);
   dic->Set("back_pic_url", t_backpic);
+#if defined(STAR_CLOUD)
+  dic->Set("head_url_tail", t_pictail);
+  dic->Set("back_pic_url_tail", t_backpictail);
+#endif
   dic->Set("star_type", t_startype);
   dic->Set("publish_type", t_publishtype);
   dic->Set("publish_time", t_publishtime);
