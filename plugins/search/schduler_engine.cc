@@ -60,6 +60,7 @@ void SearchManager::SendSearchStarInfo(int socket, int64 session, int32 reserved
     int32 t_count = 0;
     int32 max_count = 10;
     //发送给客户端
+    //std::string tmp;
     net_reply::SearchAllStar net_search_all_star;
     while(list.size() > 0 && t_count < max_count) {
         net_reply::StarUnit* net_star_unit =
@@ -70,6 +71,10 @@ void SearchManager::SendSearchStarInfo(int socket, int64 session, int32 reserved
         net_star_unit->set_gender(star.gender());
         net_star_unit->set_name(star.name());
         net_star_unit->set_pic(star.pic());
+        //tmp = star.pic();
+#ifdef STAR_CLOUD 
+        net_star_unit->set_pic(logic::SomeUtils::FindPicTail(star.pic()));
+#endif
         net_star_unit->set_wid(star.weibo_index_id());
         net_search_all_star.set_unit(net_star_unit->get());
         t_count++;
