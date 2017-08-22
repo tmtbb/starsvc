@@ -19,7 +19,11 @@ CShareMemory::~CShareMemory(){
 }
 
 bool CShareMemory::Init(){
+#if defined(STAR_CLOUD)
 	if((m_key = ftok("/etc/passwd", 0x66)) < 0)
+#else
+	if((m_key = ftok("/dev/null", 0x66)) < 0)
+#endif
 	{
 		LOG_MSG("create key failure, CShareMemory init error.");
 		return false;
