@@ -253,7 +253,11 @@ bool Infomationlogic::GetSysParamValue(struct server* srv,int socket ,struct Pac
   }
   
   base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
+#if defined(STAR_CLOUD)
+  base_logic::StringValue* ret = new base_logic::StringValue(logic::SomeUtils::FindPicTail(paramvalue));
+#else
   base_logic::StringValue* ret = new base_logic::StringValue(paramvalue);
+#endif
   dic->Set("param_value", ret);
 
   struct PacketControl packet_reply;

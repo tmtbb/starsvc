@@ -298,6 +298,9 @@ void HistoryManager::SendHistoryOwnStar(const int socket, const int64 session,
     net_ownstar->set_starname(ownstar.starname());
     net_ownstar->set_faccid(ownstar.faccid());
     net_ownstar->set_headurl(ownstar.headurl());
+#if defined(STAR_CLOUD)
+    net_ownstar->set_headurltail(logic::SomeUtils::FindPicTail(ownstar.headurl()));
+#endif
     net_ownstar->set_work(ownstar.work());
 
     all_net_ownstar.set_unit(net_ownstar->get());
