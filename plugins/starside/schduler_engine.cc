@@ -787,6 +787,7 @@ void StarSideManager::ServiceDefInfo(const int socket,
     net_item->set_price(item.price());
     net_item->set_name(item.name());
     net_item->set_showpic_url(item.showpic_url());
+    net_item->set_showpic_url_tail(item.showpic_url());
 
     all_net_meetrel.set_unit(net_item->get());
     t_count++;

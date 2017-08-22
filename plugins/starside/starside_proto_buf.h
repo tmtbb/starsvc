@@ -1702,6 +1702,7 @@ class ServiceItem{
       : mid_(NULL),
         name_(NULL),
         showpic_url_(NULL),
+        showpic_url_tail_(NULL),
         value_(NULL),
         price_(NULL) {
   }
@@ -1721,6 +1722,9 @@ class ServiceItem{
   void set_name(const std::string& value) {
     name_ = new base_logic::StringValue(value);
   }
+  void set_showpic_url_tail(const std::string& value) {
+    showpic_url_tail_ = new base_logic::StringValue(value);
+  }
   void set_showpic_url(const std::string& value) {
     showpic_url_ = new base_logic::StringValue(value);
   }
@@ -1739,6 +1743,8 @@ class ServiceItem{
       value_->Set(L"price", price_);
     if (showpic_url_ != NULL)
       value_->Set(L"showpic_url", showpic_url_);
+    if (showpic_url_tail_ != NULL)
+      value_->Set(L"showpic_url_tail", showpic_url_tail_);
     return value_;
   }
 
@@ -1748,6 +1754,7 @@ class ServiceItem{
 
   base_logic::StringValue* name_;           //
   base_logic::StringValue* showpic_url_;           //明星code
+  base_logic::StringValue* showpic_url_tail_;           //明星code
 
 
   base_logic::DictionaryValue* value_;

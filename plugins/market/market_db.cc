@@ -6,6 +6,7 @@
 #include "comm/comm_head.h"
 
 #include "logic/logic_comm.h"
+#include "logic/logic_unit.h"
 #include "basic/basic_util.h"
 #include "market_db.h"
 
@@ -503,18 +504,33 @@ bool Market_Mysql::getstarbrief(const std::string& code,DicValue &ret){
 	}
 	if(result->GetString(L"pic1",&pic1)){
 		ret.SetString(L"pic1",pic1);
+#ifdef STAR_CLOUD 
+		ret.SetString(L"pic1_tail",logic::SomeUtils::FindPicTail(pic1));
+#endif
 	}
 	if(result->GetString(L"pic2",&pic2)){
 		ret.SetString(L"pic2",pic2);
+#ifdef STAR_CLOUD 
+		ret.SetString(L"pic2_tail",logic::SomeUtils::FindPicTail(pic2));
+#endif
 	}
 	if(result->GetString(L"pic3",&pic3)){
 		ret.SetString(L"pic3",pic3);
+#ifdef STAR_CLOUD 
+		ret.SetString(L"pic3_tail",logic::SomeUtils::FindPicTail(pic3));
+#endif
 	}
 	if(result->GetString(L"pic4",&pic4)){
 		ret.SetString(L"pic4",pic4);
+#ifdef STAR_CLOUD 
+		ret.SetString(L"pic4_tail",logic::SomeUtils::FindPicTail(pic4));
+#endif
 	}
 	if(result->GetString(L"pic5",&pic5)){
 		ret.SetString(L"pic5",pic5);
+#ifdef STAR_CLOUD 
+		ret.SetString(L"pic5_tail",logic::SomeUtils::FindPicTail(pic5));
+#endif
 	}
 	int64 m_seconds;
 	if(result->GetBigInteger(L"seconds",&m_seconds)){
@@ -554,18 +570,33 @@ void Market_Mysql::callgetstarbrief(void* param, base_logic::Value* value){
 		}
 	  if (rows[7] != NULL){
 			ret->SetString(L"pic1", rows[7]);
+#ifdef STAR_CLOUD 
+			ret->SetString(L"pic1_tail", logic::SomeUtils::FindPicTail(rows[7]));
+#endif
 		}
 	  if (rows[8] != NULL){
 			ret->SetString(L"pic2", rows[8]);
+#ifdef STAR_CLOUD 
+			ret->SetString(L"pic2_tail", logic::SomeUtils::FindPicTail(rows[8]));
+#endif
 		}
 	  if (rows[9] != NULL){
 			ret->SetString(L"pic3", rows[9]);
+#ifdef STAR_CLOUD 
+			ret->SetString(L"pic3_tail", logic::SomeUtils::FindPicTail(rows[9]));
+#endif
 		}
 	  if (rows[10] != NULL){
 			ret->SetString(L"pic4", rows[10]);
+#ifdef STAR_CLOUD 
+			ret->SetString(L"pic4_tail", logic::SomeUtils::FindPicTail(rows[10]));
+#endif
 		}
 	  if (rows[11] != NULL){
 			ret->SetString(L"pic5", rows[11]);
+#ifdef STAR_CLOUD 
+			ret->SetString(L"pic5_tail", logic::SomeUtils::FindPicTail(rows[11]));
+#endif
 		}
 	  if (rows[12] != NULL){
 			ret->SetBigInteger(L"seconds", atoi(rows[12]));
@@ -836,12 +867,18 @@ void Market_Mysql::Callgetstarnewsinfo(void* param, base_logic::Value* value){
 		}
 	  if (rows[3] != NULL){
 			ret->SetString(L"showpic_url", rows[3]);
+#ifdef STAR_CLOUD 
+			ret->SetString(L"showpic_url_tail", logic::SomeUtils::FindPicTail(rows[3]));
+#endif
 		}
 	  if (rows[4] != NULL){
 			ret->SetString(L"subject_name", rows[4]);
 		}
 	  if (rows[5] != NULL){
 			ret->SetString(L"link_url", rows[5]);
+#ifdef STAR_CLOUD 
+			ret->SetString(L"link_url_tail", logic::SomeUtils::FindPicTail(rows[5]));
+#endif
 		}
 	  if (rows[6] != NULL){
 			ret->SetString(L"remarks", rows[6]);
@@ -942,6 +979,9 @@ void Market_Mysql::Callgetbannerinfo(void* param, base_logic::Value* value){
 		}
 	  if (rows[1] != NULL){
 			ret->SetString(L"pic_url", rows[1]);
+#ifdef STAR_CLOUD 
+			ret->SetString(L"pic_url_tail", logic::SomeUtils::FindPicTail(rows[1]));
+#endif
 		}
 	  if (rows[2] != NULL){
 			ret->SetBigInteger(L"type", atoi(rows[2]));
@@ -1027,6 +1067,9 @@ void Market_Mysql::Callgetinfo(void* param, base_logic::Value* value){
 	  	}
 	  if (rows[7] != NULL){
 	  		ret->SetString(L"pic_url", rows[7]);
+#ifdef STAR_CLOUD 
+	  		ret->SetString(L"pic_url_tail", logic::SomeUtils::FindPicTail(rows[7]));
+#endif
 	  	}
 	  //dict->Set(L"resultvalue", (base_logic::Value *) (ret));
 	  list->Append((base_logic::Value *) (ret));
@@ -1128,6 +1171,9 @@ void Market_Mysql::CallStarInfo(void* param, base_logic::Value* value) {
 	  }
 	  if (rows[4] != NULL){
 	    info_value->SetString(L"star_brief_url", rows[4]);
+#ifdef STAR_CLOUD 
+	    info_value->SetString(L"star_brief_url_tail", logic::SomeUtils::FindPicTail(rows[4]));
+#endif
 	  }
 	  if (rows[5] != NULL){
 	    info_value->SetInteger(L"star_type", atoi(rows[5]));
@@ -1137,6 +1183,9 @@ void Market_Mysql::CallStarInfo(void* param, base_logic::Value* value) {
 	  }
 	  if (rows[7] != NULL){
 	    info_value->SetString(L"star_pic", rows[7]);
+#ifdef STAR_CLOUD 
+	    info_value->SetString(L"star_pic_tail", logic::SomeUtils::FindPicTail(rows[7]));
+#endif
 	  }
 	  if (rows[8] != NULL){
 	    info_value->SetBigInteger(L"star_owntimes", atoll(rows[8]));
@@ -1244,6 +1293,9 @@ void Market_Mysql::CallStarbrief(void* param, base_logic::Value* value) {
 	  }
 	  if (rows[13] != NULL){
 	    info_value->SetString(L"pic_url", rows[13]);
+#ifdef STAR_CLOUD 
+	    info_value->SetString(L"pic_url_tail", logic::SomeUtils::FindPicTail(rows[13]));
+#endif
 	  }
 	  if (rows[14] != NULL){
 	    info_value->SetBigInteger(L"owntimes", atoll(rows[14]));

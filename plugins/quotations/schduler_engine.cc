@@ -342,6 +342,11 @@ void QuotationsManager::SendSymbolOne(const int socket,
       r_symbol_unit->set_name(star.name());
       r_symbol_unit->set_star_type(star.type());
       r_symbol_unit->set_pic(star.pic());
+#ifdef STAR_CLOUD 
+      r_symbol_unit->set_pic_tail(logic::SomeUtils::FindPicTail(star.pic()));
+      r_symbol_unit->set_home_pic_tail(logic::SomeUtils::FindPicTail(star.home_pic()));
+      r_symbol_unit->set_home_button_pic_tail(logic::SomeUtils::FindPicTail(star.home_button_pic()));
+#endif
       r_symbol_unit->set_home_pic(star.home_pic());
       r_symbol_unit->set_symbol(star.symbol());
       r_symbol_unit->set_system_unix_time(time(NULL));
@@ -427,6 +432,11 @@ void QuotationsManager::SendQuotationsList(const int socket, const int64 session
       r_symbol_unit->set_name(star.name());
       r_symbol_unit->set_star_type(star.type());
       r_symbol_unit->set_pic(star.pic());
+#ifdef STAR_CLOUD
+      r_symbol_unit->set_pic_tail(logic::SomeUtils::FindPicTail(star.pic()));
+      r_symbol_unit->set_home_pic_tail(logic::SomeUtils::FindPicTail(star.home_pic()));
+      r_symbol_unit->set_home_button_pic_tail(logic::SomeUtils::FindPicTail(star.home_button_pic()));
+#endif
       r_symbol_unit->set_home_pic(star.home_pic());
       r_symbol_unit->set_symbol(star.symbol());
       r_symbol_unit->set_system_unix_time(time(NULL));
@@ -456,7 +466,12 @@ void QuotationsManager::SendQuotationsList(const int socket, const int64 session
   std::map<std::string, std::string>::iterator iter
     = quotations_cache_->sys_param_map_.find("HOME_LAST_PIC");
   if(iter != quotations_cache_->sys_param_map_.end())
+  {
     symbol_list.set_home_last_pic(iter->second);
+#ifdef STAR_CLOUD
+    symbol_list.set_home_last_pic_tail(logic::SomeUtils::FindPicTail(iter->second));
+#endif
+  }
 
   if (symbol_list.Size() != 0) {
     struct PacketControl packet_control;

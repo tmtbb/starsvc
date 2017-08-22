@@ -697,8 +697,11 @@ class SymbolUnit {
         : wid_(NULL)
 	, name_(NULL)
 	, pic_(NULL)
+	, pic_tail_(NULL)
   , home_pic_(NULL)
+  , home_pic_tail_(NULL)
   , home_button_pic_(NULL)
+  , home_button_pic_tail_(NULL)
 	, symbol_(NULL)
 	, current_price_(NULL)
 	, system_unix_time_(NULL)
@@ -722,11 +725,21 @@ class SymbolUnit {
     pic_ = new base_logic::StringValue(pic);
   }
 
+  void set_pic_tail(const std::string& pic) {
+    pic_tail_ = new base_logic::StringValue(pic);
+  }
+
   void set_home_pic(const std::string& pic) {
     home_pic_ = new base_logic::StringValue(pic);
   }
+  void set_home_pic_tail(const std::string& pic) {
+    home_pic_tail_ = new base_logic::StringValue(pic);
+  }
   void set_home_button_pic(const std::string& pic) {
     home_button_pic_ = new base_logic::StringValue(pic);
+  }
+  void set_home_button_pic_tail(const std::string& pic) {
+    home_button_pic_tail_ = new base_logic::StringValue(pic);
   }
 
   void set_symbol(const std::string& symbol) {
@@ -771,10 +784,16 @@ class SymbolUnit {
       value_->Set(L"name", name_);
     if (pic_ != NULL)
       value_->Set(L"pic", pic_);
+    if (pic_tail_ != NULL)
+      value_->Set(L"pic_tail", pic_tail_);
     if (home_pic_ != NULL)
       value_->Set(L"home_pic", home_pic_);
+    if (home_pic_tail_ != NULL)
+      value_->Set(L"home_pic_tail", home_pic_tail_);
     if (home_button_pic_ != NULL)
       value_->Set(L"home_button_pic", home_button_pic_);
+    if (home_button_pic_tail_ != NULL)
+      value_->Set(L"home_button_pic_tail", home_button_pic_tail_);
     if (symbol_ != NULL)
       value_->Set(L"symbol", symbol_);
     if (current_price_ != NULL)
@@ -800,8 +819,11 @@ class SymbolUnit {
   base_logic::StringValue* wid_;
   base_logic::StringValue* name_;
   base_logic::StringValue* pic_;
+  base_logic::StringValue* pic_tail_;
   base_logic::StringValue* home_button_pic_;
+  base_logic::StringValue* home_button_pic_tail_;
   base_logic::StringValue* home_pic_;
+  base_logic::StringValue* home_pic_tail_;
   base_logic::StringValue* symbol_;
   base_logic::FundamentalValue*   current_price_;
   base_logic::FundamentalValue*   system_unix_time_;
@@ -821,6 +843,7 @@ class SymbolList {
       : symbol_info_(NULL),
         stype_(NULL),
         value_(NULL),
+        home_last_pic_tail_(NULL),
         home_last_pic_(NULL) {
     symbol_info_ = new base_logic::ListValue;
   }
@@ -843,6 +866,9 @@ class SymbolList {
   void set_home_last_pic(const std::string& pic) {
     home_last_pic_ = new base_logic::StringValue(pic);
   }
+  void set_home_last_pic_tail(const std::string& pic) {
+    home_last_pic_tail_ = new base_logic::StringValue(pic);
+  }
 
   base_logic::DictionaryValue* get() {
     value_ =  new base_logic::DictionaryValue();
@@ -856,6 +882,8 @@ class SymbolList {
       value_->Set(L"chartType", stype_);
     if(home_last_pic_ != NULL)
       value_->Set(L"home_last_pic", home_last_pic_);
+    if(home_last_pic_tail_ != NULL)
+      value_->Set(L"home_last_pic_tail", home_last_pic_tail_);
     return value_;
   }
 
@@ -875,6 +903,7 @@ class SymbolList {
   base_logic::ListValue* symbol_info_;
   base_logic::FundamentalValue* stype_;
   base_logic::StringValue* home_last_pic_;
+  base_logic::StringValue* home_last_pic_tail_;
   base_logic::DictionaryValue* value_;
 };
 

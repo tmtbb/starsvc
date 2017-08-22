@@ -82,6 +82,7 @@ public:
         ,gender_(NULL)
         ,name_(NULL)
         ,pic_(NULL)
+        ,pic_tail_(NULL)
         ,wid_(NULL) {}
 
     ~StarUnit() {
@@ -106,6 +107,9 @@ public:
     void set_pic(const std::string& pic) {
         pic_ = new base_logic::StringValue(pic);
     }
+    void set_pic_tail(const std::string& pic) {
+        pic_tail_ = new base_logic::StringValue(pic);
+    }
 
     void set_wid(const std::string& wid) {
         wid_ = new base_logic::StringValue(wid);
@@ -121,6 +125,8 @@ public:
             value_->Set(L"name", name_);
         if (pic_ != NULL)
             value_->Set(L"pic", pic_);
+        if (pic_tail_ != NULL)
+            value_->Set(L"pic_tail", pic_tail_);
         if (wid_ != NULL)
             value_->Set(L"wid", wid_);
         return value_;
@@ -130,6 +136,7 @@ private:
     base_logic::FundamentalValue*    gender_;
     base_logic::StringValue*         name_;
     base_logic::StringValue*         pic_;
+    base_logic::StringValue*         pic_tail_;
     base_logic::StringValue*         wid_;
     base_logic::DictionaryValue*     value_;
 };

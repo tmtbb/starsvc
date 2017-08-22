@@ -489,6 +489,9 @@ bool Marketlogic::getstarbrief(struct server* srv,int socket ,struct PacketHead*
     ret_list.SetString(L"birth", item.birth());
     ret_list.SetString(L"colleage", item.colleage());
     ret_list.SetString(L"pic_url", item.pic_url());
+#ifdef STAR_CLOUD 
+    ret_list.SetString(L"pic_url_tail", logic::SomeUtils::FindPicTail(item.pic_url()));
+#endif
     ret_list.SetBigInteger(L"owntimes", item.owntimes());
       /*
 	  if(!sqldb->getstarbrief(code,ret_list)){
