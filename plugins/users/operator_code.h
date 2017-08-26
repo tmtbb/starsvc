@@ -63,5 +63,8 @@ namespace users_logic {
 #define S_SET_COMMISSION_INFO USERS_TYPE * 1000 + 38
 
 #define S_LOGIN_EXISTS USERS_TYPE * 1000 + 40
+
+#define R_GET_SERVER_ADDR USERS_TYPE * 1000 + 41
+#define S_GET_SERVER_ADDR USERS_TYPE * 1000 + 42
 }
 #endif
