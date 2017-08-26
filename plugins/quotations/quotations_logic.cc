@@ -205,7 +205,7 @@ bool Quotationslogic::OnGetQiniuUrl(struct server* srv, int socket,
 
 bool Quotationslogic::OnRefreshSymbol(struct server* srv, int socket,
                                        struct PacketHead* packet) {
-  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+  if (packet->packet_length < PACKET_HEAD_LENGTH) {
     send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
     return false;
   }
