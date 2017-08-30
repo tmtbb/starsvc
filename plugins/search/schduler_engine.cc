@@ -73,7 +73,7 @@ void SearchManager::SendSearchStarInfo(int socket, int64 session, int32 reserved
         net_star_unit->set_pic(star.pic());
         //tmp = star.pic();
 #ifdef STAR_CLOUD 
-        net_star_unit->set_pic(logic::SomeUtils::FindPicTail(star.pic()));
+        net_star_unit->set_pic_tail(logic::SomeUtils::FindPicTail(star.pic()));
 #endif
         net_star_unit->set_wid(star.weibo_index_id());
         net_search_all_star.set_unit(net_star_unit->get());

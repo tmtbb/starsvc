@@ -92,6 +92,8 @@ class Userslogic {
 
   bool OnGetCommission(struct server* srv, int socket, struct PacketHead *packet);
 
+  bool OnGetServerAddr(struct server* srv, int socket, struct PacketHead *packet);
+
  private:
   bool Init();
  private:
