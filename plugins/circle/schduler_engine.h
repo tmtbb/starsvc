@@ -61,25 +61,32 @@ public:
   
   bool GetUserAsk(const int socket, const int64 session, 
                         const int32 reserved,const int64 uid,
-                        const int64 pos, const int64 count);
+                        const int64 pos, const int64 count,
+                        const int64 atype, const int64 ptype,
+                        const std::string &starcode);
   bool GetStarUserAsk(const int socket, const int64 session, 
                         const int32 reserved,const std::string &starcode,
-                        const int64 pos, const int64 count);
+                        const int64 pos, const int64 count,
+                        const int64 atype, const int64 ptype, 
+                        const int64 uid);
   bool GetAllStarUserAskHot(const int socket, const int64 session, 
                         const int32 reserved,const int64 type,
                         const int64 pos, const int64 count);
   bool UpdateUserAsk(circle_logic::UserQustions &item);
   bool UpdateStarAnswer(const int64 id, const int32 p_type,
-        const int64 answer_t, const std::string &sanswer);
+        const int64 answer_t, const std::string &sanswer,
+        const int64 uid, const std::string &starcode);
+  bool UpdateUserSeeMap(const int64 uid, const int64 qid, const std::string &starcode);
 private:
   void Init();
 
   base_logic::ListValue* GetCircleApproveList(Circle*& circle);
   base_logic::ListValue* GetCircleCommentList(Circle*& circle);
-  std::string GetUserName(int64 uid);
+  std::string GetUserName(int64 uid, std::string &headUrl);
+  int32 UserSeeMapFind(const int64 uid, const int64 qid); 
 //____________
-  void GetUserAskNoLock(const int64 uid, std::list<UserQustions> &list);
-  void GetStarUserAskNoLock(const std::string &starcode, std::list<UserQustions> &list);
+  void GetUserAskNoLock(const int64 uid, std::list<UserQustions> &list, const int64 atype, const int64 ptype, const std::string &starcode);
+  void GetStarUserAskNoLock(const std::string &starcode, std::list<UserQustions> &list, const int64 atype, const int64 ptype);
 
 private:
   manager_schduler::SchdulerEngine* manager_schduler_engine_;

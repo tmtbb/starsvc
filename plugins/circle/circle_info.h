@@ -15,12 +15,13 @@ namespace circle_logic {
 
 enum AskType{
   at_text = 0, //文字
-  at_voice = 1, //语音
-  at_video = 2  //视频
+  at_video = 1, //视频
+  at_voice = 2  //语音
 };
 enum PriType{
   pt_private = 0, //私有
-  pt_pub = 1    //公开
+  pt_pub = 1,    //公开
+  pt_all = 2,    //所有
 };
 enum CircleStatus {
   CIRCLE_NORMAL_STATUS = 0,
@@ -184,11 +185,11 @@ class UserQustions {
       data_->Release();
     }
   }
-/*
-  static bool close_after(const UserQustions& t_trades_position, const UserQustions& r_trades_position){
-    return Data::close_after(t_trades_position.data_, r_trades_position.data_);
+
+  static bool sort(const UserQustions& item, const UserQustions& r_item){
+    return Data::sort(item.data_, r_item.data_);
   }
-  */
+  
 
   void ValueSerialization(base_logic::DictionaryValue* dict);
   bool ValueSeriForUserAsk(base_logic::DictionaryValue* dict); 
@@ -238,6 +239,9 @@ class UserQustions {
   void set_id(const int64 id) {
     data_->id_ = id;
   }
+  void set_ask_t(const int64 value) {
+    data_->ask_t_= value;
+  }
   void set_answer_t(const int64 value) {
     data_->answer_t_= value;
   }
@@ -249,6 +253,9 @@ class UserQustions {
   }
   void set_sanswer(const std::string &value){
     data_->sanswer_ = value;
+  }
+  void AddTotal(){
+    data_->s_total_++;
   }
 
  private:
@@ -265,6 +272,11 @@ class UserQustions {
           p_type_(-1),
           c_type_(0)
           {
+    }
+    static bool sort(const Data* t_data, const Data* r_data) {
+
+        //return t_data->open_price_ >= r_data->open_price_ && t_data->open_position_time_ > r_data->open_position_time_;
+        return true;
     }
 /*
     static bool close_after(const Data* t_data,
@@ -489,6 +501,10 @@ public:
               , uask_(NULL)
               , sanswer_(NULL)
               , video_url_(NULL)
+              , nickname_(NULL)
+              , starname_(NULL)
+              , headurl_(NULL)
+              , isbuy_(NULL)
               {}
 
   ~AskAnswer() {
@@ -522,6 +538,9 @@ public:
   void set_c_type(const int32 i) {
     c_type_ = new base_logic::FundamentalValue(i);
   }
+  void set_isbuy(const int32 i) {
+    isbuy_ = new base_logic::FundamentalValue(i);
+  }
 
   void set_starcode(const std::string& value) {
     starcode_ = new base_logic::StringValue(value);
@@ -534,6 +553,15 @@ public:
   }
   void set_video_url(const std::string& value) {
     video_url_ = new base_logic::StringValue(value);
+  }
+  void set_nickname(const std::string& value) {
+    nickname_ = new base_logic::StringValue(value);
+  }
+  void set_headurl(const std::string& value) {
+    headurl_ = new base_logic::StringValue(value);
+  }
+  void set_starname(const std::string& value) {
+    starname_ = new base_logic::StringValue(value);
   }
 
   base_logic::DictionaryValue* get(){
@@ -562,6 +590,14 @@ public:
       m_value->Set(L"sanswer", sanswer_);
     if(video_url_ != NULL)
       m_value->Set(L"video_url", video_url_);
+    if(nickname_!= NULL)
+      m_value->Set(L"nickName", nickname_);
+    if(starname_ != NULL)
+      m_value->Set(L"starName", starname_);
+    if(headurl_!= NULL)
+      m_value->Set(L"headUrl", headurl_);
+    if(isbuy_ != NULL)
+      m_value->Set(L"purchased", isbuy_);
 
     return m_value;
   }
@@ -577,11 +613,15 @@ private:
   base_logic::FundamentalValue* a_type_;
   base_logic::FundamentalValue* p_type_;
   base_logic::FundamentalValue* c_type_;
+  base_logic::FundamentalValue* isbuy_;
 
   base_logic::StringValue* starcode_;
   base_logic::StringValue* uask_;
   base_logic::StringValue* sanswer_;
   base_logic::StringValue* video_url_;
+  base_logic::StringValue* starname_;
+  base_logic::StringValue* nickname_;
+  base_logic::StringValue* headurl_;
 
   base_logic::DictionaryValue* m_value;
 

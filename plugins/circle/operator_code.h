@@ -57,6 +57,8 @@ namespace circle_logic {
 
 #define R_GET_QINIU_TOKEN CIRCLE_TYPE * 1000 + 29
 #define S_GET_QINIU_TOKEN CIRCLE_TYPE * 1000 + 30
+
+#define R_TEST_TEST CIRCLE_TYPE * 1000 + 66
 }
 #endif 
 

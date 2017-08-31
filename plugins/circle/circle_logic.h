@@ -10,6 +10,8 @@
 #include "net/packet_processing.h"
 #include "manager/data_share_mgr.h"
 #include "circle_db.h"
+//#include "storager_kafka.h"
+#include "kafka.h"
 
 namespace circle_logic {
 
@@ -45,6 +47,8 @@ public:
   bool OnTimeout(struct server *srv, char *id, int opcode, int time);
 
 private:
+  void FetchTaskForKafka();
+
   bool OnGetAllCircleInfo(struct server* srv, int socket, struct PacketHead* packet);
 
   bool OnGetStarCircleInfo(struct server* srv, int socket, struct PacketHead* packet);
@@ -66,11 +70,14 @@ private:
   bool OnStarAnswer(struct server* srv, int socket, struct PacketHead* packet); 
 
   bool OnGetQiniuToken(struct server* srv, int socket, struct PacketHead* packet);
+  bool OnSeeQuestion(struct server* srv, int socket, struct PacketHead* packet); 
 private:
   bool Init();
 private:
   circle_logic::CircleDB*  circle_db_;
   manager_schduler::SchdulerEngine* manager_schduler_engine_;
+
+  circle_logic::Kafka* kafka_;
 };
 } // namespace circle_logic
 

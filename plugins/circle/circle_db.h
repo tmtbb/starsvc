@@ -37,9 +37,11 @@ public:
   int64 OnUserAsk(const int64 uid, const int32 a_type, 
             const int32 p_type, const int32 c_type, 
             const std::string &starcode, const std::string &uask,
-            const std::string &video_url);
+            const std::string &video_url, int64 &askt);
   int64 OnStarAnswer(const int64 id, const int32 p_type, 
-            const std::string &sanswer);
+            const std::string &sanswer, int64 *uid, std::string &starcode);
+  int64 OnSeeQuestion(const int64 uid, const int64 qid, const int32 c_type, 
+            const std::string &starcode);
 private:
   static void CallGetAllCircleInfo(void* param, base_logic::Value* value);
   static void CallGetAllUserAskAnswer(void* param, base_logic::Value* value);
@@ -49,6 +51,7 @@ private:
 
   static void CallOnUpdateCircle(void* param, base_logic::Value* value);
   static void CallGetAllUserSeeAsk(void* param, base_logic::Value* value);
+  static void CallStarAnswer(void* param, base_logic::Value* value); 
 private:
   base_logic::DataEngine* mysql_engine_;
 };

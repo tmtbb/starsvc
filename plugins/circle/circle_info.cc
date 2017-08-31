@@ -247,13 +247,16 @@ bool UserQustions::ValueSeriForUserAsk(base_logic::DictionaryValue* dict) {
   bool r1 = dict->GetBigInteger(L"uid", &data_->uid_);
   bool r2 = dict->GetString(L"starcode", &data_->starcode_);
   //bool r3 = dict->GetBigInteger(L"ask_t", &data_->ask_t_);
-
-  bool r3 = dict->GetInteger(L"a_type", &data_->a_type_);
-  bool r4 = dict->GetInteger(L"p_type", &data_->p_type_);
-  bool r5 = dict->GetInteger(L"c_type", &data_->c_type_);
+  int64 tmp;
+  bool r3 = dict->GetBigInteger(L"aType", &tmp);
+  data_->a_type_ = tmp;
+  bool r4 = dict->GetBigInteger(L"pType", &tmp);
+  data_->p_type_ = tmp;
+  bool r5 = dict->GetBigInteger(L"cType", &tmp);
+  data_->c_type_ = tmp;
 
   bool r6 = dict->GetString(L"uask", &data_->uask_); //
-  bool r7 = dict->GetString(L"video_url", &data_->video_url_); //
+  bool r7 = dict->GetString(L"videoUrl", &data_->video_url_); //
   return (!r1 || !r2 || !r3 || !r4 || !r5 || !r6 || !r7);
 }
 }  // namespace circle_logic
