@@ -94,11 +94,22 @@ namespace net {
 
 class PacketProsess {
  public:
+  //加密压缩组包
   static bool PacketStream(const struct PacketHead *packet_head,
                            void **packet_stream, int32 *packet_stream_length);
 
+  //解加密压缩包
   static bool UnpackStream(const void *packet_stream, int32 len,
                            struct PacketHead **packet_head);
+
+  //明文组包
+  static bool PacketClearStream(const PacketHead *packet_head,
+                                 void **packet_stream,
+                                 int32 *packet_stream_length);
+
+  //解明文包
+  static bool UnpackClearStream(const void *packet_stream, int32 len,
+                                 struct PacketHead **packet_head);
 
   static void HexEncode(const void *bytes, size_t size);
 
@@ -123,6 +134,7 @@ class PacketProsess {
 
   static uint64 DecompressionStream(const uint8 *zip_data, uint64 zip_len,
                                     uint8 **unzip_data);  //  解压缩
+
 };
 }  //  namespace net
 #endif /* SWP_NET_PACKET_PROCESSING_H_ */
