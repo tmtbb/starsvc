@@ -243,6 +243,8 @@ void CircleDB::CallGetUserName(void* param, base_logic::Value* value) {
 
       if (rows[0] != NULL)
           dict->SetString(L"user_name", rows[0]);
+      if (rows[1] != NULL)
+          dict->SetString(L"head_url", rows[1]);
     
     }
   }
@@ -358,7 +360,7 @@ void CircleDB::CallGetAllUserAskAnswer(void* param, base_logic::Value* value) {
 int64 CircleDB::OnUserAsk(const int64 uid, const int32 a_type, 
             const int32 p_type, const int32 c_type, 
             const std::string &starcode, const std::string &uask,
-            const std::string &video_url)
+            const std::string &video_url, int64 &askt)
 {
 
 
@@ -387,6 +389,7 @@ int64 CircleDB::OnUserAsk(const int64 uid, const int32 a_type,
   if(dict->GetDictionary(L"resultvalue", &info_value)){
       if (info_value)
         info_value->GetBigInteger(L"id", &id);
+        info_value->GetBigInteger(L"askt", &askt);
   }
 
   //if (!r)
@@ -410,6 +413,40 @@ void CircleDB::CallUserAsk(void* param, base_logic::Value* value) {
       if (rows[r_i] != NULL)
           info_value->SetBigInteger(L"id", atoll(rows[r_i]));
       r_i++;
+      if (rows[r_i] != NULL)
+          info_value->SetBigInteger(L"askt", atoll(rows[r_i]));
+      r_i++;
+
+    }
+    dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
+  }
+  else{
+    LOG_ERROR ("proc_UserAsk count < 0");
+  }
+  dict->Remove(L"sql", &value);
+}
+
+void CircleDB::CallStarAnswer(void* param, base_logic::Value* value) {
+  base_logic::DictionaryValue *dict = (base_logic::DictionaryValue *) (value);
+  base_storage::DBStorageEngine *engine =
+      (base_storage::DBStorageEngine *) (param);
+  MYSQL_ROW rows;
+  int32 num = engine->RecordCount();
+  int r_i  = 0;
+  if (num > 0) {
+    base_logic::DictionaryValue *info_value =
+          new base_logic::DictionaryValue();
+    while (rows = (*(MYSQL_ROW *) (engine->FetchRows())->proc)) {
+      r_i = 0;
+      if (rows[r_i] != NULL)
+          info_value->SetBigInteger(L"answert", atoll(rows[r_i]));
+      r_i++;
+      if (rows[r_i] != NULL)
+          info_value->SetBigInteger(L"uid", atoll(rows[r_i]));
+      r_i++;
+      if (rows[r_i] != NULL)
+          info_value->SetString(L"starcode", (rows[r_i]));
+      r_i++;
 
     }
     dict->Set(L"resultvalue", (base_logic::Value *) (info_value));
@@ -421,7 +458,7 @@ void CircleDB::CallUserAsk(void* param, base_logic::Value* value) {
 }
 //明星回答
 int64 CircleDB::OnStarAnswer(const int64 id, const int32 p_type, 
-            const std::string &sanswer)
+            const std::string &sanswer, int64 *uid, std::string &starcode)
 {
   base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
   base_logic::DictionaryValue* info_value = NULL;
@@ -433,7 +470,7 @@ int64 CircleDB::OnStarAnswer(const int64 id, const int32 p_type,
     + ",'" + sanswer
     + "');";
   dict->SetString(L"sql", sql);
-  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallUserAsk);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallStarAnswer);
   if (!r)
   {
     if (dict) delete dict;
@@ -443,7 +480,13 @@ int64 CircleDB::OnStarAnswer(const int64 id, const int32 p_type,
   int64 answer_t = -1; //回答时间
   if(dict->GetDictionary(L"resultvalue", &info_value)){
       if (info_value)
-        info_value->GetBigInteger(L"id", &answer_t );
+      {
+        info_value->GetBigInteger(L"answert", &answer_t );
+        int64 t;
+        info_value->GetBigInteger(L"uid", &t);
+        *uid = t;
+        info_value->GetString(L"starcode", &starcode);
+      }
   }
   //if (!r)
    //   return false;
@@ -503,6 +546,38 @@ void CircleDB::CallGetAllUserSeeAsk(void* param, base_logic::Value* value)
     LOG_ERROR ("proc_GetAllUserSeeAsk count < 0");
   }
   dict->Remove(L"sql", &value);
+}
+
+int64 CircleDB::OnSeeQuestion(const int64 uid, const int64 qid,
+        const int32 c_type, const std::string &starcode)
+{
+  base_logic::DictionaryValue* dict = new base_logic::DictionaryValue();
+  base_logic::DictionaryValue* info_value = NULL;
+
+  bool r = false;
+  std::string sql = "call proc_SeeQuestion("
+    + base::BasicUtil::StringUtil::Int64ToString(uid) + ","
+    + base::BasicUtil::StringUtil::Int64ToString(qid) + ","
+    + base::BasicUtil::StringUtil::Int64ToString(c_type) 
+    + ",'" + starcode 
+    + "');";
+  dict->SetString(L"sql", sql);
+  r = mysql_engine_->ReadData(0, (base_logic::Value *) (dict), CallUserAsk);
+  if (!r)
+  {
+    if (dict) delete dict;
+      return -1;
+  }
+
+  int64 ret = -1; //回答时间
+  if(dict->GetDictionary(L"resultvalue", &info_value)){
+      if (info_value)
+        info_value->GetBigInteger(L"id", &ret);
+  }
+  //if (!r)
+   //   return false;
+  
+  return ret;
 }
 }  // namespace circle_logic
 
