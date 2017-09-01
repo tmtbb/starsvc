@@ -106,19 +106,39 @@ void CircleManager::InitUserSeeAskInfo()
   base_logic::ListValue *listvalue;
   if(!circle_db_->OnFetchAllUserSeeAsk(listvalue))
     return;
-
-
+  std::vector<int64> vec;
+  int64 uid, qid, tmp = -1;
   while (listvalue->GetSize()) {
     base_logic::Value *result_value;
     listvalue->Remove(0, &result_value);
     base_logic::DictionaryValue *dict_result_value =
         (base_logic::DictionaryValue *) (result_value);
-    //item.ValueSerialization(dict_result_value);
+    dict_result_value->GetBigInteger(L"uid", &uid);
+    dict_result_value->GetBigInteger(L"qid", &qid);
     
+    if (tmp > -1)
+    {
+        if (tmp == uid)
+            vec.push_back(qid);
+        else
+        {
+            user_see_all_map_[tmp] = vec;
+            tmp = uid;
+            vec.clear();
+            vec.push_back(qid);
+        }
+    }
+    else
+    {
+        tmp = uid;
+        vec.push_back(qid);
+    }
     
     delete dict_result_value;
     dict_result_value = NULL;
   }
+  if (vec.size() > 0)
+    user_see_all_map_[tmp] = vec;
 }
 //-----
 void CircleManager::InitUserAskAnswerData()
@@ -564,6 +584,7 @@ bool CircleManager::GetAllCircle(const int socket, const int64 session, const in
 // {{"uid":123,"user_name":"abc123"}{"uid":456,"user_name":"abc456"}...}
 */
 base_logic::ListValue* CircleManager::GetCircleApproveList(Circle*& circle){
+  std::string tmp;
   base_logic::ListValue* approvelist = new base_logic::ListValue();
 
   std::list<int64>::iterator it = circle->m_approveList.begin();
@@ -571,7 +592,7 @@ base_logic::ListValue* CircleManager::GetCircleApproveList(Circle*& circle){
     base_logic::DictionaryValue* t_dir = new base_logic::DictionaryValue();
     base_logic::FundamentalValue* t_uid = new base_logic::FundamentalValue(*it);
     t_dir->Set(L"uid", t_uid);
-    base_logic::StringValue* t_username = new base_logic::StringValue(GetUserName(*it));
+    base_logic::StringValue* t_username = new base_logic::StringValue(GetUserName(*it, tmp));
     t_dir->Set(L"user_name", t_username);
     approvelist->Append((base_logic::Value*) (t_dir));
   }
@@ -583,6 +604,7 @@ base_logic::ListValue* CircleManager::GetCircleApproveList(Circle*& circle){
 // {{"uid":123,"user_name":"abc123","direction":0,"content":"abc123","priority":0}
 //  {"uid":456,"user_name":"abc456","direction":1,"content":"321cba","priority":1}... }
 */
+std::string tmp;
 base_logic::ListValue* CircleManager::GetCircleCommentList(Circle*& circle) {
   base_logic::ListValue* commentlist = new base_logic::ListValue();
   
@@ -592,7 +614,7 @@ base_logic::ListValue* CircleManager::GetCircleCommentList(Circle*& circle) {
 
     base_logic::FundamentalValue* t_uid = new base_logic::FundamentalValue(it->uid);
     t_dir->Set(L"uid", t_uid);
-    base_logic::StringValue* t_username = new base_logic::StringValue(GetUserName(it->uid));
+    base_logic::StringValue* t_username = new base_logic::StringValue(GetUserName(it->uid, tmp));
     t_dir->Set(L"user_name", t_username);
     base_logic::FundamentalValue* t_direction = new base_logic::FundamentalValue(it->direction);
     t_dir->Set(L"direction", t_direction);
@@ -607,9 +629,10 @@ base_logic::ListValue* CircleManager::GetCircleCommentList(Circle*& circle) {
   return commentlist;
 }
 
-std::string CircleManager::GetUserName(int64 uid){
+std::string CircleManager::GetUserName(int64 uid, std::string &headUrl){
   star_logic::UserInfo tuserinfo;
   if(manager_schduler_engine_->GetUserInfoSchduler(uid, &tuserinfo)){
+    headUrl = tuserinfo.head_url();
     return tuserinfo.nickname();
   }
 
@@ -617,6 +640,7 @@ std::string CircleManager::GetUserName(int64 uid){
   circle_db_->OnGetUserName(uid, dict);
   std::string username("");
   dict->GetString(L"user_name", &username);
+  dict->GetString(L"head_url", &headUrl);
 
   if(dict){
     delete dict;
@@ -628,7 +652,7 @@ std::string CircleManager::GetUserName(int64 uid){
 
 //____
 
-void CircleManager::GetUserAskNoLock(const int64 uid,std::list<UserQustions> &list)
+void CircleManager::GetUserAskNoLock(const int64 uid,std::list<UserQustions> &list, const int64 atype, const int64 ptype, const std::string &starcode)
 {
   USERQUS userqus_map;
   base::MapGet<USERQUS_ALL_MAP, USERQUS_ALL_MAP::iterator, int64, USERQUS>(
@@ -637,12 +661,16 @@ void CircleManager::GetUserAskNoLock(const int64 uid,std::list<UserQustions> &li
   for (USERQUS::iterator iter = userqus_map.begin(); 
         iter != userqus_map.end(); iter++)
   {
-    UserQustions item = iter->second;
-    list.push_back(item);
+    //UserQustions item = iter->second;
+    //list.push_back(item);
+    if ((iter->second.p_type() == ptype || iter->second.p_type() == circle_logic::pt_all)
+        && iter->second.a_type() == atype
+        && iter->second.starcode() == starcode)
+      list.push_back(iter->second);
   }
 }
 
-void CircleManager::GetStarUserAskNoLock(const std::string &starcode,std::list<UserQustions> &list)
+void CircleManager::GetStarUserAskNoLock(const std::string &starcode,std::list<UserQustions> &list, const int64 atype, const int64 ptype)
 {
   USERQUS userqus_map;
   base::MapGet<S_USERQUS_ALL_MAP, S_USERQUS_ALL_MAP::iterator, std::string, USERQUS>(
@@ -651,20 +679,30 @@ void CircleManager::GetStarUserAskNoLock(const std::string &starcode,std::list<U
   for (USERQUS::iterator iter = userqus_map.begin(); 
         iter != userqus_map.end(); iter++)
   {
-    UserQustions item = iter->second;
-    list.push_back(item);
+    //UserQustions item = iter->second;
+    //list.push_back(item);
+#ifdef STAR_SIDE
+    if ((iter->second.p_type() == ptype || ptype == circle_logic::pt_all)
+        && iter->second.a_type() == atype)
+#else
+    if ((iter->second.p_type() == ptype || ptype == circle_logic::pt_all)
+        && iter->second.a_type() == atype && iter->second.answer_t() > 0)
+#endif
+      list.push_back(iter->second);
   }
 }
 bool CircleManager::GetUserAsk(const int socket, const int64 session, 
                         const int32 reserved,const int64 uid,
-                        const int64 pos, const int64 count)
+                        const int64 pos, const int64 count,
+                        const int64 atype, const int64 ptype, 
+                        const std::string &starcode)
 {
   
   std::list<UserQustions> list;
   //LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
   {
     base_logic::RLockGd lk(lock_);  //
-    GetUserAskNoLock(uid, list);
+    GetUserAskNoLock(uid, list, atype, ptype, starcode);
   }
 
   //LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
@@ -689,6 +727,8 @@ bool CircleManager::GetUserAsk(const int socket, const int64 session,
 
   int32 t_start = 0;
   int32 t_count = 0;
+  int32 isbuy = 0;
+  std::string tmp;
 
 
   circle_reply::AskAnswerList net_list ;
@@ -714,6 +754,13 @@ bool CircleManager::GetUserAsk(const int socket, const int64 session,
     askanswer->set_uask(qus_itme.uask());
     askanswer->set_sanswer(qus_itme.sanswer());
     askanswer->set_video_url(qus_itme.video_url());
+    askanswer->set_nickname(GetUserName(qus_itme.uid(), tmp));
+    askanswer->set_headurl(tmp);
+    //
+    isbuy = (qus_itme.uid() == uid ? 1 : UserSeeMapFind(uid, qus_itme.id()));
+    askanswer->set_isbuy(isbuy);
+
+    //askanswer->set_starname(qus_itme.video_url());
 
     
     net_list.set_unit(askanswer->get());
@@ -741,14 +788,16 @@ bool CircleManager::GetUserAsk(const int socket, const int64 session,
 
 bool CircleManager::GetStarUserAsk(const int socket, const int64 session, 
                         const int32 reserved,const std::string& starcode,
-                        const int64 pos, const int64 count)
+                        const int64 pos, const int64 count,
+                        const int64 atype, const int64 ptype, 
+                        const int64 uid)
 {
   
   std::list<UserQustions> list;
   //LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
   {
     base_logic::RLockGd lk(lock_);  //
-    GetStarUserAskNoLock(starcode, list);
+    GetStarUserAskNoLock(starcode, list, atype, ptype);
   }
 
   //LOG_DEBUG2("packet_length %d____________________________________________",list.size() );
@@ -773,7 +822,9 @@ bool CircleManager::GetStarUserAsk(const int socket, const int64 session,
 
   int32 t_start = 0;
   int32 t_count = 0;
+  int32 isbuy = 0;
 
+  std::string tmp;
 
   circle_reply::AskAnswerList net_list ;
   //list.sort(star_logic::Recharge::close_after);
@@ -798,6 +849,12 @@ bool CircleManager::GetStarUserAsk(const int socket, const int64 session,
     askanswer->set_uask(qus_itme.uask());
     askanswer->set_sanswer(qus_itme.sanswer());
     askanswer->set_video_url(qus_itme.video_url());
+    askanswer->set_nickname(GetUserName(qus_itme.uid(),tmp));
+    askanswer->set_headurl(tmp);
+    //askanswer->set_isbuy(UserSeeMapFind(qus_itme.uid(), qus_itme.id()));
+    isbuy = (qus_itme.uid() == uid ? 1 : UserSeeMapFind(uid, qus_itme.id()));
+    askanswer->set_isbuy(isbuy);
+    //askanswer->set_starname(qus_itme.video_url());
 
     
     net_list.set_unit(askanswer->get());
@@ -805,7 +862,7 @@ bool CircleManager::GetStarUserAsk(const int socket, const int64 session,
     if (net_list.Size() % base_num == 0
         && net_list.Size() != 0) {
       struct PacketControl packet_control;
-      MAKE_HEAD(packet_control, S_GET_USER_ASK , 1, 0, session, 0);
+      MAKE_HEAD(packet_control, S_GET_STAR_USER_ASK, 1, 0, session, 0);
       packet_control.body_ = net_list.get();
       send_message(socket, &packet_control);
       net_list.Reset();
@@ -815,7 +872,7 @@ bool CircleManager::GetStarUserAsk(const int socket, const int64 session,
 
   if (net_list.Size() > 0) {
     struct PacketControl packet_control;
-    MAKE_HEAD(packet_control, S_GET_USER_ASK , 1, 0, session, 0);
+    MAKE_HEAD(packet_control, S_GET_STAR_USER_ASK, 1, 0, session, 0);
     packet_control.body_ = net_list.get();
     send_message(socket, &packet_control);
   }
@@ -928,7 +985,8 @@ bool CircleManager::UpdateUserAsk(circle_logic::UserQustions &item)
 
 
 bool CircleManager::UpdateStarAnswer(const int64 id, const int32 p_type,
-        const int64 answer_t, const std::string &sanswer)
+        const int64 answer_t, const std::string &sanswer, 
+        const int64 uid, const std::string &starcode)
 {
 
     base_logic::RLockGd lk(lock_);
@@ -937,7 +995,7 @@ bool CircleManager::UpdateStarAnswer(const int64 id, const int32 p_type,
     USERQUS t_item_map, t_map2;
 //用户问答信息内存查找
     bool r = base::MapGet<USERQUS_ALL_MAP,USERQUS_ALL_MAP::iterator, int64, 
-        USERQUS> (userqus_all_map_, item.uid(), t_item_map);
+        USERQUS> (userqus_all_map_, uid, t_item_map);
     if (r)
     {
       if (base::MapGet<USERQUS, USERQUS::iterator, int64, circle_logic::UserQustions>(t_item_map, id, item))
@@ -948,9 +1006,10 @@ bool CircleManager::UpdateStarAnswer(const int64 id, const int32 p_type,
         userqus_all_map_[t_item_map[id].uid()] = t_item_map;
       }
     }
-//明星文档信息
+//明星问答信息
+/*
     r = base::MapGet<S_USERQUS_ALL_MAP,S_USERQUS_ALL_MAP::iterator, std::string, 
-        USERQUS> (s_userqus_all_map_, item.starcode(), t_map2);
+        USERQUS> (s_userqus_all_map_, starcode, t_map2);
 
     if (r)
     {
@@ -962,7 +1021,75 @@ bool CircleManager::UpdateStarAnswer(const int64 id, const int32 p_type,
         s_userqus_all_map_[t_map2[id].starcode()] = t_map2; //明星对应的问答信息
       }
     }
+    */
   return true;
+
+}
+int32 CircleManager::UserSeeMapFind(const int64 uid, const int64 qid) {
+    int32 ret = 0;
+    base_logic::RLockGd lk(lock_);
+
+    std::vector<int64> t_v;
+    bool r = base::MapGet<USER_SEE_ALL_MAP,USER_SEE_ALL_MAP::iterator, 
+        int64, std::vector<int64> > (user_see_all_map_, uid, t_v);
+    if (r)
+    {
+        for (int i = 0; i < t_v.size(); i++)
+            if (t_v[i] == qid)
+                return 1;
+    }
+    return ret;
+}
+
+bool CircleManager::UpdateUserSeeMap(const int64 uid, const int64 qid, const std::string &starcode)
+{
+    base_logic::RLockGd lk(lock_);
+    bool r = false;
+#ifndef STAR_SIDE //用户端使用
+    std::vector<int64> t_v;
+    r = base::MapGet<USER_SEE_ALL_MAP,USER_SEE_ALL_MAP::iterator, int64, 
+       std::vector<int64> > (user_see_all_map_, uid, t_v);
+    if (r)
+    {
+        user_see_all_map_[uid].push_back(qid);
+    }
+    else
+    {
+        t_v.push_back(qid);
+        user_see_all_map_[uid] = t_v;
+    }
+#endif
+//更新阅读数量
+    
+    circle_logic::UserQustions item ;// = new item_logic::UserQustions();
+
+    USERQUS t_item_map, t_map2;
+//用户问答信息内存查找
+    r = base::MapGet<USERQUS_ALL_MAP,USERQUS_ALL_MAP::iterator, int64, 
+        USERQUS> (userqus_all_map_, uid, t_item_map);
+    if (r)
+    {
+      if (base::MapGet<USERQUS, USERQUS::iterator, int64, circle_logic::UserQustions>(t_item_map, qid, item))
+      {
+        t_item_map[qid].AddTotal() ;
+        userqus_all_map_[t_item_map[qid].uid()] = t_item_map;
+      }
+    }
+//明星问答信息
+/*
+    r = base::MapGet<S_USERQUS_ALL_MAP,S_USERQUS_ALL_MAP::iterator, std::string, 
+        USERQUS> (s_userqus_all_map_, starcode, t_map2);
+
+    if (r)
+    {
+      if (base::MapGet<USERQUS, USERQUS::iterator, int64, circle_logic::UserQustions>(t_map2, qid, item))
+      {
+        t_map2[qid].AddTotal() ;
+        s_userqus_all_map_[t_map2[qid].starcode()] = t_map2; //明星对应的问答信息
+      }
+    }
+    */
+    return true;
 
 }
 

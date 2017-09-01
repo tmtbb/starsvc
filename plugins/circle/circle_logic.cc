@@ -20,6 +20,7 @@
 #define DEFAULT_CONFIG_PATH "./plugins/circle/circle_config.xml"
 
 #define TIME_DISTRIBUTION_TASK 15000
+#define TIME_FETCHKAFK_TASK 15100
 
 namespace circle_logic
 {
@@ -60,6 +61,9 @@ bool Circlelogic::Init()
   circle_logic::CircleEngine::GetSchdulerManager()->InitDB(circle_db_);
   circle_logic::CircleEngine::GetSchdulerManager()->InitData();
   circle_logic::CircleEngine::GetSchdulerManager()->InitUserAskAnswerData();
+#ifndef STAR_SIDE //用户端使用
+  circle_logic::CircleEngine::GetSchdulerManager()->InitUserSeeAskInfo();
+#endif
   base::SysRadom::GetInstance();
   std::string schduler_library = "./data_share.so";
   std::string schduler_func = "GetManagerSchdulerEngine";
@@ -71,6 +75,8 @@ bool Circlelogic::Init()
   if (manager_schduler_engine_ == NULL)
       assert(0);
   circle_logic::CircleEngine::GetSchdulerManager()->InitManagerSchduler(manager_schduler_engine_);
+//kafka
+  kafka_ = new circle_logic::Kafka(config);
   return true;
 }
 
@@ -160,6 +166,7 @@ bool Circlelogic::OnCircleMessage(struct server *srv, const int socket,
     break;
   }
   case R_USER_SEE_VIDEO:{ //用户查看视频
+    OnSeeQuestion(srv, socket, packet);
     break;
   }
   case R_GET_ALLSTAR_USER_ASK_HOT : {
@@ -168,6 +175,10 @@ bool Circlelogic::OnCircleMessage(struct server *srv, const int socket,
   }
   case R_GET_QINIU_TOKEN:{
     OnGetQiniuToken(srv, socket, packet);
+    break;
+  }
+  case R_TEST_TEST : {
+    FetchTaskForKafka();
     break;
   }
   default:
@@ -219,6 +230,7 @@ bool Circlelogic::OnIniTimer(struct server *srv)
   if (srv->add_time_task != NULL)
   {
       srv->add_time_task(srv, "circle", TIME_DISTRIBUTION_TASK, 5, -1);
+      srv->add_time_task(srv, "circle", TIME_FETCHKAFK_TASK, 3, -1);
   }
   return true;
 }
@@ -228,11 +240,15 @@ bool Circlelogic::OnTimeout(struct server *srv, char *id, int opcode,
 {
   switch (opcode)
   {
-  case TIME_DISTRIBUTION_TASK:
-  {
-    circle_logic::CircleEngine::GetSchdulerManager()->InitData();
-  }
-  default:
+    case TIME_DISTRIBUTION_TASK: {
+      circle_logic::CircleEngine::GetSchdulerManager()->InitData();
+      break;
+    }
+    case TIME_FETCHKAFK_TASK: {
+      FetchTaskForKafka();
+      break;
+    }
+    default:
       break;
   }
   return true;
@@ -458,20 +474,24 @@ bool Circlelogic::OnGetStarUserAsk(struct server* srv, int socket, struct Packet
   }
   struct PacketControl* packet_control = (struct PacketControl*) (packet);
 
-  int64 pos, count ;
+  int64 pos, count , aType, pType, uid;
   std::string starcode = "";
   bool r1 = packet_control->body_->GetBigInteger(L"pos", &pos);
   bool r2 = packet_control->body_->GetBigInteger(L"count", &count);
   bool r3 = packet_control->body_->GetString(L"starcode", &starcode);
-  if (!r1 || !r2 || !r3){
+  bool r4 = packet_control->body_->GetBigInteger(L"aType", &aType); //
+  bool r5 = packet_control->body_->GetBigInteger(L"pType", &pType);
+  bool r6 = packet_control->body_->GetBigInteger(L"uid", &uid);
+  if (!r1 || !r2 || !r3 || !r4 || !r5 || !r6){
       send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
       return false;
   }
 
   circle_logic::CircleEngine::GetSchdulerManager()->GetStarUserAsk(socket,
-      packet->session_id, packet->reserved, starcode, pos, count);
+      packet->session_id, packet->reserved, starcode, pos, count, aType, pType, uid);
   return true;
 }
+
 bool Circlelogic::OnGetUserAsk(struct server* srv, int socket, struct PacketHead* packet) {
   if (packet->packet_length <= PACKET_HEAD_LENGTH) {
       send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
@@ -479,17 +499,21 @@ bool Circlelogic::OnGetUserAsk(struct server* srv, int socket, struct PacketHead
   }
   struct PacketControl* packet_control = (struct PacketControl*) (packet);
 
-  int64 pos, count, uid = 0;
+  int64 pos, count, uid = 0, aType = -1, pType = -1;
+  std::string starcode;
   bool r1 = packet_control->body_->GetBigInteger(L"pos", &pos);
   bool r2 = packet_control->body_->GetBigInteger(L"count", &count);
-  bool r3 = packet_control->body_->GetBigInteger(L"uid", &count);
-  if (!r1 || !r2 || !r3){
+  bool r3 = packet_control->body_->GetBigInteger(L"uid", &uid);
+  bool r4 = packet_control->body_->GetBigInteger(L"aType", &aType); //
+  bool r5 = packet_control->body_->GetBigInteger(L"pType", &pType);
+  bool r6 = packet_control->body_->GetString(L"starcode", &starcode);
+  if (!r1 || !r2 || !r3 || !r4 || !r5 || !r6){
       send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
       return false;
   }
 
   circle_logic::CircleEngine::GetSchdulerManager()->GetUserAsk(socket,
-      packet->session_id, packet->reserved, uid, pos, count);
+      packet->session_id, packet->reserved, uid, pos, count, aType, pType, starcode);
   return true;
 }
 
@@ -545,13 +569,31 @@ bool Circlelogic::OnUserAsk(struct server* srv, int socket, struct PacketHead* p
       send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
       return false;
   }
-
-  int64 id = circle_db_->OnUserAsk(uid, a_type, p_type, c_type, starcode,
-            uask, video_url);
-  int32 result = 0; //0提问成功,失败
+  int64 askt = 0;
+  int64 id = circle_db_->OnUserAsk(item.uid(), item.a_type(), 
+    item.p_type(), item.c_type(), item.starcode(),
+            item.uask(), item.video_url(), askt);
+  int64 result = 0; //0提问成功,失败
   if (id != -1){//sucess 更新内存
     item.set_id(id);
+    item.set_ask_t(askt);
     circle_logic::CircleEngine::GetSchdulerManager()->UpdateUserAsk(item);
+    //add kafka
+    
+    base_logic::DictionaryValue* task_info = new base_logic::DictionaryValue();
+    task_info->Set(L"type", base_logic::Value::CreateIntegerValue(circle_logic::UserAsk)); //
+    task_info->Set(L"qid", base_logic::Value::CreateIntegerValue(id));
+    task_info->Set(L"uid", base_logic::Value::CreateIntegerValue(item.uid()));
+    task_info->Set(L"aType", base_logic::Value::CreateIntegerValue(item.a_type()));
+    task_info->Set(L"pType", base_logic::Value::CreateIntegerValue(item.p_type()));
+    task_info->Set(L"cType", base_logic::Value::CreateIntegerValue(item.c_type()));
+    task_info->Set(L"starcode", base_logic::Value::CreateStringValue(item.starcode()));
+    task_info->Set(L"uask", base_logic::Value::CreateStringValue(item.uask()));
+    task_info->Set(L"videoUrl", base_logic::Value::CreateStringValue(item.video_url()));
+    task_info->Set(L"askT", base_logic::Value::CreateIntegerValue(item.ask_t()));
+    kafka_->AddStorageInfo(task_info);
+    delete task_info;
+    
   }
   else {
     result = 1;
@@ -559,13 +601,59 @@ bool Circlelogic::OnUserAsk(struct server* srv, int socket, struct PacketHead* p
   struct PacketControl packet_control_ack;
   MAKE_HEAD(packet_control_ack,S_USER_ASK , 1, 0, packet->session_id, 0);
   base_logic::DictionaryValue dic;
-  dic.SetInteger(L"result", result);
+  dic.SetBigInteger(L"result", result);
   packet_control_ack.body_ = &dic;
   send_message(socket, &packet_control_ack);
 
   return true;
 }
+void Circlelogic::FetchTaskForKafka()
+{
+    std::vector<base_logic::DictionaryValue*> vec;
+    kafka_->FectchBatchQuestionTask(vec);
+    int64 type = -1;
+    int64 uid, qid;
+    std::string starcode;
+    for (int i = 0; i < vec.size(); i ++)
+    {
+        //
+        type = -1;
+        vec[i]->GetBigInteger(L"type", &type);
+        if (type == circle_logic::UserSeeQuestion) //用户偷看
+        {
+            vec[i]->GetString(L"starcode", &starcode);
+            vec[i]->GetBigInteger(L"qid", &qid);
+            vec[i]->GetBigInteger(L"uid", &uid);
+            circle_logic::CircleEngine::GetSchdulerManager()->UpdateUserSeeMap(uid,qid, starcode);
 
+        }
+        else if (type == circle_logic::StarAnswer)
+        {
+            std::string sanswer;
+            int64 answer_t, p_type;
+            vec[i]->GetString(L"starcode", &starcode);
+            vec[i]->GetString(L"sanswer", &sanswer);
+            vec[i]->GetBigInteger(L"qid", &qid);
+            vec[i]->GetBigInteger(L"uid", &uid);
+            vec[i]->GetBigInteger(L"answert", &answer_t);
+            vec[i]->GetBigInteger(L"pType", &p_type);
+            circle_logic::CircleEngine::GetSchdulerManager()->UpdateStarAnswer(qid, p_type, answer_t, sanswer, uid, starcode);
+        }
+        else if (type == circle_logic::UserAsk)
+        {
+            vec[i]->GetBigInteger(L"qid", &qid);
+            int64 askt;
+            vec[i]->GetBigInteger(L"askT", &askt);
+            circle_logic::UserQustions item;
+            bool flag = item.ValueSeriForUserAsk(vec[i]);
+            item.set_id(qid);
+            item.set_ask_t(askt);
+            circle_logic::CircleEngine::GetSchdulerManager()->UpdateUserAsk(item);
+        }
+        //
+        delete vec[i];
+    }
+}
 
 bool Circlelogic::OnStarAnswer(struct server* srv, int socket, struct PacketHead* packet) {
 
@@ -575,25 +663,40 @@ bool Circlelogic::OnStarAnswer(struct server* srv, int socket, struct PacketHead
   }
   struct PacketControl* packet_control = (struct PacketControl*) (packet);
 
-  int64 id = 0;
+  int64 id = 0, uid = 0;
   int32 p_type;
+  int64 tmp;
   p_type = -1;
 
-  std::string sanswer;
+  std::string sanswer, starcode;
 
   bool r1 = packet_control->body_->GetBigInteger(L"id", &id);
   bool r2 = packet_control->body_->GetString(L"sanswer", &sanswer);
-  bool r3 = packet_control->body_->GetInteger(L"p_type", &p_type);
+  bool r3 = packet_control->body_->GetBigInteger(L"pType", &tmp);
+  p_type = tmp;
   if (!r1 || !r2 || !r3)
   {
       send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
       return false;
   }
 
-  int64 answer_t = circle_db_->OnStarAnswer(id, p_type, sanswer);
-  int32 result = 0; //0提问成功,失败
+  int64 answer_t = circle_db_->OnStarAnswer(id, p_type, sanswer, &uid, starcode);
+  int32 result = 0; //0 回答成功,失败
   if (answer_t != -1){//sucess 更新内存
-    circle_logic::CircleEngine::GetSchdulerManager()->UpdateStarAnswer(id, p_type, answer_t, sanswer);
+    circle_logic::CircleEngine::GetSchdulerManager()->UpdateStarAnswer(id, p_type, answer_t, sanswer, uid, starcode);
+    //add kafka
+    
+    base_logic::DictionaryValue* task_info = new base_logic::DictionaryValue();
+    task_info->Set(L"type", base_logic::Value::CreateIntegerValue(circle_logic::StarAnswer)); //
+    task_info->Set(L"starcode", base_logic::Value::CreateStringValue(starcode));
+    task_info->Set(L"sanswer", base_logic::Value::CreateStringValue(sanswer));
+    task_info->Set(L"answert", base_logic::Value::CreateIntegerValue(answer_t));
+    task_info->Set(L"qid", base_logic::Value::CreateIntegerValue(id));
+    task_info->Set(L"uid", base_logic::Value::CreateIntegerValue(uid));
+    task_info->Set(L"pType", base_logic::Value::CreateIntegerValue(p_type)); //
+    kafka_->AddStorageInfo(task_info);
+    delete task_info;
+    
   }
   else {
     result = 1;
@@ -607,6 +710,59 @@ bool Circlelogic::OnStarAnswer(struct server* srv, int socket, struct PacketHead
 
   return true;
 }
+//user see question
+bool Circlelogic::OnSeeQuestion(struct server* srv, int socket, struct PacketHead* packet) {
 
+  if (packet->packet_length <= PACKET_HEAD_LENGTH) {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+  struct PacketControl* packet_control = (struct PacketControl*) (packet);
+
+  int64 uid = 0, qid = 0;
+  int32 cType;
+  int64 tmp;
+  cType = -1;
+
+  std::string starcode;
+
+  bool r1 = packet_control->body_->GetBigInteger(L"uid", &uid);
+  bool r2 = packet_control->body_->GetBigInteger(L"qid", &qid);
+  bool r3 = packet_control->body_->GetString(L"starcode", &starcode);
+  bool r4 = packet_control->body_->GetBigInteger(L"cType", &tmp); //消费档次 0-15s, 1-30s, 2-45s
+  cType = tmp;
+  if (!r1 || !r2 || !r3 || !r4)
+  {
+      send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+      return false;
+  }
+
+  int64 ret = circle_db_->OnSeeQuestion(uid, qid, cType, starcode);
+  int32 result = 0; //0 偷听成功,失败
+  if (ret != -1){//sucess 更新内存
+    circle_logic::CircleEngine::GetSchdulerManager()->UpdateUserSeeMap(uid,qid, starcode);
+    //add kafka 通过kafk更新明星端数据
+    
+    base_logic::DictionaryValue* task_info = new base_logic::DictionaryValue();
+    task_info->Set(L"type", base_logic::Value::CreateIntegerValue(circle_logic::UserSeeQuestion)); //
+    task_info->Set(L"starcode", base_logic::Value::CreateStringValue(starcode));
+    task_info->Set(L"uid", base_logic::Value::CreateIntegerValue(uid));
+    task_info->Set(L"qid", base_logic::Value::CreateIntegerValue(qid));
+    kafka_->AddStorageInfo(task_info);
+    delete task_info;
+    
+  }
+  else {
+    result = 1;
+  }
+  struct PacketControl packet_control_ack;
+  MAKE_HEAD(packet_control_ack,S_USER_SEE_VIDEO, 1, 0, packet->session_id, 0);
+  base_logic::DictionaryValue dic;
+  dic.SetInteger(L"result", result);
+  packet_control_ack.body_ = &dic;
+  send_message(socket, &packet_control_ack);
+
+  return true;
+}
 }  // namespace circle_logic
 

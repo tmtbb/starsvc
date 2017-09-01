@@ -65,8 +65,8 @@ circle_db.o : ./circle_db.cc ./circle_db.h
 circle_info.o : ./circle_info.cc ./circle_info.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./circle_info.cc $(INCLUDE_PATHS)
 
-flash_kafka.o : ./flash_kafka.cc ./flash_kafka.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./flash_kafka.cc $(INCLUDE_PATHS)
+kafka.o : ./kafka.cc ./kafka.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./kafka.cc $(INCLUDE_PATHS)
 
 schduler_engine.o : ./schduler_engine.cc ./schduler_engine.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c ./schduler_engine.cc $(INCLUDE_PATHS)
@@ -98,7 +98,7 @@ redis_pool.o :  $(USER_DIR)/storage/redis_pool.cc $(USER_DIR)/storage/redis_pool
 time.o :  $(USER_DIR)/logic/time.cc $(USER_DIR)/logic/time.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/time.cc $(INCLUDE_PATHS)
 
-$(PLUGIN) : circle_init.o  circle_logic.o circle_db.o circle_info.o schduler_engine.o \
+$(PLUGIN) : circle_init.o circle_logic.o circle_db.o circle_info.o schduler_engine.o kafka.o \
 	star_infos.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a \
 	$(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a
@@ -106,3 +106,5 @@ $(PLUGIN) : circle_init.o  circle_logic.o circle_db.o circle_info.o schduler_eng
 	$^ -o $@
 
 include ../base.mk
+#是否为明星端
+CPPFLAGS += -DSTAR_SIDE
