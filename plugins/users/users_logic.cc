@@ -8,6 +8,7 @@
 #include "logic/star_infos.h"
 #include "comm/comm_head.h"
 #include "net/comm_head.h"
+#include "net/packet_process_assist.h"
 #include "config/config.h"
 #include "core/common.h"
 #include "logic/logic_comm.h"
@@ -119,7 +120,8 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
         return false;
     if (!net::PacketProsess::UnpackStream(msg, len, &packet)) {
         LOG_ERROR2("UnpackStream Error socket %d", socket);
-        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        //send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        SEND_UNPACKET_ERROR(socket, ERROR_TYPE, UNPACKET_ERRNO, FORMAT_ERRNO);
         return false;
     }
     
@@ -206,6 +208,10 @@ bool Userslogic::OnUsersMessage(struct server *srv, const int socket,
       OnGetServerAddr(srv, socket, packet);
       break;
     }
+    case R_GET_PACKET_KEY:{
+      OnGetPacketCryptKey(srv, socket, packet);
+      break;
+    }
     default:
       break;
   }
@@ -246,12 +252,18 @@ bool Userslogic::OnBroadcastClose(struct server *srv, const int socket) {
 
 bool Userslogic::OnIniTimer(struct server *srv) {
     if (srv->add_time_task != NULL) {
+        srv->add_time_task(srv, "users", 30001, 86400, -1);
     }
     return true;
 }
 
 bool Userslogic::OnTimeout(struct server *srv, char *id, int opcode, int time) {
     switch (opcode) {
+        case 30001: {
+            unsigned int key = net::CreateKey();
+            LOG_DEBUG2("New Key:%d", key);
+            break;
+        }
     default:
         break;
     }
@@ -1321,5 +1333,29 @@ bool Userslogic::OnGetServerAddr(struct server* srv, int socket,
 
   return true;
 }
+
+bool Userslogic::OnGetPacketCryptKey(struct server* srv, int socket,
+                                      struct PacketHead *packet) {
+  if (packet->packet_length < PACKET_HEAD_LENGTH) {
+    send_error(socket, ERROR_TYPE, FORMAT_ERRNO, packet->session_id);
+    return false;
+  }
+
+  unsigned int key = net::GetKey();
+  unsigned int xorRet = 26010 ^ key;
+  LOG_DEBUG2("packet key[%d], xorRet[%d]", key, xorRet);
+  
+  //发送信息
+  SEND_UNPACKET_ERROR(socket, USERS_TYPE, (int32) xorRet, packet->session_id);
+  /*struct PacketControl packet_control_ack; 
+  MAKE_HEAD(packet_control_ack, S_GET_PACKET_KEY, USERS_TYPE, 0, packet->session_id, packet->reserved);
+  base_logic::DictionaryValue* dic = new base_logic::DictionaryValue();
+  dic->SetBigInteger(L"PacketKey", (int64) xorRet );
+  packet_control_ack.body_ = dic; 
+  send_message(socket, &packet_control_ack); */
+
+  return true;
+}
+
 
 }  // namespace users_logic

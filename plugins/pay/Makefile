@@ -107,6 +107,9 @@ logic_unit.o :  $(USER_DIR)/logic/logic_unit.cc $(USER_DIR)/logic/logic_unit.h
 star_infos.o :  $(USER_DIR)/logic/star_infos.cc $(USER_DIR)/logic/star_infos.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/star_infos.cc $(INCLUDE_PATHS)
 
+packet_process_assist.o :  $(USER_DIR)/net/packet_process_assist.cc $(USER_DIR)/net/packet_process_assist.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/net/packet_process_assist.cc $(INCLUDE_PATHS)
+
 packet_processing.o :  $(USER_DIR)/net/packet_processing.cc $(USER_DIR)/net/packet_processing.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/net/packet_processing.cc $(INCLUDE_PATHS)
 
@@ -131,7 +134,7 @@ storager_kafka.o :  ./storager_kafka.cc ./storager_kafka.h
 
 
 $(PLUGIN) : unionpay_order.o pay_init.o pay_logic.o pay_db.o pay_proto_buf.o schduler_engine.o wx_order.o http_client.o aplipay_clt.o logic_unit.o\
-	star_infos.o packet_processing.o data_engine.o data_engine.o data_mysql_engine.o storager_kafka.o \
+	star_infos.o packet_process_assist.o packet_processing.o data_engine.o data_engine.o data_mysql_engine.o storager_kafka.o \
 	data_redis_engine.o mysql_pool.o redis_pool.o \
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a $(LIB_DIR)/mylib/third_party/lib/libhiredis.a\
 	$(CUSTOM_THIRD_PATH)/lib/librdkafka.a
