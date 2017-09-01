@@ -94,6 +94,8 @@ class Userslogic {
 
   bool OnGetServerAddr(struct server* srv, int socket, struct PacketHead *packet);
 
+  bool OnGetPacketCryptKey(struct server* srv, int socket, struct PacketHead *packet);
+
  private:
   bool Init();
  private:

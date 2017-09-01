@@ -78,7 +78,7 @@ bool Searchlogic::OnSearchMessage(struct server *srv, const int socket,
         return false;
     if (!net::PacketProsess::UnpackStream(msg, len, &packet)) {
         LOG_ERROR2("UnpackStream Error socket %d", socket);
-        send_error(socket, ERROR_TYPE, ERROR_TYPE, FORMAT_ERRNO);
+        SEND_UNPACKET_ERROR(socket, ERROR_TYPE, UNPACKET_ERRNO, FORMAT_ERRNO);
         return false;
     }
     switch (packet->operate_code) {

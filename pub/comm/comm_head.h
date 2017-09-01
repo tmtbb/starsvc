@@ -13,7 +13,8 @@ enum TIME_TASK {
 };
 
 enum PUBLIC_ERRNO {
-  FORMAT_ERRNO = -100
+  FORMAT_ERRNO = -100,
+  UNPACKET_ERRNO = -117
 };
 
 enum PACKET_ERROR {

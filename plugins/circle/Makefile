@@ -77,6 +77,9 @@ logic_unit.o :  $(USER_DIR)/logic/logic_unit.cc $(USER_DIR)/logic/logic_unit.h
 star_infos.o :  $(USER_DIR)/logic/star_infos.cc $(USER_DIR)/logic/star_infos.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/star_infos.cc $(INCLUDE_PATHS)
 
+packet_process_assist.o :  $(USER_DIR)/net/packet_process_assist.cc $(USER_DIR)/net/packet_process_assist.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/net/packet_process_assist.cc $(INCLUDE_PATHS)
+
 packet_processing.o :  $(USER_DIR)/net/packet_processing.cc $(USER_DIR)/net/packet_processing.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/net/packet_processing.cc $(INCLUDE_PATHS)
 
@@ -99,7 +102,7 @@ time.o :  $(USER_DIR)/logic/time.cc $(USER_DIR)/logic/time.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/logic/time.cc $(INCLUDE_PATHS)
 
 $(PLUGIN) : circle_init.o circle_logic.o circle_db.o circle_info.o schduler_engine.o kafka.o \
-	star_infos.o logic_unit.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
+	star_infos.o logic_unit.o packet_process_assist.o packet_processing.o data_engine.o data_mysql_engine.o data_redis_engine.o mysql_pool.o redis_pool.o\
 	$(CUSTOM_THIRD_PATH)/dmg_fp/lib/dmg_fp.a $(LIB_DIR)/mylib/base/lib/mybase.a \
 	$(LIB_DIR)/mylib/third_party/lib/libhiredis.a $(CUSTOM_THIRD_PATH)/librdkafka/librdkafka.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_PATHS) -lpthread -lexpat -lrt -ldl -liconv -lmysqlclient -lqiniu \

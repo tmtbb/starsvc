@@ -6,6 +6,7 @@
 
 
 #include "net/comm_head.h"
+#include "comm/comm_head.h"
 
 
 namespace trades_logic {

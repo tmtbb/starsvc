@@ -66,5 +66,8 @@ namespace users_logic {
 
 #define R_GET_SERVER_ADDR USERS_TYPE * 1000 + 41
 #define S_GET_SERVER_ADDR USERS_TYPE * 1000 + 42
+
+#define R_GET_PACKET_KEY USERS_TYPE * 1000 + 43
+#define S_GET_PACKET_KEY USERS_TYPE * 1000 + 44
 }
 #endif

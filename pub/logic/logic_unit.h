@@ -33,7 +33,7 @@ class SendUtils {
   bool SendBytes(int socket, const void* bytes, int32 len, const char* file,
                  int32 line);
   bool SendMessage(int socket, struct PacketHead* packet, const char* file,
-                   int32 line);
+                   int32 line, int16 flag = 1);
  private:
   struct threadrw_t* socket_lock_;
 };
@@ -171,7 +171,7 @@ extern std::map<int, const char*> error_code_msgs;
 }
 
 #define send_message(socket, packet) \
-  logic::SendUtils::GetInstance()->SendMessage(socket, packet, __FILE__, __LINE__)\
+  logic::SendUtils::GetInstance()->SendMessage(socket, packet, __FILE__, __LINE__, 1)\
 
 #define send_full(socket, buffer, len) \
   logic::SendUtils::GetInstance()->SendFull(socket, buffer, len)\
@@ -184,6 +184,16 @@ extern std::map<int, const char*> error_code_msgs;
     dic.SetInteger(L"result", error_code); \
     packet_control.body_ = &dic; \
     send_message(socket, &packet_control); \
+  } while(0)
+
+#define SEND_UNPACKET_ERROR(socket, type, error_code, session) \
+  do { \
+    struct PacketControl packet_control; \
+    MAKE_HEAD(packet_control, ERROR_TYPE, type, 0, session, 0); \
+    base_logic::DictionaryValue dic; \
+    dic.SetInteger(L"result", error_code); \
+    packet_control.body_ = &dic; \
+    logic::SendUtils::GetInstance()->SendMessage(socket, &packet_control, __FILE__, __LINE__, 0); \
   } while(0)
 
 #define closelockconnect(socket) \

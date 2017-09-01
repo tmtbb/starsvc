@@ -7,9 +7,9 @@ CPPFLAGS=
 CC=g++
 MAKE=gmake
 #星云
-#PROJECT="STAR_CLOUD"
+PROJECT="STAR_CLOUD"
 #默认星享
-PROJECT=""
+#PROJECT=""
 
 
 

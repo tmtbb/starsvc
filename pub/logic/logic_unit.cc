@@ -353,7 +353,7 @@ bool SendUtils::SendBytes(int socket, const void* bytes, int32 len,
 }
 
 bool SendUtils::SendMessage(int socket, struct PacketHead* packet,
-                            const char* file, int32 line) {
+                            const char* file, int32 line, int16 flag) {
   bool r;
   void *packet_stream = NULL;
   int32_t packet_stream_length = 0;
@@ -362,9 +362,14 @@ bool SendUtils::SendMessage(int socket, struct PacketHead* packet,
   if (socket <= 0 || packet == NULL)
     return false;
 
-  if (net::PacketProsess::PacketStream(packet, &packet_stream,
+  if (1 == flag && net::PacketProsess::PacketStream(packet, &packet_stream,
                                        &packet_stream_length) == false) {
     LOG_ERROR2("Call PackStream failed in %s:%d", file, line);
+    r = false;
+    goto MEMFREE;
+  } else if (0 == flag && net::PacketProsess::PacketClearStream(packet, &packet_stream,
+                                       &packet_stream_length) == false) {
+    LOG_ERROR2("Call PacketClearStream failed in %s:%d", file, line);
     r = false;
     goto MEMFREE;
   }
